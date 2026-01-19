@@ -59,6 +59,22 @@ export interface IGrid {
 }
 
 /**
+ * Core game state interface for managing dynamic elements.
+ */
+export interface IGameState {
+  /** Returns all active entities in the game. */
+  getEntities(): Entity[];
+  /** Returns the current player score. */
+  getScore(): number;
+  /** Returns the total number of pellets remaining in the grid. */
+  getRemainingPellets(): number;
+  /** Consumes a pellet at the specified coordinates and updates state. */
+  consumePellet(x: number, y: number): void;
+  /** Checks if a pellet at the specified coordinates has already been eaten. */
+  isPelletEaten(x: number, y: number): boolean;
+}
+
+/**
  * Core renderer interface for drawing the game state.
  */
 export interface IRenderer {
