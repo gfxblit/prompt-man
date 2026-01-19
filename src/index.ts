@@ -18,4 +18,3 @@ export function init(container: HTMLElement): void {
     console.log('Grid rendered to canvas');
   }
 }
-  
