@@ -1,5 +1,5 @@
 import { TileType, EntityType } from './types.js';
-import type { Entity, IGrid, IRenderer, IGameState } from './types.js';
+import type { Entity, IGrid, IRenderer, IGameState, IUIRenderer, JoystickState } from './types.js';
 import { TILE_SIZE, COLORS } from './config.js';
 
 export class Renderer implements IRenderer {
@@ -102,5 +102,32 @@ export class Renderer implements IRenderer {
         this.ctx.fill();
         break;
     }
+  }
+}
+
+export class UIRenderer implements IUIRenderer {
+  constructor(private ctx: CanvasRenderingContext2D) {}
+
+  render(joystick: JoystickState): void {
+    if (!joystick.active) return;
+
+    this.ctx.save();
+    
+    // Draw outer circle (base)
+    this.ctx.beginPath();
+    this.ctx.arc(joystick.originX, joystick.originY, 40, 0, Math.PI * 2);
+    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+    this.ctx.fill();
+    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+    this.ctx.lineWidth = 2;
+    this.ctx.stroke();
+
+    // Draw inner circle (stick)
+    this.ctx.beginPath();
+    this.ctx.arc(joystick.currentX, joystick.currentY, 20, 0, Math.PI * 2);
+    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+    this.ctx.fill();
+    
+    this.ctx.restore();
   }
 }
