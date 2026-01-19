@@ -1,0 +1,150 @@
+name: CI/CD
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: dist/
+          retention-days: 7
+
+  deploy-preview:
+    needs: build
+    # prevent running on closed PRs
+    if: github.event_name == 'pull_request' && github.event.pull_request.state == 'open'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Get PR number
+        id: pr
+        run: |
+          echo "number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          fetch-depth: 0
+          path: gh-pages-branch
+
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build
+          path: dist-artifact
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Deploy Preview
+        run: |
+          PR_DIR="gh-pages-branch/pr-${{ steps.pr.outputs.number }}"
+          mkdir -p $PR_DIR
+          # clear existing preview if any
+          rm -rf $PR_DIR/*
+          # copy new build
+          cp -r dist-artifact/* $PR_DIR/
+          
+          cd gh-pages-branch
+          git add .
+          git commit -m "Deploy preview for PR #${{ steps.pr.outputs.number }}" || echo "No changes to commit"
+          git push origin gh-pages
+
+      - name: Comment preview URL on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = ${{ steps.pr.outputs.number }};
+            const previewUrl = `https://${context.repo.owner}.github.io/${context.repo.repo}/pr-${prNumber}/`;
+
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: `🐍 **Preview Deployed!**\n\n**Preview URL:** ${previewUrl}`
+            });
+
+  deploy-production:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+    steps:
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          fetch-depth: 0
+          path: gh-pages-branch
+
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build
+          path: dist-artifact
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Deploy Production
+        run: |
+          cd gh-pages-branch
+          # Clean root files but preserve .git and pr-* directories
+          find . -maxdepth 1 -not -name '.git' -not -name 'pr-*' -not -name '.' -exec rm -rf {} +
+          
+          # Copy new build to root
+          cp -r ../dist-artifact/* .
+          
+          git add .
+          git commit -m "Deploy production build from ${{ github.sha }}" || echo "No changes to commit"
+          git push origin gh-pages
