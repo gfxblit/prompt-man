@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { GameState } from './game-state.js';
 import { Grid } from './grid.js';
-import { EntityType, TileType } from './types.js';
+import { TileType } from './types.js';
 
 describe('GameState', () => {
   const template = `
@@ -89,6 +89,22 @@ describe('GameState', () => {
     gameState.moveGhost(0, 3, 2);
     expect(gameState.getGhosts()[0].x).toBe(3);
     expect(gameState.getGhosts()[0].y).toBe(2);
+  });
+
+  it('should not throw when moving non-existent ghost', () => {
+    const grid = Grid.fromString(template);
+    const gameState = new GameState(grid);
+
+    gameState.moveGhost(99, 10, 10);
+    expect(gameState.getGhosts()).toHaveLength(1);
+  });
+
+  it('should return undefined for out of bounds tile', () => {
+    const grid = Grid.fromString(template);
+    const gameState = new GameState(grid);
+
+    expect(gameState.getTile(-1, 0)).toBeUndefined();
+    expect(gameState.getTile(99, 99)).toBeUndefined();
   });
 
   it('should delegate grid checks to the underlying grid', () => {

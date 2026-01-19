@@ -35,10 +35,32 @@ describe('Grid', () => {
     expect(grid.isOutOfBounds(5, 5)).toBe(true);
   });
 
+  it('should handle malformed templates', () => {
+    const template = `
+###
+
+#P
+    `.trim();
+    const grid = Grid.fromString(template);
+    // Line 2 is empty, Line 3 is shorter than Line 1.
+    expect(grid.getWidth()).toBe(3);
+    expect(grid.getHeight()).toBe(3);
+    expect(grid.getTile(0, 2)).toBe(TileType.Wall);
+    expect(grid.getTile(2, 2)).toBe(TileType.Empty); // Out of range of line[2] but in grid
+  });
+
   it('should update tiles', () => {
     const grid = new Grid(5, 5, TileType.Pellet);
     grid.setTile(2, 2, TileType.Empty);
     expect(grid.getTile(2, 2)).toBe(TileType.Empty);
+  });
+
+  it('should not throw when setting out of bounds tile', () => {
+    const grid = new Grid(5, 5);
+    grid.setTile(-1, 0, TileType.Wall);
+    grid.setTile(5, 0, TileType.Wall);
+    // Should not change anything or throw
+    expect(grid.getTile(0, 0)).toBe(TileType.Empty);
   });
 
   it('should check walkability', () => {
