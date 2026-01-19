@@ -16,7 +16,11 @@ export class Grid implements IGrid {
   }
 
   static fromString(template: string): Grid {
-    const lines = template.trim().split('\n');
+    const trimmed = template.trim();
+    if (!trimmed) {
+      return new Grid(0, 0);
+    }
+    const lines = trimmed.split('\n');
     const height = lines.length;
     const width = lines[0]?.length ?? 0;
     const grid = new Grid(width, height);

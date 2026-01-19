@@ -94,4 +94,33 @@ describe('Grid', () => {
     const pellets = grid.findTiles(TileType.Pellet);
     expect(pellets).toHaveLength(0);
   });
+
+  it('should handle empty string in fromString', () => {
+    const grid = Grid.fromString('');
+    expect(grid.getWidth()).toBe(0);
+    expect(grid.getHeight()).toBe(0);
+  });
+
+  it('should handle non-rectangular strings in fromString', () => {
+    const template = `
+###
+#
+`;
+    const grid = Grid.fromString(template);
+    expect(grid.getWidth()).toBe(3);
+    expect(grid.getHeight()).toBe(2);
+    expect(grid.getTile(0, 0)).toBe(TileType.Wall);
+    expect(grid.getTile(1, 1)).toBe(TileType.Empty); // line[1][1] is undefined
+  });
+
+  it('should handle out of bounds in setTile', () => {
+    const grid = new Grid(2, 2);
+    grid.setTile(-1, 0, TileType.Wall);
+    grid.setTile(0, -1, TileType.Wall);
+    grid.setTile(2, 0, TileType.Wall);
+    grid.setTile(0, 2, TileType.Wall);
+    // No errors should occur
+    expect(grid.getTile(0, 0)).toBe(TileType.Empty);
+  });
+  });
 });
