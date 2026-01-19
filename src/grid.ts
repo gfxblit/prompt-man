@@ -68,4 +68,16 @@ export class Grid implements IGrid {
     const tile = this.getTile(x, y);
     return tile !== undefined && tile !== TileType.Wall;
   }
+
+  findTiles(type: TileType): { x: number, y: number }[] {
+    const results: { x: number, y: number }[] = [];
+    for (let y = 0; y < this.height; y++) {
+      for (let x = 0; x < this.width; x++) {
+        if (this.tiles[y]?.[x] === type) {
+          results.push({ x, y });
+        }
+      }
+    }
+    return results;
+  }
 }

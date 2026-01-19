@@ -54,6 +54,8 @@ export interface IGrid {
   isOutOfBounds(x: number, y: number): boolean;
   /** Checks if the tile at the specified coordinates can be entered by entities. */
   isWalkable(x: number, y: number): boolean;
+  /** Finds all coordinates of a specific tile type. */
+  findTiles(type: TileType): { x: number, y: number }[];
 }
 
 /**
