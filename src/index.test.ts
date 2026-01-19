@@ -17,6 +17,11 @@ describe('index', () => {
       lineTo: vi.fn(),
       closePath: vi.fn(),
       fill: vi.fn(),
+      save: vi.fn(),
+      restore: vi.fn(),
+      stroke: vi.fn(),
+      strokeStyle: '',
+      lineWidth: 0,
     } as unknown as CanvasRenderingContext2D;
 
     // Mock canvas
@@ -71,8 +76,8 @@ describe('index', () => {
     expect(canvas.height).toBeGreaterThan(0);
     expect(canvas.getContext).toHaveBeenCalledWith('2d');
     
-    // Check for Tailwind classes
-    expect(canvas.classList.add).toHaveBeenCalledWith('border-2', 'border-gray-600');
+    // Check for game-canvas class
+    expect(canvas.classList.add).toHaveBeenCalledWith('game-canvas');
     
     // Check if render was called (by checking context calls)
     // The grid is non-empty, so it should clear rect and draw something

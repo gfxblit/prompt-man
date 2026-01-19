@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Renderer } from './renderer.js';
+import { Renderer, UIRenderer } from './renderer.js';
 import { Grid } from './grid.js';
 import { TileType, EntityType } from './types.js';
 import type { IGameState } from './types.js';
@@ -202,5 +202,56 @@ describe('Renderer', () => {
       0,
       Math.PI * 2
     );
+  });
+});
+
+describe('UIRenderer', () => {
+  let mockContext: {
+    beginPath: ReturnType<typeof vi.fn>;
+    arc: ReturnType<typeof vi.fn>;
+    fill: ReturnType<typeof vi.fn>;
+    stroke: ReturnType<typeof vi.fn>;
+    fillStyle: string;
+    strokeStyle: string;
+    lineWidth: number;
+  };
+  let uiRenderer: UIRenderer;
+
+  beforeEach(() => {
+    mockContext = {
+      beginPath: vi.fn(),
+      arc: vi.fn(),
+      fill: vi.fn(),
+      stroke: vi.fn(),
+      save: vi.fn(),
+      restore: vi.fn(),
+      fillStyle: '',
+      strokeStyle: '',
+      lineWidth: 0,
+    };
+    uiRenderer = new UIRenderer(mockContext as unknown as CanvasRenderingContext2D);
+  });
+
+  it('should be initialized with a context', () => {
+    expect(uiRenderer).toBeDefined();
+  });
+
+  it('should not render if joystick is inactive', () => {
+    const joystick = { active: false, originX: 0, originY: 0, currentX: 0, currentY: 0 };
+    uiRenderer.render(joystick);
+    expect(mockContext.beginPath).not.toHaveBeenCalled();
+  });
+
+  it('should render joystick circles if active', () => {
+    const joystick = { active: true, originX: 100, originY: 100, currentX: 120, currentY: 100 };
+    uiRenderer.render(joystick);
+
+    // Should draw circles
+    expect(mockContext.beginPath).toHaveBeenCalled();
+    // Outer circle
+    expect(mockContext.arc).toHaveBeenCalledWith(100, 100, 40, 0, Math.PI * 2);
+    // Inner circle
+    expect(mockContext.arc).toHaveBeenCalledWith(120, 100, 20, 0, Math.PI * 2);
+    expect(mockContext.fill).toHaveBeenCalled();
   });
 });

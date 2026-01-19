@@ -16,6 +16,8 @@ export class InputHandler {
     currentY: 0,
   };
 
+  private targetElement: HTMLElement | null = null;
+
   private constructor() {
     this.handleKeyDownBound = this.handleKeyDown.bind(this);
     this.handleTouchStartBound = this.handleTouchStart.bind(this);
@@ -35,6 +37,25 @@ export class InputHandler {
       InputHandler.instance = new InputHandler();
     }
     return InputHandler.instance;
+  }
+
+  public setTargetElement(element: HTMLElement): void {
+    this.targetElement = element;
+  }
+
+  private translateCoordinates(clientX: number, clientY: number): { x: number; y: number } {
+    if (!this.targetElement) {
+      return { x: clientX, y: clientY };
+    }
+
+    const rect = this.targetElement.getBoundingClientRect();
+    const scaleX = (this.targetElement as HTMLCanvasElement).width / rect.width;
+    const scaleY = (this.targetElement as HTMLCanvasElement).height / rect.height;
+
+    return {
+      x: (clientX - rect.left) * scaleX,
+      y: (clientY - rect.top) * scaleY,
+    };
   }
 
   private handleKeyDown(event: KeyboardEvent): void {
@@ -65,21 +86,26 @@ export class InputHandler {
   private handleTouchStart(event: TouchEvent): void {
     if (event.touches.length > 0) {
       const touch = event.touches[0];
+      const coords = this.translateCoordinates(touch.clientX, touch.clientY);
       this.joystickState = {
         active: true,
-        originX: touch.clientX,
-        originY: touch.clientY,
-        currentX: touch.clientX,
-        currentY: touch.clientY,
+        originX: coords.x,
+        originY: coords.y,
+        currentX: coords.x,
+        currentY: coords.y,
       };
+      if (this.targetElement) {
+        event.preventDefault();
+      }
     }
   }
 
   private handleTouchMove(event: TouchEvent): void {
     if (this.joystickState.active && event.touches.length > 0) {
       const touch = event.touches[0];
-      this.joystickState.currentX = touch.clientX;
-      this.joystickState.currentY = touch.clientY;
+      const coords = this.translateCoordinates(touch.clientX, touch.clientY);
+      this.joystickState.currentX = coords.x;
+      this.joystickState.currentY = coords.y;
 
       const dx = this.joystickState.currentX - this.joystickState.originX;
       const dy = this.joystickState.currentY - this.joystickState.originY;
