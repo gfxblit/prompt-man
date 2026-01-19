@@ -37,14 +37,15 @@ describe('Renderer', () => {
       consumePellet: vi.fn(),
       isPelletEaten: vi.fn().mockReturnValue(false),
     };
-    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
   });
 
   it('should be initialized with a context', () => {
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
     expect(renderer).toBeDefined();
   });
 
   it('should render a Wall as a blue block', () => {
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
     const grid = new Grid(1, 1);
     grid.setTile(0, 0, TileType.Wall);
 
@@ -55,6 +56,7 @@ describe('Renderer', () => {
   });
 
   it('should render a Pellet as a small peach dot', () => {
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
     const grid = new Grid(1, 1);
     grid.setTile(0, 0, TileType.Pellet);
 
@@ -70,9 +72,11 @@ describe('Renderer', () => {
   });
 
   it('should NOT render a Pellet if it is eaten', () => {
+    vi.mocked(mockState.isPelletEaten).mockReturnValue(true);
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
+    
     const grid = new Grid(1, 1);
     grid.setTile(0, 0, TileType.Pellet);
-    vi.mocked(mockState.isPelletEaten).mockReturnValue(true);
 
     renderer.render(grid, mockState);
 
@@ -85,6 +89,7 @@ describe('Renderer', () => {
   });
 
   it('should render a PowerPellet as a large peach circle', () => {
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
     const grid = new Grid(1, 1);
     grid.setTile(0, 0, TileType.PowerPellet);
 
@@ -103,6 +108,7 @@ describe('Renderer', () => {
   });
 
   it('should clear the canvas before rendering', () => {
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
     const grid = new Grid(2, 2);
     renderer.render(grid, mockState);
 
@@ -118,6 +124,7 @@ describe('Renderer', () => {
     const grid = new Grid(1, 1);
     const entities = [{ type: EntityType.Pacman, x: 0, y: 0 }];
     vi.mocked(mockState.getEntities).mockReturnValue(entities);
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
 
     renderer.render(grid, mockState);
 
@@ -137,6 +144,7 @@ describe('Renderer', () => {
     const grid = new Grid(1, 1);
     const entities = [{ type: EntityType.Ghost, x: 0, y: 0, color: 'pink' }];
     vi.mocked(mockState.getEntities).mockReturnValue(entities);
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
 
     renderer.render(grid, mockState);
 
@@ -156,6 +164,7 @@ describe('Renderer', () => {
     const grid = new Grid(1, 1);
     const entities = [{ type: EntityType.Ghost, x: 0, y: 0 }];
     vi.mocked(mockState.getEntities).mockReturnValue(entities);
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
 
     renderer.render(grid, mockState);
 
@@ -163,6 +172,7 @@ describe('Renderer', () => {
   });
 
   it('should render multiple tiles correctly', () => {
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
     const grid = Grid.fromString('#.\no ');
     // # at (0,0)
     // . at (1,0)
