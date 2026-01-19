@@ -5,7 +5,7 @@ describe('InputHandler', () => {
   let handler: InputHandler;
 
   beforeEach(() => {
-    handler = new InputHandler();
+    handler = InputHandler.getInstance();
   });
 
   afterEach(() => {

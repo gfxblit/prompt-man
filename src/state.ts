@@ -1,5 +1,5 @@
 import { TileType, EntityType } from './types.js';
-import type { Entity, IGrid, IGameState } from './types.js';
+import type { Entity, IGrid, IGameState, Direction } from './types.js';
 
 export class GameState implements IGameState {
   private entities: Entity[] = [];
@@ -69,7 +69,7 @@ export class GameState implements IGameState {
 
   movePacman(x: number, y: number): void {
     const pacman = this.entities.find(e => e.type === EntityType.Pacman);
-    if (pacman && this.grid.isWalkable(x, y)) {
+    if (pacman && (pacman.x !== x || pacman.y !== y) && this.grid.isWalkable(x, y) && !this.grid.isOutOfBounds(x, y)) {
       pacman.x = x;
       pacman.y = y;
       this.consumePellet(x, y);

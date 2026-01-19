@@ -7,7 +7,7 @@ import { TILE_SIZE, LEVEL_TEMPLATE } from './config.js';
 export function init(container: HTMLElement): void {
   const grid = Grid.fromString(LEVEL_TEMPLATE);
   const state = new GameState(grid);
-  const inputHandler = new InputHandler();
+  const inputHandler = InputHandler.getInstance();
 
   const canvas = document.createElement('canvas');
   canvas.width = grid.getWidth() * TILE_SIZE;

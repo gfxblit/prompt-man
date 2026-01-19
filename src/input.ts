@@ -1,14 +1,22 @@
 import type { Direction } from './types.js';
 
 export class InputHandler {
+  private static instance: InputHandler | null = null;
   private currentDirection: Direction = { dx: 0, dy: 0 };
   private handleKeyDownBound: (event: KeyboardEvent) => void;
 
-  constructor() {
+  private constructor() {
     this.handleKeyDownBound = this.handleKeyDown.bind(this);
     if (typeof window !== 'undefined') {
       window.addEventListener('keydown', this.handleKeyDownBound);
     }
+  }
+
+  public static getInstance(): InputHandler {
+    if (!InputHandler.instance) {
+      InputHandler.instance = new InputHandler();
+    }
+    return InputHandler.instance;
   }
 
   private handleKeyDown(event: KeyboardEvent): void {
@@ -44,5 +52,6 @@ export class InputHandler {
     if (typeof window !== 'undefined') {
       window.removeEventListener('keydown', this.handleKeyDownBound);
     }
+    InputHandler.instance = null;
   }
 }

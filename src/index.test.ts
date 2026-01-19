@@ -43,13 +43,18 @@ describe('index', () => {
     } as unknown as HTMLElement;
 
     // Mock requestAnimationFrame
-    let called = false;
+    let animationFrameId = 0;
     vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => {
-      if (!called) {
-        called = true;
-        callback(performance.now());
+      animationFrameId++;
+      // Simulate continuous animation by calling the callback a few times
+      if (animationFrameId <= 2) {
+        callback(performance.now() + animationFrameId * 16); // ~60fps
       }
-      return 0;
+      return animationFrameId;
+    }));
+
+    vi.stubGlobal('cancelAnimationFrame', vi.fn(() => {
+      // Mock implementation
     }));
   });
 
