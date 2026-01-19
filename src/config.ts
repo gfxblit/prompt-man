@@ -1,7 +1,9 @@
 /**
  * Game mechanics configuration
  */
+/** Points awarded for collecting a regular pellet. */
 export const PELLET_SCORE = 10;
+/** Points awarded for collecting a power pellet. */
 export const POWER_PELLET_SCORE = 50;
 
 /**

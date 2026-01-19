@@ -29,11 +29,11 @@ describe('GameState', () => {
     const grid = Grid.fromString(template);
     const gameState = new GameState(grid);
 
-    // Initial counts based on template
-    // . at (3,1) and (3,3)
-    // o at (1,3)
-    expect(gameState.getPelletCount()).toBe(2);
-    expect(gameState.getPowerPelletCount()).toBe(1);
+    const expectedPellets = grid.findTiles(TileType.Pellet).length;
+    const expectedPowerPellets = grid.findTiles(TileType.PowerPellet).length;
+
+    expect(gameState.getPelletCount()).toBe(expectedPellets);
+    expect(gameState.getPowerPelletCount()).toBe(expectedPowerPellets);
   });
 
   it('should update Pacman position', () => {
@@ -96,8 +96,11 @@ describe('GameState', () => {
     const grid = Grid.fromString(template);
     const gameState = new GameState(grid);
 
+    const initialGhost = { ...gameState.getGhosts()[0] };
     gameState.moveGhost(99, 10, 10);
     expect(gameState.getGhosts()).toHaveLength(1);
+    expect(gameState.getGhosts()[0].x).toBe(initialGhost.x);
+    expect(gameState.getGhosts()[0].y).toBe(initialGhost.y);
   });
 
   it('should return undefined for out of bounds tile', () => {

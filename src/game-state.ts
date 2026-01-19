@@ -6,8 +6,8 @@ export class GameState implements IGrid {
   private grid: IGrid;
   private pacman: Entity;
   private ghosts: Entity[] = [];
-  private pellets: Set<string> = new Set();
-  private powerPellets: Set<string> = new Set();
+  private pellets: Set<number> = new Set();
+  private powerPellets: Set<number> = new Set();
   private score: number = 0;
 
   constructor(grid: IGrid) {
@@ -17,25 +17,25 @@ export class GameState implements IGrid {
   }
 
   private initialize(): void {
-    for (let y = 0; y < this.grid.getHeight(); y++) {
-      for (let x = 0; x < this.grid.getWidth(); x++) {
-        const tile = this.grid.getTile(x, y);
-        switch (tile) {
-          case TileType.PacmanSpawn:
-            this.pacman = { type: EntityType.Pacman, x, y };
-            break;
-          case TileType.GhostSpawn:
-            this.ghosts.push({ type: EntityType.Ghost, x, y });
-            break;
-          case TileType.Pellet:
-            this.pellets.add(`${x},${y}`);
-            break;
-          case TileType.PowerPellet:
-            this.powerPellets.add(`${x},${y}`);
-            break;
-        }
-      }
+    const width = this.grid.getWidth();
+
+    // Use abstracted findTiles to decouple from grid traversal
+    const pacmanSpawns = this.grid.findTiles(TileType.PacmanSpawn);
+    if (pacmanSpawns.length > 0) {
+      this.pacman = { type: EntityType.Pacman, x: pacmanSpawns[0].x, y: pacmanSpawns[0].y };
     }
+
+    this.grid.findTiles(TileType.GhostSpawn).forEach(({ x, y }) => {
+      this.ghosts.push({ type: EntityType.Ghost, x, y });
+    });
+
+    this.grid.findTiles(TileType.Pellet).forEach(({ x, y }) => {
+      this.pellets.add(y * width + x);
+    });
+
+    this.grid.findTiles(TileType.PowerPellet).forEach(({ x, y }) => {
+      this.powerPellets.add(y * width + x);
+    });
   }
 
   getWidth(): number {
@@ -52,6 +52,26 @@ export class GameState implements IGrid {
 
   isWalkable(x: number, y: number): boolean {
     return this.grid.isWalkable(x, y);
+  }
+
+  findTiles(type: TileType): { x: number; y: number }[] {
+    // Return current tiles, considering consumed pellets
+    if (type === TileType.Pellet) {
+      const width = this.getWidth();
+      return Array.from(this.pellets).map(pos => ({
+        x: pos % width,
+        y: Math.floor(pos / width),
+      }));
+    }
+    if (type === TileType.PowerPellet) {
+      const width = this.getWidth();
+      return Array.from(this.powerPellets).map(pos => ({
+        x: pos % width,
+        y: Math.floor(pos / width),
+      }));
+    }
+    // For other types, they don't change in GameState (for now)
+    return this.grid.findTiles(type);
   }
 
   getPacman(): Entity {
@@ -78,7 +98,7 @@ export class GameState implements IGrid {
     const tile = this.grid.getTile(x, y);
     if (tile === undefined) return undefined;
 
-    const pos = `${x},${y}`;
+    const pos = y * this.getWidth() + x;
     if (tile === TileType.Pellet && !this.pellets.has(pos)) {
       return TileType.Empty;
     }
@@ -92,7 +112,7 @@ export class GameState implements IGrid {
     this.pacman.x = x;
     this.pacman.y = y;
 
-    const pos = `${x},${y}`;
+    const pos = y * this.getWidth() + x;
     if (this.pellets.has(pos)) {
       this.pellets.delete(pos);
       this.score += PELLET_SCORE;

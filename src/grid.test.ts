@@ -63,6 +63,19 @@ describe('Grid', () => {
     expect(grid.getTile(0, 0)).toBe(TileType.Empty);
   });
 
+  it('should find tiles of a specific type', () => {
+    const template = `
+#P
+.o
+    `.trim();
+    const grid = Grid.fromString(template);
+    expect(grid.findTiles(TileType.Wall)).toEqual([{ x: 0, y: 0 }]);
+    expect(grid.findTiles(TileType.PacmanSpawn)).toEqual([{ x: 1, y: 0 }]);
+    expect(grid.findTiles(TileType.Pellet)).toEqual([{ x: 0, y: 1 }]);
+    expect(grid.findTiles(TileType.PowerPellet)).toEqual([{ x: 1, y: 1 }]);
+    expect(grid.findTiles(TileType.Empty)).toEqual([]);
+  });
+
   it('should check walkability', () => {
     const template = `
 ###

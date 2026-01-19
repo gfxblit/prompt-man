@@ -1,23 +1,40 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { init } from './index.js';
 
-describe('main', () => {
-  it('should call init when imported if container exists', async () => {
-    const { initMock } = vi.hoisted(() => ({
-      initMock: vi.fn(),
-    }));
+vi.mock('./index.js', () => ({
+  init: vi.fn(),
+}));
 
-    vi.mock('./index.js', () => ({
-      init: initMock,
-    }));
+describe('main entry point', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
-    const container = {} as HTMLElement;
+  it('should call init if #game-container exists', async () => {
+    const mockContainer = { appendChild: vi.fn() };
     vi.stubGlobal('document', {
-      getElementById: vi.fn((id) => (id === 'game-container' ? container : null)),
+      getElementById: vi.fn((id) => (id === 'game-container' ? mockContainer : null)),
     });
 
-    // We use dynamic import to trigger the module execution
-    await import('./main.js');
+    // Import main to trigger side effect
+    await import('./main.js?test=' + Date.now());
 
-    expect(initMock).toHaveBeenCalledWith(container);
+    expect(document.getElementById).toHaveBeenCalledWith('game-container');
+    expect(init).toHaveBeenCalledWith(mockContainer);
+    
+    vi.unstubAllGlobals();
+  });
+
+  it('should not call init if #game-container does not exist', async () => {
+    vi.stubGlobal('document', {
+      getElementById: vi.fn(() => null),
+    });
+
+    // Import main to trigger side effect
+    await import('./main.js?test2=' + Date.now());
+
+    expect(init).not.toHaveBeenCalled();
+    
+    vi.unstubAllGlobals();
   });
 });

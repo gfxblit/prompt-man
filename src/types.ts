@@ -55,7 +55,7 @@ export interface IGrid {
   /** Checks if the tile at the specified coordinates can be entered by entities. */
   isWalkable(x: number, y: number): boolean;
   /** Finds all coordinates of a specific tile type. */
-  findTiles(type: TileType): { x: number, y: number }[];
+  findTiles(type: TileType): { x: number; y: number }[];
 }
 
 /**
@@ -72,6 +72,7 @@ export interface IGameState {
   consumePellet(x: number, y: number): void;
   /** Checks if a pellet at the specified coordinates has already been eaten. */
   isPelletEaten(x: number, y: number): boolean;
+}
 }
 
 /**
