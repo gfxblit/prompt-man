@@ -211,6 +211,8 @@ describe('UIRenderer', () => {
     arc: ReturnType<typeof vi.fn>;
     fill: ReturnType<typeof vi.fn>;
     stroke: ReturnType<typeof vi.fn>;
+    save: ReturnType<typeof vi.fn>;
+    restore: ReturnType<typeof vi.fn>;
     fillStyle: string;
     strokeStyle: string;
     lineWidth: number;

@@ -84,8 +84,8 @@ export class InputHandler {
   }
 
   private handleTouchStart(event: TouchEvent): void {
-    if (event.touches.length > 0) {
-      const touch = event.touches[0];
+    const touch = event.touches[0];
+    if (touch) {
       const coords = this.translateCoordinates(touch.clientX, touch.clientY);
       this.joystickState = {
         active: true,
@@ -101,8 +101,8 @@ export class InputHandler {
   }
 
   private handleTouchMove(event: TouchEvent): void {
-    if (this.joystickState.active && event.touches.length > 0) {
-      const touch = event.touches[0];
+    const touch = event.touches[0];
+    if (this.joystickState.active && touch) {
       const coords = this.translateCoordinates(touch.clientX, touch.clientY);
       this.joystickState.currentX = coords.x;
       this.joystickState.currentY = coords.y;
