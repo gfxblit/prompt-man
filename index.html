@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<<<<<<< HEAD
     <title>prompt-man</title>
     <style>
         body {
@@ -29,5 +30,31 @@
     <h1>prompt-man</h1>
     <div id="output">Loading grid...</div>
     <script type="module" src="/src/index.ts"></script>
+||||||| parent of e3f0fcd (refactor(app): make entry point modular and fix start script)
+=======
+    <title>Prompt Man</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #222;
+            margin: 0;
+            color: white;
+        }
+        canvas {
+            border: 2px solid #555;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container"></div>
+    <script type="module">
+        import { init } from './dist/index.js';
+        const container = document.getElementById('game-container');
+        init(container);
+    </script>
+>>>>>>> e3f0fcd (refactor(app): make entry point modular and fix start script)
 </body>
 </html>

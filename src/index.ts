@@ -1,7 +1,8 @@
 import { Grid } from './grid.js';
 import { Renderer, TILE_SIZE } from './renderer.js';
 
-export const levelTemplate = `
+export function init(container: HTMLElement): void {
+  const levelTemplate = `
 ############################
 #............##............#
 #.####.#####.##.#####.####.#
@@ -35,12 +36,7 @@ export const levelTemplate = `
 ############################
 `.trim();
 
-export function init(outputElement: HTMLElement | null) {
   const grid = Grid.fromString(levelTemplate);
-
-  if (outputElement) {
-    outputElement.textContent = levelTemplate;
-  }
 
   console.log(`Grid loaded: ${grid.getWidth()}x${grid.getHeight()}`);
 
@@ -48,7 +44,7 @@ export function init(outputElement: HTMLElement | null) {
   const canvas = document.createElement('canvas');
   canvas.width = grid.getWidth() * TILE_SIZE;
   canvas.height = grid.getHeight() * TILE_SIZE;
-  document.body.appendChild(canvas);
+  container.appendChild(canvas);
 
   const ctx = canvas.getContext('2d');
   if (ctx) {
@@ -56,8 +52,6 @@ export function init(outputElement: HTMLElement | null) {
     renderer.render(grid);
     console.log('Grid rendered to canvas');
   }
-
-  return grid;
 }
 
 if (typeof document !== 'undefined') {
