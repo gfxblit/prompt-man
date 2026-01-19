@@ -4,7 +4,14 @@ import { Grid } from './grid.js';
 import { TileType } from './types.js';
 
 describe('Renderer', () => {
-  let mockContext: any;
+  let mockContext: {
+    fillRect: ReturnType<typeof vi.fn>;
+    beginPath: ReturnType<typeof vi.fn>;
+    arc: ReturnType<typeof vi.fn>;
+    fill: ReturnType<typeof vi.fn>;
+    clearRect: ReturnType<typeof vi.fn>;
+    fillStyle: string;
+  };
   let renderer: Renderer;
 
   beforeEach(() => {
