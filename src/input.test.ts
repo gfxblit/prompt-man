@@ -137,8 +137,8 @@ describe('InputHandler', () => {
 
       const diagonalState = handler.getJoystickState();
       const expectedOffset = JOYSTICK.MAX_DISTANCE / Math.sqrt(2);
-      expect(diagonalState.currentX).toBeCloseTo(100 + expectedOffset, 2);
-      expect(diagonalState.currentY).toBeCloseTo(100 + expectedOffset, 2);
+      expect(diagonalState.currentX).toBeCloseTo(100 + expectedOffset, 4);
+      expect(diagonalState.currentY).toBeCloseTo(100 + expectedOffset, 4);
     });
 
     it('should deactivate joystick on touchend', () => {
