@@ -1,4 +1,5 @@
 import type { Direction, JoystickState } from './types.js';
+import { JOYSTICK } from './config.js';
 
 export class InputHandler {
   private static instance: InputHandler | null = null;
@@ -104,14 +105,21 @@ export class InputHandler {
     const touch = event.touches[0];
     if (this.joystickState.active && touch) {
       const coords = this.translateCoordinates(touch.clientX, touch.clientY);
-      this.joystickState.currentX = coords.x;
-      this.joystickState.currentY = coords.y;
+      
+      let dx = coords.x - this.joystickState.originX;
+      let dy = coords.y - this.joystickState.originY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
 
-      const dx = this.joystickState.currentX - this.joystickState.originX;
-      const dy = this.joystickState.currentY - this.joystickState.originY;
+      if (distance > JOYSTICK.MAX_DISTANCE) {
+        const ratio = JOYSTICK.MAX_DISTANCE / distance;
+        dx *= ratio;
+        dy *= ratio;
+      }
 
-      const DEADZONE = 10;
-      if (Math.sqrt(dx * dx + dy * dy) > DEADZONE) {
+      this.joystickState.currentX = this.joystickState.originX + dx;
+      this.joystickState.currentY = this.joystickState.originY + dy;
+
+      if (distance > JOYSTICK.DEADZONE) {
         if (Math.abs(dx) > Math.abs(dy)) {
           this.currentDirection = { dx: Math.sign(dx) as -1 | 0 | 1, dy: 0 };
         } else {

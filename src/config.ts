@@ -22,6 +22,16 @@ export const COLORS = {
 } as const;
 
 /**
+ * Joystick configuration
+ */
+export const JOYSTICK = {
+  BASE_RADIUS: 40,
+  STICK_RADIUS: 20,
+  MAX_DISTANCE: 20, // BASE_RADIUS - STICK_RADIUS
+  DEADZONE: 10,
+} as const;
+
+/**
  * Default level layout template
  */
 export const LEVEL_TEMPLATE = `
