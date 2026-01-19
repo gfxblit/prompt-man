@@ -79,9 +79,9 @@ export interface IGameState {
  */
 export interface IRenderer {
   /**
-   * Renders the current state of the grid and entities to the output medium.
+   * Renders the current state of the grid and game state to the output medium.
    * @param grid The game grid to render.
-   * @param entities Optional list of entities to render on top of the grid.
+   * @param state The current game state including entities and eaten pellets.
    */
-  render(grid: IGrid, entities?: Entity[]): void;
+  render(grid: IGrid, state: IGameState): void;
 }
