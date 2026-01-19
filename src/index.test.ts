@@ -55,7 +55,7 @@ describe('index', () => {
     expect(canvas.getContext).toHaveBeenCalledWith('2d');
     
     // Check for Tailwind classes
-    expect(canvas.classList.add).toHaveBeenCalledWith('border-2', 'border-[#555]');
+    expect(canvas.classList.add).toHaveBeenCalledWith('border-2', 'border-gray-600');
     
     // Check if render was called (by checking context calls)
     // The grid is non-empty, so it should clear rect and draw something
