@@ -96,7 +96,7 @@ describe('Renderer', () => {
 
     // Wall at (0,0)
     expect(mockContext.fillRect).toHaveBeenCalledWith(0, 0, TILE_SIZE, TILE_SIZE);
-    
+
     // Pellet at (1,0)
     expect(mockContext.fillRect).toHaveBeenCalledWith(
       TILE_SIZE + TILE_SIZE / 2 - 1,
