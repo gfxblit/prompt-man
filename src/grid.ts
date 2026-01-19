@@ -14,7 +14,7 @@ export class Grid implements IGrid {
     this.tiles = Array.from({ length: height }, () =>
       Array.from({ length: width }, () => defaultTile)
     );
-    
+
     if (width > 0 && height > 0) {
       this.rebuildCache();
     }
@@ -33,7 +33,7 @@ export class Grid implements IGrid {
     for (let y = 0; y < height; y++) {
       const line = lines[y];
       if (!line) continue;
-      
+
       for (let x = 0; x < width; x++) {
         const char = line[x];
         if (char === undefined) continue;
@@ -50,8 +50,11 @@ export class Grid implements IGrid {
   private rebuildCache(): void {
     this.tileCache.clear();
     for (let y = 0; y < this.height; y++) {
+      const row = this.tiles[y];
+      if (!row) continue;
       for (let x = 0; x < this.width; x++) {
-        const type = this.tiles[y][x];
+        const type = row[x];
+        if (type === undefined) continue;
         if (!this.tileCache.has(type)) {
           this.tileCache.set(type, []);
         }
@@ -83,9 +86,9 @@ export class Grid implements IGrid {
     if (row) {
       const oldType = row[x];
       if (oldType === type) return;
-      
+
       row[x] = type;
-      
+
       // Incrementally update cache
       if (oldType !== undefined) {
         const oldList = this.tileCache.get(oldType);
@@ -96,7 +99,7 @@ export class Grid implements IGrid {
           }
         }
       }
-      
+
       if (!this.tileCache.has(type)) {
         this.tileCache.set(type, []);
       }

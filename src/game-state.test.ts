@@ -20,8 +20,10 @@ describe('GameState', () => {
     expect(gameState.getPacman().x).toBe(1);
     expect(gameState.getPacman().y).toBe(1);
     expect(gameState.getGhosts()).toHaveLength(1);
-    expect(gameState.getGhosts()[0].x).toBe(2);
-    expect(gameState.getGhosts()[0].y).toBe(2);
+    const firstGhost = gameState.getGhosts()[0];
+    expect(firstGhost).toBeDefined();
+    expect(firstGhost?.x).toBe(2);
+    expect(firstGhost?.y).toBe(2);
     expect(gameState.getScore()).toBe(0);
   });
 
@@ -88,19 +90,27 @@ describe('GameState', () => {
     const gameState = new GameState(grid);
 
     gameState.moveGhost(0, 3, 2);
-    expect(gameState.getGhosts()[0].x).toBe(3);
-    expect(gameState.getGhosts()[0].y).toBe(2);
+    const ghosts = gameState.getGhosts();
+    expect(ghosts[0]?.x).toBe(3);
+    expect(ghosts[0]?.y).toBe(2);
   });
 
   it('should not throw when moving non-existent ghost', () => {
     const grid = Grid.fromString(template);
     const gameState = new GameState(grid);
 
-    const initialGhost = { ...gameState.getGhosts()[0] };
+    const ghosts = gameState.getGhosts();
+    expect(ghosts).toHaveLength(1);
+    const initialGhost = { ...ghosts[0]! };
+
     gameState.moveGhost(99, 10, 10);
-    expect(gameState.getGhosts()).toHaveLength(1);
-    expect(gameState.getGhosts()[0].x).toBe(initialGhost.x);
-    expect(gameState.getGhosts()[0].y).toBe(initialGhost.y);
+
+    const finalGhosts = gameState.getGhosts();
+    expect(finalGhosts).toHaveLength(1);
+    const currentGhost = finalGhosts[0];
+    expect(currentGhost).toBeDefined();
+    expect(currentGhost?.x).toBe(initialGhost.x);
+    expect(currentGhost?.y).toBe(initialGhost.y);
   });
 
   it('should return undefined for out of bounds tile', () => {
@@ -127,13 +137,13 @@ describe('GameState', () => {
 P .
     `.trim());
     const gameState = new GameState(grid);
-    
+
     // Initially, there is one Empty tile at (1,0)
     expect(gameState.findTiles(TileType.Empty)).toEqual([{ x: 1, y: 0 }]);
-    
+
     // Consume pellet at (2,0)
     gameState.movePacman(2, 0);
-    
+
     const emptyTiles = gameState.findTiles(TileType.Empty);
     expect(emptyTiles).toContainEqual({ x: 1, y: 0 });
     expect(emptyTiles).toContainEqual({ x: 2, y: 0 });

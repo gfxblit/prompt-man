@@ -37,7 +37,10 @@ export class GameState implements IGrid {
     // Initialize entities from the grid
     const pacmanSpawns = this.grid.findTiles(TileType.PacmanSpawn);
     if (pacmanSpawns.length > 0) {
-      this.pacman = { type: EntityType.Pacman, x: pacmanSpawns[0].x, y: pacmanSpawns[0].y };
+      const spawn = pacmanSpawns[0];
+      if (spawn) {
+        this.pacman = { type: EntityType.Pacman, x: spawn.x, y: spawn.y };
+      }
     }
 
     this.grid.findTiles(TileType.GhostSpawn).forEach(({ x, y }) => {
