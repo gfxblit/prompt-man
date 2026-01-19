@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { InputHandler } from './input.js';
+import { JOYSTICK } from './config.js';
 
 describe('InputHandler', () => {
   let handler: InputHandler;
@@ -105,6 +106,40 @@ describe('InputHandler', () => {
       Object.defineProperty(moveUpEvent, 'touches', { value: [{ clientX: 120, clientY: 70 }] });
       window.dispatchEvent(moveUpEvent);
       expect(handler.getDirection()).toEqual({ dx: 0, dy: -1 });
+    });
+
+    it('should clamp joystick position to MAX_DISTANCE', () => {
+      // Start touch at (100, 100)
+      const startEvent = new CustomEvent('touchstart') as unknown as TouchEvent;
+      Object.defineProperty(startEvent, 'touches', { value: [{ clientX: 100, clientY: 100 }] });
+      window.dispatchEvent(startEvent);
+
+      // Move touch far to the right (200, 100)
+      const moveEvent = new CustomEvent('touchmove') as unknown as TouchEvent;
+      Object.defineProperty(moveEvent, 'touches', { value: [{ clientX: 200, clientY: 100 }] });
+      window.dispatchEvent(moveEvent);
+
+      const state = handler.getJoystickState();
+      const maxDistance = JOYSTICK.BASE_RADIUS - JOYSTICK.STICK_RADIUS;
+      // Distance is 100, but should be clamped to maxDistance (20)
+      // originX (100) + 20 = 120
+      expect(state.currentX).toBe(100 + maxDistance);
+      expect(state.currentY).toBe(100);
+      expect(handler.getDirection()).toEqual({ dx: 1, dy: 0 });
+
+      // Move touch far diagonally (200, 200)
+      // distance = sqrt(100^2 + 100^2) = 141.4
+      // clamped distance = maxDistance (20)
+      // normalized dx, dy = (1/sqrt(2), 1/sqrt(2))
+      // currentX = 100 + 20 * (1/sqrt(2)) = 100 + 14.14 = 114.14
+      const moveDiagonalEvent = new CustomEvent('touchmove') as unknown as TouchEvent;
+      Object.defineProperty(moveDiagonalEvent, 'touches', { value: [{ clientX: 200, clientY: 200 }] });
+      window.dispatchEvent(moveDiagonalEvent);
+
+      const diagonalState = handler.getJoystickState();
+      const expectedOffset = maxDistance / Math.sqrt(2);
+      expect(diagonalState.currentX).toBeCloseTo(100 + expectedOffset, 4);
+      expect(diagonalState.currentY).toBeCloseTo(100 + expectedOffset, 4);
     });
 
     it('should deactivate joystick on touchend', () => {

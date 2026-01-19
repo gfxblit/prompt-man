@@ -1,4 +1,5 @@
 import type { Direction, JoystickState } from './types.js';
+import { JOYSTICK } from './config.js';
 
 export class InputHandler {
   private static instance: InputHandler | null = null;
@@ -104,19 +105,32 @@ export class InputHandler {
     const touch = event.touches[0];
     if (this.joystickState.active && touch) {
       const coords = this.translateCoordinates(touch.clientX, touch.clientY);
-      this.joystickState.currentX = coords.x;
-      this.joystickState.currentY = coords.y;
+      
+      const dx = coords.x - this.joystickState.originX;
+      const dy = coords.y - this.joystickState.originY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
 
-      const dx = this.joystickState.currentX - this.joystickState.originX;
-      const dy = this.joystickState.currentY - this.joystickState.originY;
+      const maxDistance = JOYSTICK.BASE_RADIUS - JOYSTICK.STICK_RADIUS;
+      let clampedDx = dx;
+      let clampedDy = dy;
+      if (distance > maxDistance) {
+        const ratio = maxDistance / distance;
+        clampedDx *= ratio;
+        clampedDy *= ratio;
+      }
 
-      const DEADZONE = 10;
-      if (Math.sqrt(dx * dx + dy * dy) > DEADZONE) {
-        if (Math.abs(dx) > Math.abs(dy)) {
-          this.currentDirection = { dx: Math.sign(dx) as -1 | 0 | 1, dy: 0 };
+      this.joystickState.currentX = this.joystickState.originX + clampedDx;
+      this.joystickState.currentY = this.joystickState.originY + clampedDy;
+
+      const finalDistance = Math.sqrt(clampedDx * clampedDx + clampedDy * clampedDy);
+      if (finalDistance > JOYSTICK.DEADZONE) {
+        if (Math.abs(clampedDx) > Math.abs(clampedDy)) {
+          this.currentDirection = { dx: Math.sign(clampedDx) as -1 | 0 | 1, dy: 0 };
         } else {
-          this.currentDirection = { dx: 0, dy: Math.sign(dy) as -1 | 0 | 1 };
+          this.currentDirection = { dx: 0, dy: Math.sign(clampedDy) as -1 | 0 | 1 };
         }
+      } else {
+        this.currentDirection = { dx: 0, dy: 0 };
       }
     }
   }
