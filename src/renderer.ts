@@ -1,11 +1,11 @@
 import { TileType, EntityType } from './types.js';
-import type { Entity, IGrid, IRenderer } from './types.js';
+import type { Entity, IGrid, IRenderer, IGameState } from './types.js';
 import { TILE_SIZE, COLORS } from './config.js';
 
 export class Renderer implements IRenderer {
   constructor(private ctx: CanvasRenderingContext2D) { }
 
-  render(grid: IGrid, entities: Entity[] = []): void {
+  render(grid: IGrid, state: IGameState): void {
     const width = grid.getWidth();
     const height = grid.getHeight();
 
@@ -17,11 +17,17 @@ export class Renderer implements IRenderer {
         const tile = grid.getTile(x, y);
         if (!tile) continue;
 
+        // Skip eaten pellets
+        if ((tile === TileType.Pellet || tile === TileType.PowerPellet) && 
+            state.isPelletEaten(x, y)) {
+          continue;
+        }
+
         this.renderTile(x, y, tile);
       }
     }
 
-    this.renderEntities(entities);
+    this.renderEntities(state.getEntities());
   }
 
   private renderTile(x: number, y: number, tile: TileType): void {
