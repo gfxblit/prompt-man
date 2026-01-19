@@ -4,27 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prompt Man</title>
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #222;
-            margin: 0;
-            color: white;
-        }
-        canvas {
-            border: 2px solid #555;
-        }
-    </style>
+    <link rel="stylesheet" href="./src/style.css">
 </head>
-<body>
+<body class="flex justify-center items-center h-screen bg-gray-800 text-white">
     <div id="game-container"></div>
-    <script type="module">
-        import { init } from './src/index.ts';
-        const container = document.getElementById('game-container');
-        init(container);
-    </script>
+    <script type="module" src="./src/main.ts"></script>
 </body>
 </html>
