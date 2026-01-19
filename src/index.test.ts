@@ -41,6 +41,16 @@ describe('index', () => {
     container = {
       appendChild: vi.fn(),
     } as unknown as HTMLElement;
+
+    // Mock requestAnimationFrame
+    let called = false;
+    vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => {
+      if (!called) {
+        called = true;
+        callback(performance.now());
+      }
+      return 0;
+    }));
   });
 
   afterEach(() => {

@@ -41,6 +41,16 @@ export interface Entity {
 }
 
 /**
+ * Represents a movement direction vector.
+ */
+export interface Direction {
+  /** Horizontal movement component (-1, 0, or 1). */
+  dx: number;
+  /** Vertical movement component (-1, 0, or 1). */
+  dy: number;
+}
+
+/**
  * Core grid interface defining the spatial structure of a level.
  */
 export interface IGrid {
@@ -72,6 +82,10 @@ export interface IGameState {
   consumePellet(x: number, y: number): void;
   /** Checks if a pellet at the specified coordinates has already been eaten. */
   isPelletEaten(x: number, y: number): boolean;
+  /** Moves Pacman to the specified coordinates. */
+  movePacman(x: number, y: number): void;
+  /** Updates Pacman's position based on a direction. */
+  updatePacman(direction: Direction): void;
 }
 
 /**

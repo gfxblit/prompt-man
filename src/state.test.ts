@@ -65,4 +65,40 @@ describe('GameState', () => {
     expect(state.getRemainingPellets()).toBe(3);
     expect(state.getScore()).toBe(50);
   });
+
+  it('should move Pacman and consume pellets', () => {
+    const state = new GameState(grid);
+    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+    
+    // Move to (2,1) which has a pellet
+    state.movePacman(2, 1);
+    expect(pacman.x).toBe(2);
+    expect(pacman.y).toBe(1);
+    expect(state.getRemainingPellets()).toBe(3);
+    expect(state.getScore()).toBe(10);
+  });
+
+  it('should not move Pacman into walls', () => {
+    const state = new GameState(grid);
+    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+    const initialX = pacman.x;
+    const initialY = pacman.y;
+    
+    // Move to (1,0) which is a wall
+    state.movePacman(1, 0);
+    expect(pacman.x).toBe(initialX);
+    expect(pacman.y).toBe(initialY);
+  });
+
+  it('should update Pacman position based on direction', () => {
+    const state = new GameState(grid);
+    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+    const initialX = pacman.x;
+    const initialY = pacman.y;
+
+    // Move right (dx=1, dy=0)
+    state.updatePacman({ dx: 1, dy: 0 });
+    expect(pacman.x).toBe(initialX + 1);
+    expect(pacman.y).toBe(initialY);
+  });
 });

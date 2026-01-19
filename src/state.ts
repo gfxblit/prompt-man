@@ -66,4 +66,20 @@ export class GameState implements IGameState {
       this.score += tile === TileType.Pellet ? 10 : 50;
     }
   }
+
+  movePacman(x: number, y: number): void {
+    const pacman = this.entities.find(e => e.type === EntityType.Pacman);
+    if (pacman && this.grid.isWalkable(x, y)) {
+      pacman.x = x;
+      pacman.y = y;
+      this.consumePellet(x, y);
+    }
+  }
+
+  updatePacman(direction: Direction): void {
+    const pacman = this.entities.find(e => e.type === EntityType.Pacman);
+    if (pacman) {
+      this.movePacman(pacman.x + direction.dx, pacman.y + direction.dy);
+    }
+  }
 }
