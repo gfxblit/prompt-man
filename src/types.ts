@@ -6,3 +6,15 @@ export enum TileType {
   PacmanSpawn = 'PacmanSpawn',
   GhostSpawn = 'GhostSpawn',
 }
+
+export enum EntityType {
+  Pacman = 'Pacman',
+  Ghost = 'Ghost',
+}
+
+export interface Entity {
+  type: EntityType;
+  x: number;
+  y: number;
+  color?: string;
+}
