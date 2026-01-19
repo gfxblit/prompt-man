@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { GameState } from './state.js';
 import { Grid } from './grid.js';
-import { TileType, EntityType } from './types.js';
+import { EntityType } from './types.js';
 
 describe('GameState', () => {
   let grid: Grid;
