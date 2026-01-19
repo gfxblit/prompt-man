@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Renderer } from './renderer.js';
 import { Grid } from './grid.js';
-import { GameState } from './game-state.js';
 import { TileType, EntityType } from './types.js';
 import type { IGameState } from './types.js';
 import { TILE_SIZE, COLORS } from './config.js';
