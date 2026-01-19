@@ -17,6 +17,5 @@ export function init(container: HTMLElement): void {
   if (ctx) {
     const renderer = new Renderer(ctx);
     renderer.render(grid, state);
-    console.log('Grid rendered to canvas');
   }
 }
