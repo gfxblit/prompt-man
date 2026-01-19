@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Renderer } from './renderer.js';
 import { Grid } from './grid.js';
+import { GameState } from './game-state.js';
 import { TileType, EntityType } from './types.js';
 import type { IGameState } from './types.js';
 import { TILE_SIZE, COLORS } from './config.js';
@@ -200,5 +201,22 @@ describe('Renderer', () => {
       0,
       Math.PI * 2
     );
+  });
+
+  it('should not render consumed pellets when using GameState', () => {
+    const grid = Grid.fromString('P.');
+    const gameState = new GameState(grid);
+
+    // Consume pellet at (1,0)
+    gameState.movePacman(1, 0);
+
+    renderer.render(gameState);
+
+    // Should NOT have called fillRect for the pellet at (1,0)
+    // The only fillRect calls would be for Pacman if we rendered entities, 
+    // but we are only passing gameState as IGrid here.
+    // Wait, renderer.render calls renderTile.
+    // Pellet at (1,0) would have called fillRect(TILE_SIZE + TILE_SIZE/2 - 1, ...)
+    expect(mockContext.fillRect).not.toHaveBeenCalled();
   });
 });

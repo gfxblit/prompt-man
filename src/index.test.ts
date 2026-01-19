@@ -14,6 +14,8 @@ describe('index', () => {
       fillRect: vi.fn(),
       beginPath: vi.fn(),
       arc: vi.fn(),
+      lineTo: vi.fn(),
+      closePath: vi.fn(),
       fill: vi.fn(),
       lineTo: vi.fn(),
       closePath: vi.fn(),
