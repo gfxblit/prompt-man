@@ -83,7 +83,7 @@ export class Renderer implements IRenderer {
     const screenY = entity.y * TILE_SIZE + TILE_SIZE / 2;
 
     switch (entity.type) {
-      case EntityType.Pacman:
+      case EntityType.Pacman: {
         this.ctx.fillStyle = COLORS.PACMAN;
         this.ctx.beginPath();
         
@@ -99,6 +99,7 @@ export class Renderer implements IRenderer {
         this.ctx.closePath();
         this.ctx.fill();
         break;
+      }
 
       case EntityType.Ghost:
         this.ctx.fillStyle = entity.color || COLORS.GHOST_DEFAULT;
