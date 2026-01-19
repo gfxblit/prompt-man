@@ -101,4 +101,69 @@ describe('GameState', () => {
     expect(pacman.x).toBe(initialX + 1);
     expect(pacman.y).toBe(initialY);
   });
+
+  it('should continue in current direction if requested direction is blocked by a wall', () => {
+    const customTemplate = `
+#####
+#P..#
+###.#
+#####
+    `.trim();
+    const customGrid = Grid.fromString(customTemplate);
+    const state = new GameState(customGrid);
+    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+
+    // Initially at (1,1).
+    // Set initial direction to Right
+    state.updatePacman({ dx: 1, dy: 0 }); 
+    expect(pacman.x).toBe(2);
+    expect(pacman.y).toBe(1);
+    expect(pacman.direction).toEqual({ dx: 1, dy: 0 });
+
+    // Now at (2,1). Above (2,0) is wall. Right (3,1) is empty.
+    // Request Up { dx: 0, dy: -1 }
+    state.updatePacman({ dx: 0, dy: -1 });
+    
+    // Should NOT move Up (blocked), but SHOULD move Right (buffered)
+    expect(pacman.x).toBe(3);
+    expect(pacman.y).toBe(1);
+    expect(pacman.direction).toEqual({ dx: 1, dy: 0 });
+  });
+
+  it('should turn when requested direction becomes walkable', () => {
+    const customTemplate = `
+#####
+#P..#
+###.#
+#...#
+#####
+    `.trim();
+    const customGrid = Grid.fromString(customTemplate);
+    const state = new GameState(customGrid);
+    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+
+    // 1. Move Right to (2,1)
+    state.updatePacman({ dx: 1, dy: 0 });
+    expect(pacman.x).toBe(2);
+    expect(pacman.y).toBe(1);
+    expect(pacman.direction).toEqual({ dx: 1, dy: 0 });
+
+    // 2. Request Down. (2,2) is wall, so it should continue Right to (3,1)
+    state.updatePacman({ dx: 0, dy: 1 });
+    expect(pacman.x).toBe(3);
+    expect(pacman.y).toBe(1);
+    expect(pacman.direction).toEqual({ dx: 1, dy: 0 });
+
+    // 3. Request Down again. Now at (3,1), (3,2) is walkable. Should move Down to (3,2)
+    state.updatePacman({ dx: 0, dy: 1 });
+    expect(pacman.x).toBe(3);
+    expect(pacman.y).toBe(2);
+    expect(pacman.direction).toEqual({ dx: 0, dy: 1 });
+    
+    // 4. Continue Down to (3,3)
+    state.updatePacman({ dx: 0, dy: 1 });
+    expect(pacman.x).toBe(3);
+    expect(pacman.y).toBe(3);
+    expect(pacman.direction).toEqual({ dx: 0, dy: 1 });
+  });
 });

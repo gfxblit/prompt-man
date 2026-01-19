@@ -86,7 +86,15 @@ export class Renderer implements IRenderer {
       case EntityType.Pacman:
         this.ctx.fillStyle = COLORS.PACMAN;
         this.ctx.beginPath();
-        this.ctx.arc(screenX, screenY, TILE_SIZE / 2 - 1, 0.2 * Math.PI, 1.8 * Math.PI);
+        
+        const rotation = entity.direction 
+          ? Math.atan2(entity.direction.dy, entity.direction.dx) 
+          : 0;
+        
+        const startAngle = 0.2 * Math.PI + rotation;
+        const endAngle = 1.8 * Math.PI + rotation;
+        
+        this.ctx.arc(screenX, screenY, TILE_SIZE / 2 - 1, startAngle, endAngle);
         this.ctx.lineTo(screenX, screenY);
         this.ctx.closePath();
         this.ctx.fill();

@@ -36,6 +36,8 @@ export interface Entity {
   x: number;
   /** Vertical position in grid coordinates. */
   y: number;
+  /** Optional movement direction. */
+  direction?: Direction;
   /** Optional CSS color string for rendering. */
   color?: string;
 }

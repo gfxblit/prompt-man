@@ -79,8 +79,20 @@ export class GameState implements IGameState {
 
   updatePacman(direction: Direction): void {
     const pacman = this.entities.find(e => e.type === EntityType.Pacman);
-    if (pacman) {
-      this.movePacman(pacman.x + direction.dx, pacman.y + direction.dy);
+    if (!pacman) return;
+
+    const nextX = pacman.x + direction.dx;
+    const nextY = pacman.y + direction.dy;
+
+    if (this.grid.isWalkable(nextX, nextY) && !this.grid.isOutOfBounds(nextX, nextY)) {
+      this.movePacman(nextX, nextY);
+      pacman.direction = direction;
+    } else if (pacman.direction) {
+      const currentNextX = pacman.x + pacman.direction.dx;
+      const currentNextY = pacman.y + pacman.direction.dy;
+      if (this.grid.isWalkable(currentNextX, currentNextY) && !this.grid.isOutOfBounds(currentNextX, currentNextY)) {
+        this.movePacman(currentNextX, currentNextY);
+      }
     }
   }
 }
