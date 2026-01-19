@@ -14,9 +14,9 @@ describe('index', () => {
       fillRect: vi.fn(),
       beginPath: vi.fn(),
       arc: vi.fn(),
-      fill: vi.fn(),
       lineTo: vi.fn(),
       closePath: vi.fn(),
+      fill: vi.fn(),
     } as unknown as CanvasRenderingContext2D;
 
     // Mock canvas
@@ -63,6 +63,9 @@ describe('index', () => {
     // The grid is non-empty, so it should clear rect and draw something
     expect(context.clearRect).toHaveBeenCalled();
     // It should draw walls or pellets
-    expect(context.fillRect).toHaveBeenCalled(); 
+    expect(context.fillRect).toHaveBeenCalled();
+    // It should draw Pacman and ghosts
+    expect(context.lineTo).toHaveBeenCalled();
+    expect(context.closePath).toHaveBeenCalled();
   });
 });

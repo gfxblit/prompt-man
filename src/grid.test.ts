@@ -35,10 +35,45 @@ describe('Grid', () => {
     expect(grid.isOutOfBounds(5, 5)).toBe(true);
   });
 
+  it('should handle malformed templates', () => {
+    const template = `
+###
+
+#P
+    `.trim();
+    const grid = Grid.fromString(template);
+    // Line 2 is empty, Line 3 is shorter than Line 1.
+    expect(grid.getWidth()).toBe(3);
+    expect(grid.getHeight()).toBe(3);
+    expect(grid.getTile(0, 2)).toBe(TileType.Wall);
+    expect(grid.getTile(2, 2)).toBe(TileType.Empty); // Out of range of line[2] but in grid
+  });
+
   it('should update tiles', () => {
     const grid = new Grid(5, 5, TileType.Pellet);
     grid.setTile(2, 2, TileType.Empty);
     expect(grid.getTile(2, 2)).toBe(TileType.Empty);
+  });
+
+  it('should not throw when setting out of bounds tile', () => {
+    const grid = new Grid(5, 5);
+    grid.setTile(-1, 0, TileType.Wall);
+    grid.setTile(5, 0, TileType.Wall);
+    // Should not change anything or throw
+    expect(grid.getTile(0, 0)).toBe(TileType.Empty);
+  });
+
+  it('should find tiles of a specific type', () => {
+    const template = `
+#P
+.o
+    `.trim();
+    const grid = Grid.fromString(template);
+    expect(grid.findTiles(TileType.Wall)).toEqual([{ x: 0, y: 0 }]);
+    expect(grid.findTiles(TileType.PacmanSpawn)).toEqual([{ x: 1, y: 0 }]);
+    expect(grid.findTiles(TileType.Pellet)).toEqual([{ x: 0, y: 1 }]);
+    expect(grid.findTiles(TileType.PowerPellet)).toEqual([{ x: 1, y: 1 }]);
+    expect(grid.findTiles(TileType.Empty)).toEqual([]);
   });
 
   it('should check walkability', () => {
@@ -71,5 +106,34 @@ describe('Grid', () => {
 
     const pellets = grid.findTiles(TileType.Pellet);
     expect(pellets).toHaveLength(0);
+  });
+
+  it('should handle empty string in fromString', () => {
+    const grid = Grid.fromString('');
+    expect(grid.getWidth()).toBe(0);
+    expect(grid.getHeight()).toBe(0);
+  });
+
+  it('should handle non-rectangular strings in fromString', () => {
+    const template = `
+#
+###
+`;
+    const grid = Grid.fromString(template);
+    expect(grid.getWidth()).toBe(3);
+    expect(grid.getHeight()).toBe(2);
+    expect(grid.getTile(0, 1)).toBe(TileType.Wall);
+    expect(grid.getTile(2, 1)).toBe(TileType.Wall);
+    expect(grid.getTile(1, 0)).toBe(TileType.Empty); // line[0][1] is undefined
+  });
+
+  it('should handle out of bounds in setTile', () => {
+    const grid = new Grid(2, 2);
+    grid.setTile(-1, 0, TileType.Wall);
+    grid.setTile(0, -1, TileType.Wall);
+    grid.setTile(2, 0, TileType.Wall);
+    grid.setTile(0, 2, TileType.Wall);
+    // No errors should occur
+    expect(grid.getTile(0, 0)).toBe(TileType.Empty);
   });
 });
