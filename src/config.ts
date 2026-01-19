@@ -9,7 +9,7 @@ export const POWER_PELLET_SCORE = 50;
 /**
  * Rendering configuration
  */
-export const TILE_SIZE = 8;
+export const TILE_SIZE = 16;
 
 /**
  * Game color palette
