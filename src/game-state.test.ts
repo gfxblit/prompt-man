@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { GameState } from './game-state.js';
 import { Grid } from './grid.js';
 import { TileType } from './types.js';
+import { PELLET_SCORE, POWER_PELLET_SCORE } from './config.js';
 
 describe('GameState', () => {
   const template = `
@@ -51,7 +52,7 @@ describe('GameState', () => {
     // Template has pellet at (3,1)
     gameState.movePacman(3, 1);
     expect(gameState.getPelletCount()).toBe(1);
-    expect(gameState.getScore()).toBe(10); // Assume 10 points for pellet
+    expect(gameState.getScore()).toBe(PELLET_SCORE);
   });
 
   it('should consume power pellets and update score', () => {
@@ -61,7 +62,7 @@ describe('GameState', () => {
     // Template has power pellet at (1,3)
     gameState.movePacman(1, 3);
     expect(gameState.getPowerPelletCount()).toBe(0);
-    expect(gameState.getScore()).toBe(50); // Assume 50 points for power pellet
+    expect(gameState.getScore()).toBe(POWER_PELLET_SCORE);
   });
 
   it('should return the correct tile type, reflecting consumed pellets', () => {

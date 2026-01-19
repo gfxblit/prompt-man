@@ -103,14 +103,15 @@ describe('Grid', () => {
 
   it('should handle non-rectangular strings in fromString', () => {
     const template = `
-###
 #
+###
 `;
     const grid = Grid.fromString(template);
     expect(grid.getWidth()).toBe(3);
     expect(grid.getHeight()).toBe(2);
-    expect(grid.getTile(0, 0)).toBe(TileType.Wall);
-    expect(grid.getTile(1, 1)).toBe(TileType.Empty); // line[1][1] is undefined
+    expect(grid.getTile(0, 1)).toBe(TileType.Wall);
+    expect(grid.getTile(2, 1)).toBe(TileType.Wall);
+    expect(grid.getTile(1, 0)).toBe(TileType.Empty); // line[0][1] is undefined
   });
 
   it('should handle out of bounds in setTile', () => {

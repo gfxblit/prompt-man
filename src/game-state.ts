@@ -1,5 +1,6 @@
 import { EntityType, TileType } from './types.js';
 import type { Entity, IGrid } from './types.js';
+import { PELLET_SCORE, POWER_PELLET_SCORE } from './config.js';
 
 export class GameState implements IGrid {
   private grid: IGrid;
@@ -94,10 +95,10 @@ export class GameState implements IGrid {
     const pos = `${x},${y}`;
     if (this.pellets.has(pos)) {
       this.pellets.delete(pos);
-      this.score += 10;
+      this.score += PELLET_SCORE;
     } else if (this.powerPellets.has(pos)) {
       this.powerPellets.delete(pos);
-      this.score += 50;
+      this.score += POWER_PELLET_SCORE;
     }
   }
 

@@ -22,7 +22,7 @@ export class Grid implements IGrid {
     }
     const lines = trimmed.split('\n');
     const height = lines.length;
-    const width = lines[0]?.length ?? 0;
+    const width = Math.max(...lines.map(line => line.length));
     const grid = new Grid(width, height);
 
     for (let y = 0; y < height; y++) {

@@ -1,4 +1,10 @@
 /**
+ * Game mechanics configuration
+ */
+export const PELLET_SCORE = 10;
+export const POWER_PELLET_SCORE = 50;
+
+/**
  * Rendering configuration
  */
 export const TILE_SIZE = 8;
