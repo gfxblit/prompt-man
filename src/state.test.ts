@@ -166,4 +166,35 @@ describe('GameState', () => {
     expect(pacman.y).toBe(3);
     expect(pacman.direction).toEqual({ dx: 0, dy: 1 });
   });
+
+  it('should stop and clear direction when hitting a wall in both requested and current directions', () => {
+    const customTemplate = `
+#####
+#P..#
+#####
+    `.trim();
+    const customGrid = Grid.fromString(customTemplate);
+    const state = new GameState(customGrid);
+    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+
+    // 1. Move Right to (2,1)
+    state.updatePacman({ dx: 1, dy: 0 });
+    expect(pacman.x).toBe(2);
+    expect(pacman.direction).toEqual({ dx: 1, dy: 0 });
+
+    // 2. Move Right to (3,1)
+    state.updatePacman({ dx: 1, dy: 0 });
+    expect(pacman.x).toBe(3);
+    expect(pacman.direction).toEqual({ dx: 1, dy: 0 });
+
+    // 3. Try to move Right again, but (4,1) is a wall.
+    // Also try to move Up (blocked).
+    state.updatePacman({ dx: 0, dy: -1 });
+
+    expect(pacman.x).toBe(3); // Should not have moved
+    // Now reflects that movement has stopped
+    expect(pacman.direction).toEqual({ dx: 0, dy: 0 });
+    // But rotation should be preserved (facing Right)
+    expect(pacman.rotation).toBeCloseTo(0);
+  });
 });

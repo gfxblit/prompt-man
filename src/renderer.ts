@@ -87,9 +87,7 @@ export class Renderer implements IRenderer {
         this.ctx.fillStyle = COLORS.PACMAN;
         this.ctx.beginPath();
         
-        const rotation = entity.direction 
-          ? Math.atan2(entity.direction.dy, entity.direction.dx) 
-          : 0;
+        const rotation = entity.rotation ?? 0;
         
         const startAngle = 0.2 * Math.PI + rotation;
         const endAngle = 1.8 * Math.PI + rotation;

@@ -84,14 +84,27 @@ export class GameState implements IGameState {
     const nextX = pacman.x + direction.dx;
     const nextY = pacman.y + direction.dy;
 
-    if (this.grid.isWalkable(nextX, nextY) && !this.grid.isOutOfBounds(nextX, nextY)) {
+    const isRequestedMoving = direction.dx !== 0 || direction.dy !== 0;
+
+    if (isRequestedMoving && this.grid.isWalkable(nextX, nextY) && !this.grid.isOutOfBounds(nextX, nextY)) {
       this.movePacman(nextX, nextY);
       pacman.direction = direction;
+      pacman.rotation = Math.atan2(direction.dy, direction.dx);
     } else if (pacman.direction) {
-      const currentNextX = pacman.x + pacman.direction.dx;
-      const currentNextY = pacman.y + pacman.direction.dy;
-      if (this.grid.isWalkable(currentNextX, currentNextY) && !this.grid.isOutOfBounds(currentNextX, currentNextY)) {
-        this.movePacman(currentNextX, currentNextY);
+      const isCurrentMoving = pacman.direction.dx !== 0 || pacman.direction.dy !== 0;
+      if (isCurrentMoving) {
+        const currentNextX = pacman.x + pacman.direction.dx;
+        const currentNextY = pacman.y + pacman.direction.dy;
+        if (this.grid.isWalkable(currentNextX, currentNextY) && !this.grid.isOutOfBounds(currentNextX, currentNextY)) {
+          this.movePacman(currentNextX, currentNextY);
+          // Update pacman.direction even when continuing in the old direction
+          // to ensure it always reflects the current movement.
+          pacman.direction = { ...pacman.direction };
+          pacman.rotation = Math.atan2(pacman.direction.dy, pacman.direction.dx);
+        } else {
+          // If we hit a wall, stop movement but keep the rotation for rendering
+          pacman.direction = { dx: 0, dy: 0 };
+        }
       }
     }
   }

@@ -38,6 +38,8 @@ export interface Entity {
   y: number;
   /** Optional movement direction. */
   direction?: Direction;
+  /** Optional rotation in radians for rendering. */
+  rotation?: number;
   /** Optional CSS color string for rendering. */
   color?: string;
 }
