@@ -1,6 +1,8 @@
 import { TileType } from './types.js';
+import type { IGrid } from './types.js';
+import { CHAR_MAP } from './constants.js';
 
-export class Grid {
+export class Grid implements IGrid {
   private tiles: TileType[][];
   private width: number;
   private height: number;
@@ -19,22 +21,13 @@ export class Grid {
     const width = lines[0]?.length ?? 0;
     const grid = new Grid(width, height);
 
-    const charMap: Record<string, TileType> = {
-      '#': TileType.Wall,
-      '.': TileType.Pellet,
-      'o': TileType.PowerPellet,
-      ' ': TileType.Empty,
-      'P': TileType.PacmanSpawn,
-      'G': TileType.GhostSpawn,
-    };
-
     for (let y = 0; y < height; y++) {
       const line = lines[y];
       if (!line) continue;
       for (let x = 0; x < width; x++) {
         const char = line[x];
         if (char === undefined) continue;
-        const tileType = charMap[char] || TileType.Empty;
+        const tileType = CHAR_MAP[char] || TileType.Empty;
         grid.setTile(x, y, tileType);
       }
     }
