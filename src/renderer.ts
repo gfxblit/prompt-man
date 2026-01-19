@@ -1,10 +1,11 @@
 import { Grid } from './grid.js';
-import { TileType, Entity, EntityType } from './types.js';
+import { TileType, EntityType } from './types.js';
+import type { Entity } from './types.js';
 
 export const TILE_SIZE = 8;
 
 export class Renderer {
-  constructor(private ctx: CanvasRenderingContext2D) {}
+  constructor(private ctx: CanvasRenderingContext2D) { }
 
   render(grid: Grid, entities: Entity[] = []): void {
     const width = grid.getWidth();
