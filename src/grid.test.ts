@@ -136,5 +136,4 @@ describe('Grid', () => {
     // No errors should occur
     expect(grid.getTile(0, 0)).toBe(TileType.Empty);
   });
-  });
 });

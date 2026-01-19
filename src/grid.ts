@@ -116,5 +116,4 @@ export class Grid implements IGrid {
   findTiles(type: TileType): { x: number; y: number }[] {
     return [...(this.tileCache.get(type) || [])];
   }
-  }
 }

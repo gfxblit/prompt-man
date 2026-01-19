@@ -17,8 +17,6 @@ describe('index', () => {
       lineTo: vi.fn(),
       closePath: vi.fn(),
       fill: vi.fn(),
-      lineTo: vi.fn(),
-      closePath: vi.fn(),
     } as unknown as CanvasRenderingContext2D;
 
     // Mock canvas
