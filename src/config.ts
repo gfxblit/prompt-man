@@ -27,7 +27,7 @@ export const COLORS = {
 export const JOYSTICK = {
   BASE_RADIUS: 40,
   STICK_RADIUS: 20,
-  MAX_DISTANCE: 20, // BASE_RADIUS - STICK_RADIUS
+  // MAX_DISTANCE is calculated as BASE_RADIUS - STICK_RADIUS
   DEADZONE: 10,
 } as const;
 

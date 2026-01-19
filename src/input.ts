@@ -106,25 +106,31 @@ export class InputHandler {
     if (this.joystickState.active && touch) {
       const coords = this.translateCoordinates(touch.clientX, touch.clientY);
       
-      let dx = coords.x - this.joystickState.originX;
-      let dy = coords.y - this.joystickState.originY;
+      const dx = coords.x - this.joystickState.originX;
+      const dy = coords.y - this.joystickState.originY;
       const distance = Math.sqrt(dx * dx + dy * dy);
 
-      if (distance > JOYSTICK.MAX_DISTANCE) {
-        const ratio = JOYSTICK.MAX_DISTANCE / distance;
-        dx *= ratio;
-        dy *= ratio;
+      const maxDistance = JOYSTICK.BASE_RADIUS - JOYSTICK.STICK_RADIUS;
+      let clampedDx = dx;
+      let clampedDy = dy;
+      if (distance > maxDistance) {
+        const ratio = maxDistance / distance;
+        clampedDx *= ratio;
+        clampedDy *= ratio;
       }
 
-      this.joystickState.currentX = this.joystickState.originX + dx;
-      this.joystickState.currentY = this.joystickState.originY + dy;
+      this.joystickState.currentX = this.joystickState.originX + clampedDx;
+      this.joystickState.currentY = this.joystickState.originY + clampedDy;
 
-      if (distance > JOYSTICK.DEADZONE) {
-        if (Math.abs(dx) > Math.abs(dy)) {
-          this.currentDirection = { dx: Math.sign(dx) as -1 | 0 | 1, dy: 0 };
+      const finalDistance = Math.sqrt(clampedDx * clampedDx + clampedDy * clampedDy);
+      if (finalDistance > JOYSTICK.DEADZONE) {
+        if (Math.abs(clampedDx) > Math.abs(clampedDy)) {
+          this.currentDirection = { dx: Math.sign(clampedDx) as -1 | 0 | 1, dy: 0 };
         } else {
-          this.currentDirection = { dx: 0, dy: Math.sign(dy) as -1 | 0 | 1 };
+          this.currentDirection = { dx: 0, dy: Math.sign(clampedDy) as -1 | 0 | 1 };
         }
+      } else {
+        this.currentDirection = { dx: 0, dy: 0 };
       }
     }
   }
