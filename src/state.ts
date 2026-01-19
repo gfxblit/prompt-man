@@ -1,5 +1,6 @@
 import { TileType, EntityType } from './types.js';
-import type { Entity, IGrid, IGameState } from './types.js';
+import type { Entity, IGrid, IGameState, Direction } from './types.js';
+import { PELLET_SCORE, POWER_PELLET_SCORE } from './config.js';
 
 export class GameState implements IGameState {
   private entities: Entity[] = [];
@@ -63,7 +64,23 @@ export class GameState implements IGameState {
     if (tile === TileType.Pellet || tile === TileType.PowerPellet) {
       this.eatenPellets.add(`${x},${y}`);
       this.remainingPellets--;
-      this.score += tile === TileType.Pellet ? 10 : 50;
+      this.score += tile === TileType.Pellet ? PELLET_SCORE : POWER_PELLET_SCORE;
+    }
+  }
+
+  movePacman(x: number, y: number): void {
+    const pacman = this.entities.find(e => e.type === EntityType.Pacman);
+    if (pacman && (pacman.x !== x || pacman.y !== y) && this.grid.isWalkable(x, y) && !this.grid.isOutOfBounds(x, y)) {
+      pacman.x = x;
+      pacman.y = y;
+      this.consumePellet(x, y);
+    }
+  }
+
+  updatePacman(direction: Direction): void {
+    const pacman = this.entities.find(e => e.type === EntityType.Pacman);
+    if (pacman) {
+      this.movePacman(pacman.x + direction.dx, pacman.y + direction.dy);
     }
   }
 }
