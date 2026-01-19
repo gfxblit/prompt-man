@@ -53,4 +53,23 @@ describe('Grid', () => {
     expect(grid.isWalkable(1, 0)).toBe(false); // Wall
     expect(grid.isWalkable(5, 5)).toBe(false); // Out of bounds
   });
+
+  it('should find tiles of a specific type', () => {
+    const template = `
+#P#
+#G#
+#G#
+    `.trim();
+    const grid = Grid.fromString(template);
+    const ghostSpawns = grid.findTiles(TileType.GhostSpawn);
+    expect(ghostSpawns).toHaveLength(2);
+    expect(ghostSpawns).toContainEqual({ x: 1, y: 1 });
+    expect(ghostSpawns).toContainEqual({ x: 1, y: 2 });
+
+    const pacmanSpawns = grid.findTiles(TileType.PacmanSpawn);
+    expect(pacmanSpawns).toEqual([{ x: 1, y: 0 }]);
+
+    const pellets = grid.findTiles(TileType.Pellet);
+    expect(pellets).toHaveLength(0);
+  });
 });

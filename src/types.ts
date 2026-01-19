@@ -54,6 +54,24 @@ export interface IGrid {
   isOutOfBounds(x: number, y: number): boolean;
   /** Checks if the tile at the specified coordinates can be entered by entities. */
   isWalkable(x: number, y: number): boolean;
+  /** Finds all coordinates of a specific tile type. */
+  findTiles(type: TileType): { x: number, y: number }[];
+}
+
+/**
+ * Core game state interface for managing dynamic elements.
+ */
+export interface IGameState {
+  /** Returns all active entities in the game. */
+  getEntities(): Entity[];
+  /** Returns the current player score. */
+  getScore(): number;
+  /** Returns the total number of pellets remaining in the grid. */
+  getRemainingPellets(): number;
+  /** Consumes a pellet at the specified coordinates and updates state. */
+  consumePellet(x: number, y: number): void;
+  /** Checks if a pellet at the specified coordinates has already been eaten. */
+  isPelletEaten(x: number, y: number): boolean;
 }
 
 /**
@@ -61,9 +79,9 @@ export interface IGrid {
  */
 export interface IRenderer {
   /**
-   * Renders the current state of the grid and entities to the output medium.
+   * Renders the current state of the grid and game state to the output medium.
    * @param grid The game grid to render.
-   * @param entities Optional list of entities to render on top of the grid.
+   * @param state The current game state including entities and eaten pellets.
    */
-  render(grid: IGrid, entities?: Entity[]): void;
+  render(grid: IGrid, state: IGameState): void;
 }

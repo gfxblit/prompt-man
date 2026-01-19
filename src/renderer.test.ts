@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Renderer } from './renderer.js';
 import { Grid } from './grid.js';
 import { TileType, EntityType } from './types.js';
+import type { IGameState } from './types.js';
 import { TILE_SIZE, COLORS } from './config.js';
 
 describe('Renderer', () => {
@@ -15,6 +16,7 @@ describe('Renderer', () => {
     closePath: ReturnType<typeof vi.fn>;
     fillStyle: string;
   };
+  let mockState: IGameState;
   let renderer: Renderer;
 
   beforeEach(() => {
@@ -28,28 +30,37 @@ describe('Renderer', () => {
       closePath: vi.fn(),
       fillStyle: '',
     };
-    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
+    mockState = {
+      getEntities: vi.fn().mockReturnValue([]),
+      getScore: vi.fn().mockReturnValue(0),
+      getRemainingPellets: vi.fn().mockReturnValue(0),
+      consumePellet: vi.fn(),
+      isPelletEaten: vi.fn().mockReturnValue(false),
+    };
   });
 
   it('should be initialized with a context', () => {
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
     expect(renderer).toBeDefined();
   });
 
   it('should render a Wall as a blue block', () => {
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
     const grid = new Grid(1, 1);
     grid.setTile(0, 0, TileType.Wall);
 
-    renderer.render(grid);
+    renderer.render(grid, mockState);
 
     expect(mockContext.fillStyle).toBe(COLORS.WALL);
     expect(mockContext.fillRect).toHaveBeenCalledWith(0, 0, TILE_SIZE, TILE_SIZE);
   });
 
   it('should render a Pellet as a small peach dot', () => {
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
     const grid = new Grid(1, 1);
     grid.setTile(0, 0, TileType.Pellet);
 
-    renderer.render(grid);
+    renderer.render(grid, mockState);
 
     expect(mockContext.fillStyle).toBe(COLORS.PELLET);
     expect(mockContext.fillRect).toHaveBeenCalledWith(
@@ -60,11 +71,29 @@ describe('Renderer', () => {
     );
   });
 
+  it('should NOT render a Pellet if it is eaten', () => {
+    vi.mocked(mockState.isPelletEaten).mockReturnValue(true);
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
+    
+    const grid = new Grid(1, 1);
+    grid.setTile(0, 0, TileType.Pellet);
+
+    renderer.render(grid, mockState);
+
+    expect(mockContext.fillRect).not.toHaveBeenCalledWith(
+      TILE_SIZE / 2 - 1,
+      TILE_SIZE / 2 - 1,
+      2,
+      2
+    );
+  });
+
   it('should render a PowerPellet as a large peach circle', () => {
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
     const grid = new Grid(1, 1);
     grid.setTile(0, 0, TileType.PowerPellet);
 
-    renderer.render(grid);
+    renderer.render(grid, mockState);
 
     expect(mockContext.fillStyle).toBe(COLORS.PELLET);
     expect(mockContext.beginPath).toHaveBeenCalled();
@@ -79,8 +108,9 @@ describe('Renderer', () => {
   });
 
   it('should clear the canvas before rendering', () => {
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
     const grid = new Grid(2, 2);
-    renderer.render(grid);
+    renderer.render(grid, mockState);
 
     expect(mockContext.clearRect).toHaveBeenCalledWith(
       0,
@@ -93,8 +123,10 @@ describe('Renderer', () => {
   it('should render Pacman correctly', () => {
     const grid = new Grid(1, 1);
     const entities = [{ type: EntityType.Pacman, x: 0, y: 0 }];
+    vi.mocked(mockState.getEntities).mockReturnValue(entities);
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
 
-    renderer.render(grid, entities);
+    renderer.render(grid, mockState);
 
     expect(mockContext.fillStyle).toBe(COLORS.PACMAN);
     expect(mockContext.beginPath).toHaveBeenCalled();
@@ -111,8 +143,10 @@ describe('Renderer', () => {
   it('should render a Ghost correctly', () => {
     const grid = new Grid(1, 1);
     const entities = [{ type: EntityType.Ghost, x: 0, y: 0, color: 'pink' }];
+    vi.mocked(mockState.getEntities).mockReturnValue(entities);
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
 
-    renderer.render(grid, entities);
+    renderer.render(grid, mockState);
 
     expect(mockContext.fillStyle).toBe('pink');
     expect(mockContext.beginPath).toHaveBeenCalled();
@@ -129,20 +163,23 @@ describe('Renderer', () => {
   it('should render a Ghost with default color if not specified', () => {
     const grid = new Grid(1, 1);
     const entities = [{ type: EntityType.Ghost, x: 0, y: 0 }];
+    vi.mocked(mockState.getEntities).mockReturnValue(entities);
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
 
-    renderer.render(grid, entities);
+    renderer.render(grid, mockState);
 
     expect(mockContext.fillStyle).toBe(COLORS.GHOST_DEFAULT);
   });
 
   it('should render multiple tiles correctly', () => {
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
     const grid = Grid.fromString('#.\no ');
     // # at (0,0)
     // . at (1,0)
     // o at (0,1)
     //   at (1,1)
 
-    renderer.render(grid);
+    renderer.render(grid, mockState);
 
     // Wall at (0,0)
     expect(mockContext.fillRect).toHaveBeenCalledWith(0, 0, TILE_SIZE, TILE_SIZE);
