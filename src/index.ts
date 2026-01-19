@@ -12,16 +12,10 @@ export function init(container: HTMLElement): void {
   container.appendChild(canvas);
 
   const ctx = canvas.getContext('2d');
-  if (ctx) {
-    const renderer = new Renderer(ctx);
-    renderer.render(grid);
-    console.log('Grid rendered to canvas');
+    if (ctx) {
+      const renderer = new Renderer(ctx);
+      renderer.render(grid);
+      console.log('Grid rendered to canvas');
+    }
   }
-}
-
-if (typeof document !== 'undefined') {
-  const container = document.getElementById('game-container');
-  if (container) {
-    init(container);
-  }
-}
+  
