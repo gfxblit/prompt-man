@@ -1,5 +1,6 @@
 import { TileType, EntityType } from './types.js';
 import type { Entity, IGrid, IGameState, Direction } from './types.js';
+import { PELLET_SCORE, POWER_PELLET_SCORE } from './config.js';
 
 export class GameState implements IGameState {
   private entities: Entity[] = [];
@@ -63,7 +64,7 @@ export class GameState implements IGameState {
     if (tile === TileType.Pellet || tile === TileType.PowerPellet) {
       this.eatenPellets.add(`${x},${y}`);
       this.remainingPellets--;
-      this.score += tile === TileType.Pellet ? 10 : 50;
+      this.score += tile === TileType.Pellet ? PELLET_SCORE : POWER_PELLET_SCORE;
     }
   }
 
