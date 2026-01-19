@@ -22,6 +22,9 @@ describe('index', () => {
       width: 0,
       height: 0,
       getContext: vi.fn(() => context),
+      classList: {
+        add: vi.fn(),
+      },
     } as unknown as HTMLCanvasElement;
 
     // Mock document
@@ -50,6 +53,9 @@ describe('index', () => {
     expect(canvas.width).toBeGreaterThan(0);
     expect(canvas.height).toBeGreaterThan(0);
     expect(canvas.getContext).toHaveBeenCalledWith('2d');
+    
+    // Check for Tailwind classes
+    expect(canvas.classList.add).toHaveBeenCalledWith('border-2', 'border-[#555]');
     
     // Check if render was called (by checking context calls)
     // The grid is non-empty, so it should clear rect and draw something

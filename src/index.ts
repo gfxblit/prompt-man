@@ -8,6 +8,7 @@ export function init(container: HTMLElement): void {
   const canvas = document.createElement('canvas');
   canvas.width = grid.getWidth() * TILE_SIZE;
   canvas.height = grid.getHeight() * TILE_SIZE;
+  canvas.classList.add('border-2', 'border-[#555]');
   container.appendChild(canvas);
 
   const ctx = canvas.getContext('2d');
@@ -19,8 +20,8 @@ export function init(container: HTMLElement): void {
 }
 
 if (typeof document !== 'undefined') {
-  const output = document.getElementById('output');
-  if (output) {
-    init(output);
+  const container = document.getElementById('game-container');
+  if (container) {
+    init(container);
   }
 }
