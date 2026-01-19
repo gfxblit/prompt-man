@@ -1,13 +1,11 @@
-import { Grid } from './grid.js';
 import { TileType, EntityType } from './types.js';
-import type { Entity } from './types.js';
+import type { Entity, IGrid, IRenderer } from './types.js';
+import { TILE_SIZE, COLORS } from './config.js';
 
-export const TILE_SIZE = 8;
-
-export class Renderer {
+export class Renderer implements IRenderer {
   constructor(private ctx: CanvasRenderingContext2D) { }
 
-  render(grid: Grid, entities: Entity[] = []): void {
+  render(grid: IGrid, entities: Entity[] = []): void {
     const width = grid.getWidth();
     const height = grid.getHeight();
 
@@ -32,12 +30,12 @@ export class Renderer {
 
     switch (tile) {
       case TileType.Wall:
-        this.ctx.fillStyle = 'blue';
+        this.ctx.fillStyle = COLORS.WALL;
         this.ctx.fillRect(screenX, screenY, TILE_SIZE, TILE_SIZE);
         break;
 
       case TileType.Pellet:
-        this.ctx.fillStyle = 'peachpuff';
+        this.ctx.fillStyle = COLORS.PELLET;
         this.ctx.fillRect(
           screenX + TILE_SIZE / 2 - 1,
           screenY + TILE_SIZE / 2 - 1,
@@ -47,7 +45,7 @@ export class Renderer {
         break;
 
       case TileType.PowerPellet:
-        this.ctx.fillStyle = 'peachpuff';
+        this.ctx.fillStyle = COLORS.PELLET;
         this.ctx.beginPath();
         this.ctx.arc(
           screenX + TILE_SIZE / 2,
@@ -80,7 +78,7 @@ export class Renderer {
 
     switch (entity.type) {
       case EntityType.Pacman:
-        this.ctx.fillStyle = 'yellow';
+        this.ctx.fillStyle = COLORS.PACMAN;
         this.ctx.beginPath();
         this.ctx.arc(screenX, screenY, TILE_SIZE / 2 - 1, 0.2 * Math.PI, 1.8 * Math.PI);
         this.ctx.lineTo(screenX, screenY);
@@ -89,7 +87,7 @@ export class Renderer {
         break;
 
       case EntityType.Ghost:
-        this.ctx.fillStyle = entity.color || 'red';
+        this.ctx.fillStyle = entity.color || COLORS.GHOST_DEFAULT;
         this.ctx.beginPath();
         this.ctx.arc(screenX, screenY, TILE_SIZE / 2 - 1, Math.PI, 0);
         this.ctx.lineTo(screenX + TILE_SIZE / 2 - 1, screenY + TILE_SIZE / 2 - 1);

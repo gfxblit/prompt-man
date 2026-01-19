@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Renderer, TILE_SIZE } from './renderer.js';
+import { Renderer } from './renderer.js';
 import { Grid } from './grid.js';
 import { TileType, EntityType } from './types.js';
+import { TILE_SIZE, COLORS } from './config.js';
 
 describe('Renderer', () => {
   let mockContext: {
@@ -40,7 +41,7 @@ describe('Renderer', () => {
 
     renderer.render(grid);
 
-    expect(mockContext.fillStyle).toBe('blue');
+    expect(mockContext.fillStyle).toBe(COLORS.WALL);
     expect(mockContext.fillRect).toHaveBeenCalledWith(0, 0, TILE_SIZE, TILE_SIZE);
   });
 
@@ -50,7 +51,7 @@ describe('Renderer', () => {
 
     renderer.render(grid);
 
-    expect(mockContext.fillStyle).toBe('peachpuff');
+    expect(mockContext.fillStyle).toBe(COLORS.PELLET);
     expect(mockContext.fillRect).toHaveBeenCalledWith(
       TILE_SIZE / 2 - 1,
       TILE_SIZE / 2 - 1,
@@ -65,7 +66,7 @@ describe('Renderer', () => {
 
     renderer.render(grid);
 
-    expect(mockContext.fillStyle).toBe('peachpuff');
+    expect(mockContext.fillStyle).toBe(COLORS.PELLET);
     expect(mockContext.beginPath).toHaveBeenCalled();
     expect(mockContext.arc).toHaveBeenCalledWith(
       TILE_SIZE / 2,
@@ -95,7 +96,7 @@ describe('Renderer', () => {
 
     renderer.render(grid, entities);
 
-    expect(mockContext.fillStyle).toBe('yellow');
+    expect(mockContext.fillStyle).toBe(COLORS.PACMAN);
     expect(mockContext.beginPath).toHaveBeenCalled();
     expect(mockContext.arc).toHaveBeenCalledWith(
       TILE_SIZE / 2,
@@ -123,6 +124,15 @@ describe('Renderer', () => {
       0
     );
     expect(mockContext.fill).toHaveBeenCalled();
+  });
+
+  it('should render a Ghost with default color if not specified', () => {
+    const grid = new Grid(1, 1);
+    const entities = [{ type: EntityType.Ghost, x: 0, y: 0 }];
+
+    renderer.render(grid, entities);
+
+    expect(mockContext.fillStyle).toBe(COLORS.GHOST_DEFAULT);
   });
 
   it('should render multiple tiles correctly', () => {
