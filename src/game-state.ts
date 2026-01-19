@@ -1,25 +1,40 @@
 import { EntityType, TileType } from './types.js';
 import type { Entity, IGrid } from './types.js';
 import { PELLET_SCORE, POWER_PELLET_SCORE } from './config.js';
+import { Grid } from './grid.js';
 
 export class GameState implements IGrid {
-  private grid: IGrid;
+  private grid: Grid;
   private pacman: Entity;
   private ghosts: Entity[] = [];
-  private pellets: Set<number> = new Set();
-  private powerPellets: Set<number> = new Set();
   private score: number = 0;
+  private pelletCount: number = 0;
+  private powerPelletCount: number = 0;
 
-  constructor(grid: IGrid) {
-    this.grid = grid;
+  constructor(initialGrid: IGrid) {
+    // Create an internal mutable grid to be the source of truth
+    this.grid = new Grid(initialGrid.getWidth(), initialGrid.getHeight());
     this.pacman = { type: EntityType.Pacman, x: 0, y: 0 };
-    this.initialize();
+    this.initialize(initialGrid);
   }
 
-  private initialize(): void {
-    const width = this.grid.getWidth();
+  private initialize(initialGrid: IGrid): void {
+    const width = initialGrid.getWidth();
+    const height = initialGrid.getHeight();
 
-    // Use abstracted findTiles to decouple from grid traversal
+    // Copy tiles from initialGrid and count pellets
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const tile = initialGrid.getTile(x, y);
+        if (tile) {
+          this.grid.setTile(x, y, tile);
+          if (tile === TileType.Pellet) this.pelletCount++;
+          if (tile === TileType.PowerPellet) this.powerPelletCount++;
+        }
+      }
+    }
+
+    // Initialize entities from the grid
     const pacmanSpawns = this.grid.findTiles(TileType.PacmanSpawn);
     if (pacmanSpawns.length > 0) {
       this.pacman = { type: EntityType.Pacman, x: pacmanSpawns[0].x, y: pacmanSpawns[0].y };
@@ -27,14 +42,6 @@ export class GameState implements IGrid {
 
     this.grid.findTiles(TileType.GhostSpawn).forEach(({ x, y }) => {
       this.ghosts.push({ type: EntityType.Ghost, x, y });
-    });
-
-    this.grid.findTiles(TileType.Pellet).forEach(({ x, y }) => {
-      this.pellets.add(y * width + x);
-    });
-
-    this.grid.findTiles(TileType.PowerPellet).forEach(({ x, y }) => {
-      this.powerPellets.add(y * width + x);
     });
   }
 
@@ -55,22 +62,7 @@ export class GameState implements IGrid {
   }
 
   findTiles(type: TileType): { x: number; y: number }[] {
-    // Return current tiles, considering consumed pellets
-    if (type === TileType.Pellet) {
-      const width = this.getWidth();
-      return Array.from(this.pellets).map(pos => ({
-        x: pos % width,
-        y: Math.floor(pos / width),
-      }));
-    }
-    if (type === TileType.PowerPellet) {
-      const width = this.getWidth();
-      return Array.from(this.powerPellets).map(pos => ({
-        x: pos % width,
-        y: Math.floor(pos / width),
-      }));
-    }
-    // For other types, they don't change in GameState (for now)
+    // Now perfectly consistent because we update the underlying grid
     return this.grid.findTiles(type);
   }
 
@@ -87,37 +79,29 @@ export class GameState implements IGrid {
   }
 
   getPelletCount(): number {
-    return this.pellets.size;
+    return this.pelletCount;
   }
 
   getPowerPelletCount(): number {
-    return this.powerPellets.size;
+    return this.powerPelletCount;
   }
 
   getTile(x: number, y: number): TileType | undefined {
-    const tile = this.grid.getTile(x, y);
-    if (tile === undefined) return undefined;
-
-    const pos = y * this.getWidth() + x;
-    if (tile === TileType.Pellet && !this.pellets.has(pos)) {
-      return TileType.Empty;
-    }
-    if (tile === TileType.PowerPellet && !this.powerPellets.has(pos)) {
-      return TileType.Empty;
-    }
-    return tile;
+    return this.grid.getTile(x, y);
   }
 
   movePacman(x: number, y: number): void {
     this.pacman.x = x;
     this.pacman.y = y;
 
-    const pos = y * this.getWidth() + x;
-    if (this.pellets.has(pos)) {
-      this.pellets.delete(pos);
+    const tile = this.grid.getTile(x, y);
+    if (tile === TileType.Pellet) {
+      this.grid.setTile(x, y, TileType.Empty);
+      this.pelletCount--;
       this.score += PELLET_SCORE;
-    } else if (this.powerPellets.has(pos)) {
-      this.powerPellets.delete(pos);
+    } else if (tile === TileType.PowerPellet) {
+      this.grid.setTile(x, y, TileType.Empty);
+      this.powerPelletCount--;
       this.score += POWER_PELLET_SCORE;
     }
   }

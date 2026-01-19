@@ -15,7 +15,7 @@ export class Grid implements IGrid {
       Array.from({ length: width }, () => defaultTile)
     );
     
-    if (defaultTile !== TileType.Empty || width > 0 || height > 0) {
+    if (width > 0 && height > 0) {
       this.rebuildCache();
     }
   }
@@ -28,16 +28,19 @@ export class Grid implements IGrid {
     const lines = trimmed.split('\n');
     const height = lines.length;
     const width = lines.length > 0 ? Math.max(...lines.map(line => line.length)) : 0;
-    const grid = new Grid(width, height);
+    const grid = new Grid(width, height, TileType.Empty);
 
     for (let y = 0; y < height; y++) {
       const line = lines[y];
       if (!line) continue;
+      
       for (let x = 0; x < width; x++) {
         const char = line[x];
         if (char === undefined) continue;
         const tileType = CHAR_MAP[char] || TileType.Empty;
-        grid.setTile(x, y, tileType);
+        if (tileType !== TileType.Empty) {
+          grid.setTile(x, y, tileType);
+        }
       }
     }
 

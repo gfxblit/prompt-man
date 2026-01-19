@@ -121,4 +121,22 @@ describe('GameState', () => {
     expect(gameState.isWalkable(0, 0)).toBe(false); // Wall
     expect(gameState.isWalkable(1, 1)).toBe(true); // Empty
   });
+
+  it('should reflect consumed pellets in findTiles(TileType.Empty)', () => {
+    const grid = Grid.fromString(`
+P .
+    `.trim());
+    const gameState = new GameState(grid);
+    
+    // Initially, there is one Empty tile at (1,0)
+    expect(gameState.findTiles(TileType.Empty)).toEqual([{ x: 1, y: 0 }]);
+    
+    // Consume pellet at (2,0)
+    gameState.movePacman(2, 0);
+    
+    const emptyTiles = gameState.findTiles(TileType.Empty);
+    expect(emptyTiles).toContainEqual({ x: 1, y: 0 });
+    expect(emptyTiles).toContainEqual({ x: 2, y: 0 });
+    expect(emptyTiles.length).toBe(2);
+  });
 });
