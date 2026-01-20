@@ -100,4 +100,33 @@ describe('index', () => {
     expect(context.lineTo).toHaveBeenCalled();
     expect(context.closePath).toHaveBeenCalled();
   });
+
+  it('should initialize with fallback when asset loading fails', async () => {
+    // Mock Image for AssetLoader to fail
+    class MockImage {
+      _src: string = '';
+      onerror: (() => void) | null = null;
+      set src(value: string) {
+        this._src = value;
+        setTimeout(() => { if (this.onerror) this.onerror(); }, 0);
+      }
+    }
+    vi.stubGlobal('Image', MockImage);
+
+    // Suppress console.error for this test
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await init(container);
+
+    expect(document.createElement).toHaveBeenCalledWith('canvas');
+    expect(container.appendChild).toHaveBeenCalledWith(canvas);
+    expect(canvas.classList.add).toHaveBeenCalledWith('border-2', 'border-gray-600');
+    expect(canvas.getContext).toHaveBeenCalledWith('2d');
+    
+    expect(context.clearRect).toHaveBeenCalled();
+    // Should use solid colors (fillRect) instead of drawImage when no spritesheet
+    expect(context.fillRect).toHaveBeenCalled();
+    
+    consoleSpy.mockRestore();
+  });
 });
