@@ -55,17 +55,6 @@ export interface Direction {
 }
 
 /**
- * Represents the type of quadrant for autotiling.
- */
-export enum QuadrantType {
-  OuterCorner = 0,
-  VerticalEdge = 1,
-  HorizontalEdge = 2,
-  InnerCorner = 3,
-  Fill = 4,
-}
-
-/**
  * Core grid interface defining the spatial structure of a level.
  */
 export interface IGrid {

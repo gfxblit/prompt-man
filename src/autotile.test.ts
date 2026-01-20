@@ -1,72 +1,47 @@
 import { describe, it, expect } from 'vitest';
+import { getTileMask, MASK } from './autotile.js';
 import { Grid } from './grid.js';
-import { QuadrantType } from './types.js';
-import { getQuadrantType } from './autotile.js';
+import { TileType } from './types.js';
 
 describe('Autotiling', () => {
-  describe('getQuadrantType', () => {
-    it('identifies Outer Corner when both adjacent neighbors are not walls', () => {
-      const grid = Grid.fromString(`
-...
-.#.
-...
-      `.trim());
-      // Middle is wall at (1,1). 
-      // Top-left quadrant (TL) at (1,1) looks at:
-      // V: (1,0) - Pellet
-      // H: (0,1) - Pellet
-      // D: (0,0) - Pellet
-      expect(getQuadrantType(grid, 1, 1, -1, -1)).toBe(QuadrantType.OuterCorner);
+  describe('getTileMask', () => {
+    it('returns 0 when there are no wall neighbors', () => {
+      const grid = new Grid(3, 3);
+      grid.setTile(1, 1, TileType.Wall);
+      // All other tiles are Empty by default
+      expect(getTileMask(grid, 1, 1)).toBe(0);
     });
 
-    it('identifies Vertical Edge when vertical neighbor is wall but horizontal is not', () => {
-      const grid = Grid.fromString(`
-.#.
-.#.
-...
-      `.trim());
-      // (1,1) TL quadrant:
-      // V: (1,0) - Wall
-      // H: (0,1) - Pellet
-      expect(getQuadrantType(grid, 1, 1, -1, -1)).toBe(QuadrantType.VerticalEdge);
+    it('identifies orthogonal neighbors', () => {
+      const grid = new Grid(3, 3);
+      grid.setTile(1, 1, TileType.Wall);
+      grid.setTile(1, 0, TileType.Wall); // North
+      grid.setTile(2, 1, TileType.Wall); // East
+      grid.setTile(1, 2, TileType.Wall); // South
+      grid.setTile(0, 1, TileType.Wall); // West
+
+      expect(getTileMask(grid, 1, 1)).toBe(MASK.N | MASK.E | MASK.S | MASK.W);
     });
 
-    it('identifies Horizontal Edge when horizontal neighbor is wall but vertical is not', () => {
-      const grid = Grid.fromString(`
-...
-###
-...
-      `.trim());
-      // (1,1) TL quadrant:
-      // V: (1,0) - Pellet
-      // H: (0,1) - Wall
-      expect(getQuadrantType(grid, 1, 1, -1, -1)).toBe(QuadrantType.HorizontalEdge);
+    it('identifies diagonal neighbors', () => {
+      const grid = new Grid(3, 3);
+      grid.setTile(1, 1, TileType.Wall);
+      grid.setTile(2, 0, TileType.Wall); // NE
+      grid.setTile(2, 2, TileType.Wall); // SE
+      grid.setTile(0, 2, TileType.Wall); // SW
+      grid.setTile(0, 0, TileType.Wall); // NW
+
+      expect(getTileMask(grid, 1, 1)).toBe(MASK.NE | MASK.SE | MASK.SW | MASK.NW);
     });
 
-    it('identifies Inner Corner when both adjacent neighbors are walls but diagonal is not', () => {
-      const grid = Grid.fromString(`
-.##
-###
-...
-      `.trim());
-      // (1,1) TL quadrant:
-      // V: (1,0) - Wall
-      // H: (0,1) - Wall
-      // D: (0,0) - Pellet
-      expect(getQuadrantType(grid, 1, 1, -1, -1)).toBe(QuadrantType.InnerCorner);
-    });
+    it('identifies a mix of neighbors', () => {
+      const grid = new Grid(3, 3);
+      grid.setTile(1, 1, TileType.Wall);
+      grid.setTile(1, 0, TileType.Wall); // N
+      grid.setTile(2, 0, TileType.Wall); // NE
+      grid.setTile(0, 1, TileType.Wall); // W
 
-    it('identifies Fill when all neighbors are walls', () => {
-      const grid = Grid.fromString(`
-###
-###
-###
-      `.trim());
-      // (1,1) TL quadrant:
-      // V: (1,0) - Wall
-      // H: (0,1) - Wall
-      // D: (0,0) - Wall
-      expect(getQuadrantType(grid, 1, 1, -1, -1)).toBe(QuadrantType.Fill);
+      expect(getTileMask(grid, 1, 1)).toBe(MASK.N | MASK.NE | MASK.W);
     });
   });
 });

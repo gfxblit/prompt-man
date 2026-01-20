@@ -1,39 +1,40 @@
-import { TileType, type IGrid, QuadrantType } from './types.js';
+import { TileType, type IGrid } from './types.js';
 
 /**
- * Determines the quadrant type for a specific corner of a tile.
+ * Neighbor bitmask values for Orthogonal and Diagonal neighbors
+ */
+export const MASK = {
+  N: 1,
+  E: 2,
+  S: 4,
+  W: 8,
+  NE: 16,
+  SE: 32,
+  SW: 64,
+  NW: 128,
+} as const;
+
+/**
+ * Calculates an 8-neighbor bitmask for a wall tile.
  * 
  * @param grid The game grid
  * @param x Tile X coordinate
  * @param y Tile Y coordinate
- * @param dx Horizontal direction of the quadrant (-1 for left, 1 for right)
- * @param dy Vertical direction of the quadrant (-1 for top, 1 for bottom)
+ * @returns A bitmask value from 0 to 255
  */
-export function getQuadrantType(
-  grid: IGrid,
-  x: number,
-  y: number,
-  dx: -1 | 1,
-  dy: -1 | 1
-): QuadrantType {
+export function getTileMask(grid: IGrid, x: number, y: number): number {
+  let mask = 0;
   const isWall = (tx: number, ty: number) => grid.getTile(tx, ty) === TileType.Wall;
 
-  const v = isWall(x, y + dy);
-  const h = isWall(x + dx, y);
-  const d = isWall(x + dx, y + dy);
+  if (isWall(x, y - 1)) mask |= MASK.N;
+  if (isWall(x + 1, y)) mask |= MASK.E;
+  if (isWall(x, y + 1)) mask |= MASK.S;
+  if (isWall(x - 1, y)) mask |= MASK.W;
 
-  if (!v && !h) {
-    return QuadrantType.OuterCorner;
-  }
-  if (v && !h) {
-    return QuadrantType.VerticalEdge;
-  }
-  if (!v && h) {
-    return QuadrantType.HorizontalEdge;
-  }
-  // v && h
-  if (!d) {
-    return QuadrantType.InnerCorner;
-  }
-  return QuadrantType.Fill;
+  if (isWall(x + 1, y - 1)) mask |= MASK.NE;
+  if (isWall(x + 1, y + 1)) mask |= MASK.SE;
+  if (isWall(x - 1, y + 1)) mask |= MASK.SW;
+  if (isWall(x - 1, y - 1)) mask |= MASK.NW;
+
+  return mask;
 }

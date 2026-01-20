@@ -1,7 +1,8 @@
 import { TileType, EntityType } from './types.js';
 import type { Entity, IGrid, IRenderer, IGameState, IUIRenderer, JoystickState } from './types.js';
-import { TILE_SIZE, COLORS, QUADRANT_SIZE, WALL_SPRITE_COORDS, JOYSTICK } from './config.js';
-import { getQuadrantType } from './autotile.js';
+import { TILE_SIZE, COLORS, PALETTE_ORIGIN_X, PALETTE_ORIGIN_Y, PALETTE_PADDING_X, PALETTE_PADDING_Y, JOYSTICK } from './config.js';
+import { getTileMask } from './autotile.js';
+import { TILE_MAP, SOURCE_QUADRANT_SIZE, STATIC_SPRITE_MAP, SOURCE_TILE_SIZE } from './sprites.js';
 
 export class Renderer implements IRenderer {
   constructor(
@@ -49,26 +50,56 @@ export class Renderer implements IRenderer {
         break;
 
       case TileType.Pellet:
-        this.ctx.fillStyle = COLORS.PELLET;
-        this.ctx.fillRect(
-          screenX + TILE_SIZE / 2 - 1,
-          screenY + TILE_SIZE / 2 - 1,
-          2,
-          2
-        );
+        if (this.spritesheet) {
+          const [row, col] = STATIC_SPRITE_MAP.PELLET;
+          this.ctx.drawImage(
+            this.spritesheet,
+            PALETTE_ORIGIN_X + (col * SOURCE_TILE_SIZE) + PALETTE_PADDING_X,
+            PALETTE_ORIGIN_Y + (row * SOURCE_TILE_SIZE) + PALETTE_PADDING_Y,
+            SOURCE_TILE_SIZE - PALETTE_PADDING_X,
+            SOURCE_TILE_SIZE - PALETTE_PADDING_Y,
+            screenX,
+            screenY,
+            TILE_SIZE,
+            TILE_SIZE
+          );
+        } else {
+          this.ctx.fillStyle = COLORS.PELLET;
+          this.ctx.fillRect(
+            screenX + TILE_SIZE / 2 - 1,
+            screenY + TILE_SIZE / 2 - 1,
+            2,
+            2
+          );
+        }
         break;
 
       case TileType.PowerPellet:
-        this.ctx.fillStyle = COLORS.PELLET;
-        this.ctx.beginPath();
-        this.ctx.arc(
-          screenX + TILE_SIZE / 2,
-          screenY + TILE_SIZE / 2,
-          3,
-          0,
-          Math.PI * 2
-        );
-        this.ctx.fill();
+        if (this.spritesheet) {
+          const [row, col] = STATIC_SPRITE_MAP.POWER_PELLET;
+          this.ctx.drawImage(
+            this.spritesheet,
+            PALETTE_ORIGIN_X + (col * SOURCE_TILE_SIZE) + PALETTE_PADDING_X,
+            PALETTE_ORIGIN_Y + (row * SOURCE_TILE_SIZE) + PALETTE_PADDING_Y,
+            SOURCE_TILE_SIZE - PALETTE_PADDING_X,
+            SOURCE_TILE_SIZE - PALETTE_PADDING_Y,
+            screenX,
+            screenY,
+            TILE_SIZE,
+            TILE_SIZE
+          );
+        } else {
+          this.ctx.fillStyle = COLORS.PELLET;
+          this.ctx.beginPath();
+          this.ctx.arc(
+            screenX + TILE_SIZE / 2,
+            screenY + TILE_SIZE / 2,
+            3,
+            0,
+            Math.PI * 2
+          );
+          this.ctx.fill();
+        }
         break;
 
       case TileType.Empty:
@@ -83,32 +114,31 @@ export class Renderer implements IRenderer {
   private renderWallAutotiled(grid: IGrid, x: number, y: number): void {
     if (!this.spritesheet) return;
 
+    const mask = getTileMask(grid, x, y);
+    const quadrantSet = TILE_MAP[mask] || TILE_MAP[0]!;
     const screenX = x * TILE_SIZE;
     const screenY = y * TILE_SIZE;
 
-    // Define the 4 quadrants: [dx, dy, offsetX, offsetY]
-    const quadrants: [ -1 | 1, -1 | 1, number, number ][] = [
-      [-1, -1, 0, 0], // TL
-      [1, -1, QUADRANT_SIZE, 0], // TR
-      [-1, 1, 0, QUADRANT_SIZE], // BL
-      [1, 1, QUADRANT_SIZE, QUADRANT_SIZE], // BR
-    ];
+    const renderQuadrantSize = TILE_SIZE / 2;
 
-    for (const [dx, dy, ox, oy] of quadrants) {
-      const type = getQuadrantType(grid, x, y, dx, dy);
-      const coords = WALL_SPRITE_COORDS[type];
+    for (let row = 0; row < 2; row++) {
+      const quadrantRow = quadrantSet[row as 0 | 1];
+      for (let col = 0; col < 2; col++) {
+        const coord = quadrantRow[col as 0 | 1];
+        const [sRow, sCol] = coord;
 
-      this.ctx.drawImage(
-        this.spritesheet,
-        coords.x,
-        coords.y,
-        QUADRANT_SIZE,
-        QUADRANT_SIZE,
-        screenX + ox,
-        screenY + oy,
-        QUADRANT_SIZE,
-        QUADRANT_SIZE
-      );
+        this.ctx.drawImage(
+          this.spritesheet,
+          PALETTE_ORIGIN_X + (sCol * SOURCE_QUADRANT_SIZE) + PALETTE_PADDING_X,
+          PALETTE_ORIGIN_Y + (sRow * SOURCE_QUADRANT_SIZE) + PALETTE_PADDING_Y,
+          SOURCE_QUADRANT_SIZE - PALETTE_PADDING_X,
+          SOURCE_QUADRANT_SIZE - PALETTE_PADDING_Y,
+          screenX + col * renderQuadrantSize,
+          screenY + row * renderQuadrantSize,
+          renderQuadrantSize,
+          renderQuadrantSize
+        );
+      }
     }
   }
 

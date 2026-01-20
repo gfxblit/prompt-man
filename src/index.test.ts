@@ -94,9 +94,9 @@ describe('index', () => {
     // Check if render was called (by checking context calls)
     // The grid is non-empty, so it should clear rect and draw something
     expect(context.clearRect).toHaveBeenCalled();
-    // It should draw walls or pellets
-    expect(context.fillRect).toHaveBeenCalled();
-    // It should draw Pacman and ghosts
+    // It should draw walls or pellets using drawImage since we loaded the palette
+    expect(context.drawImage).toHaveBeenCalled();
+    // It should draw Pacman and ghosts (still using primitives)
     expect(context.lineTo).toHaveBeenCalled();
     expect(context.closePath).toHaveBeenCalled();
   });
