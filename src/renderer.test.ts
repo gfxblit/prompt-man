@@ -142,6 +142,30 @@ describe('Renderer', () => {
     expect(mockContext.fill).toHaveBeenCalled();
   });
 
+  it('should rotate Pacman based on rotation property', () => {
+    const grid = new Grid(1, 1);
+    // Facing down (rotation for PI/2)
+    const rotation = Math.PI / 2;
+    const entities = [{ 
+      type: EntityType.Pacman, 
+      x: 0, 
+      y: 0, 
+      rotation: rotation
+    }];
+    vi.mocked(mockState.getEntities).mockReturnValue(entities);
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
+
+    renderer.render(grid, mockState);
+
+    const startAngle = 0.2 * Math.PI + rotation;
+    const endAngle = 1.8 * Math.PI + rotation;
+
+    const lastArcCall = vi.mocked(mockContext.arc).mock.calls.find(call => call[2] === TILE_SIZE / 2 - 1);
+    expect(lastArcCall).toBeDefined();
+    expect(lastArcCall![3]).toBeCloseTo(startAngle);
+    expect(lastArcCall![4]).toBeCloseTo(endAngle);
+  });
+
   it('should render a Ghost correctly', () => {
     const grid = new Grid(1, 1);
     const entities = [{ type: EntityType.Ghost, x: 0, y: 0, color: 'pink' }];
