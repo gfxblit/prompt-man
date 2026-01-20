@@ -95,7 +95,7 @@ export class GameState implements IGameState {
       if (isCurrentMoving) {
         const currentNextX = pacman.x + pacman.direction.dx;
         const currentNextY = pacman.y + pacman.direction.dy;
-        if (this.grid.isWalkable(currentNextX, currentNextY) && !this.grid.isOutOfBounds(currentNextX, currentNextY)) {
+        if (this.grid.isWalkable(currentNextX, currentNextY)) {
           this.movePacman(currentNextX, currentNextY);
           // Update pacman.direction even when continuing in the old direction
           // to ensure it always reflects the current movement.
