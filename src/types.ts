@@ -88,46 +88,45 @@ export interface IGameState {
   isPelletEaten(x: number, y: number): boolean;
   /** Moves Pacman to the specified coordinates. */
   movePacman(x: number, y: number): void;
-    /** Updates Pacman's position based on a direction. */
-    updatePacman(direction: Direction): void;
-  }
-  
+  /** Updates Pacman's position based on a direction. */
+  updatePacman(direction: Direction): void;
+}
+
+/**
+ * Represents the state of the virtual joystick for touch controls.
+ */
+export interface JoystickState {
+  /** Whether the joystick is currently being touched. */
+  active: boolean;
+  /** The x-coordinate where the touch started. */
+  originX: number;
+  /** The y-coordinate where the touch started. */
+  originY: number;
+  /** The current x-coordinate of the touch. */
+  currentX: number;
+  /** The current y-coordinate of the touch. */
+  currentY: number;
+}
+
+/**
+ * Core renderer interface for drawing the game state.
+ */
+export interface IRenderer {
   /**
-   * Represents the state of the virtual joystick for touch controls.
+   * Renders the current state of the grid and game state to the output medium.
+   * @param grid The game grid to render.
+   * @param state The current game state including entities and eaten pellets.
    */
-  export interface JoystickState {
-    /** Whether the joystick is currently being touched. */
-    active: boolean;
-    /** The x-coordinate where the touch started. */
-    originX: number;
-    /** The y-coordinate where the touch started. */
-    originY: number;
-    /** The current x-coordinate of the touch. */
-    currentX: number;
-    /** The current y-coordinate of the touch. */
-    currentY: number;
-  }
-  
+  render(grid: IGrid, state: IGameState): void;
+}
+
+/**
+ * Interface for rendering UI overlays like touch controls.
+ */
+export interface IUIRenderer {
   /**
-   * Core renderer interface for drawing the game state.
+   * Renders UI elements over the game world.
+   * @param joystick The current state of the joystick.
    */
-  export interface IRenderer {
-    /**
-     * Renders the current state of the grid and game state to the output medium.
-     * @param grid The game grid to render.
-     * @param state The current game state including entities and eaten pellets.
-     */
-    render(grid: IGrid, state: IGameState): void;
-  }
-  
-  /**
-   * Interface for rendering UI overlays like touch controls.
-   */
-  export interface IUIRenderer {
-    /**
-     * Renders UI elements over the game world.
-     * @param joystick The current state of the joystick.
-     */
-    render(joystick: JoystickState): void;
-  }
-  
+  render(joystick: JoystickState): void;
+}

@@ -17,6 +17,7 @@ describe('index', () => {
       lineTo: vi.fn(),
       closePath: vi.fn(),
       fill: vi.fn(),
+      drawImage: vi.fn(),
       save: vi.fn(),
       restore: vi.fn(),
       stroke: vi.fn(),
@@ -67,8 +68,19 @@ describe('index', () => {
     vi.unstubAllGlobals();
   });
 
-  it('should initialize the game and render to canvas', () => {
-    init(container);
+  it('should initialize the game and render to canvas', async () => {
+    // Mock Image for AssetLoader
+    class MockImage {
+      _src: string = '';
+      onload: (() => void) | null = null;
+      set src(value: string) {
+        this._src = value;
+        setTimeout(() => { if (this.onload) this.onload(); }, 0);
+      }
+    }
+    vi.stubGlobal('Image', MockImage);
+
+    await init(container);
 
     expect(document.createElement).toHaveBeenCalledWith('canvas');
     expect(container.appendChild).toHaveBeenCalledWith(canvas);
@@ -76,16 +88,45 @@ describe('index', () => {
     expect(canvas.height).toBeGreaterThan(0);
     expect(canvas.getContext).toHaveBeenCalledWith('2d');
     
-    // Check for game-canvas class
-    expect(canvas.classList.add).toHaveBeenCalledWith('game-canvas');
+    // Check for border classes
+    expect(canvas.classList.add).toHaveBeenCalledWith('border-2', 'border-gray-600');
     
     // Check if render was called (by checking context calls)
     // The grid is non-empty, so it should clear rect and draw something
     expect(context.clearRect).toHaveBeenCalled();
-    // It should draw walls or pellets
-    expect(context.fillRect).toHaveBeenCalled();
-    // It should draw Pacman and ghosts
+    // It should draw walls or pellets using drawImage since we loaded the palette
+    expect(context.drawImage).toHaveBeenCalled();
+    // It should draw Pacman and ghosts (still using primitives)
     expect(context.lineTo).toHaveBeenCalled();
     expect(context.closePath).toHaveBeenCalled();
+  });
+
+  it('should initialize with fallback when asset loading fails', async () => {
+    // Mock Image for AssetLoader to fail
+    class MockImage {
+      _src: string = '';
+      onerror: (() => void) | null = null;
+      set src(value: string) {
+        this._src = value;
+        setTimeout(() => { if (this.onerror) this.onerror(); }, 0);
+      }
+    }
+    vi.stubGlobal('Image', MockImage);
+
+    // Suppress console.error for this test
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await init(container);
+
+    expect(document.createElement).toHaveBeenCalledWith('canvas');
+    expect(container.appendChild).toHaveBeenCalledWith(canvas);
+    expect(canvas.classList.add).toHaveBeenCalledWith('border-2', 'border-gray-600');
+    expect(canvas.getContext).toHaveBeenCalledWith('2d');
+    
+    expect(context.clearRect).toHaveBeenCalled();
+    // Should use solid colors (fillRect) instead of drawImage when no spritesheet
+    expect(context.fillRect).toHaveBeenCalled();
+    
+    consoleSpy.mockRestore();
   });
 });

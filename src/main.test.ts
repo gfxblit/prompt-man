@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { init } from './index.js';
 
 vi.mock('./index.js', () => ({
-  init: vi.fn(),
+  init: vi.fn().mockResolvedValue(undefined),
 }));
 
 describe('main entry point', () => {

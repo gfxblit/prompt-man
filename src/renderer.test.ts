@@ -14,6 +14,7 @@ describe('Renderer', () => {
     clearRect: ReturnType<typeof vi.fn>;
     lineTo: ReturnType<typeof vi.fn>;
     closePath: ReturnType<typeof vi.fn>;
+    drawImage: ReturnType<typeof vi.fn>;
     fillStyle: string;
   };
   let mockState: IGameState;
@@ -28,6 +29,7 @@ describe('Renderer', () => {
       clearRect: vi.fn(),
       lineTo: vi.fn(),
       closePath: vi.fn(),
+      drawImage: vi.fn(),
       fillStyle: '',
     };
     mockState = {
@@ -46,7 +48,18 @@ describe('Renderer', () => {
     expect(renderer).toBeDefined();
   });
 
-  it('should render a Wall as a blue block', () => {
+  it('should render Wall using autotiling when spritesheet is provided', () => {
+    const mockSpritesheet = {} as HTMLImageElement;
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D, mockSpritesheet);
+    
+    const grid = Grid.fromString('#');
+    renderer.render(grid, mockState);
+
+    // Should call drawImage 4 times for the 4 quadrants of the wall
+    expect(mockContext.drawImage).toHaveBeenCalledTimes(4);
+  });
+
+  it('should render a Wall as a blue block when no spritesheet is provided', () => {
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
     const grid = new Grid(1, 1);
     grid.setTile(0, 0, TileType.Wall);

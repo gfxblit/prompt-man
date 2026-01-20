@@ -7,9 +7,22 @@ export const PELLET_SCORE = 10;
 export const POWER_PELLET_SCORE = 50;
 
 /**
+ * Assets configuration
+ */
+export const PALETTE_URL = 'art/palettes.png';
+/** Global X offset (pixels) for the start of the tilemap in the palette sheet. */
+export const PALETTE_ORIGIN_X = 600;
+/** Global Y offset (pixels) for the start of the tilemap in the palette sheet. */
+export const PALETTE_ORIGIN_Y = 186;
+/** Padding (pixels) on the left of each sprite in the palette (e.g., pink boundary). */
+export const PALETTE_PADDING_X = 1;
+/** Padding (pixels) on the top of each sprite in the palette (e.g., pink boundary). */
+export const PALETTE_PADDING_Y = 1;
+
+/**
  * Rendering configuration
  */
-export const TILE_SIZE = 16;
+export const TILE_SIZE = 18;
 
 /**
  * Game color palette

@@ -1,9 +1,14 @@
 import { TileType, EntityType } from './types.js';
 import type { Entity, IGrid, IRenderer, IGameState, IUIRenderer, JoystickState } from './types.js';
-import { TILE_SIZE, COLORS, JOYSTICK } from './config.js';
+import { TILE_SIZE, COLORS, PALETTE_ORIGIN_X, PALETTE_ORIGIN_Y, PALETTE_PADDING_X, PALETTE_PADDING_Y, JOYSTICK } from './config.js';
+import { getTileMask } from './autotile.js';
+import { TILE_MAP, SOURCE_QUADRANT_SIZE, STATIC_SPRITE_MAP, SOURCE_TILE_SIZE } from './sprites.js';
 
 export class Renderer implements IRenderer {
-  constructor(private ctx: CanvasRenderingContext2D) { }
+  constructor(
+    private ctx: CanvasRenderingContext2D,
+    private spritesheet?: HTMLImageElement
+  ) { }
 
   render(grid: IGrid, state: IGameState): void {
     const width = grid.getWidth();
@@ -23,44 +28,78 @@ export class Renderer implements IRenderer {
           continue;
         }
 
-        this.renderTile(x, y, tile);
+        this.renderTile(grid, x, y, tile);
       }
     }
 
     this.renderEntities(state.getEntities());
   }
 
-  private renderTile(x: number, y: number, tile: TileType): void {
+  private renderTile(grid: IGrid, x: number, y: number, tile: TileType): void {
     const screenX = x * TILE_SIZE;
     const screenY = y * TILE_SIZE;
 
     switch (tile) {
       case TileType.Wall:
-        this.ctx.fillStyle = COLORS.WALL;
-        this.ctx.fillRect(screenX, screenY, TILE_SIZE, TILE_SIZE);
+        if (this.spritesheet) {
+          this.renderWallAutotiled(grid, x, y);
+        } else {
+          this.ctx.fillStyle = COLORS.WALL;
+          this.ctx.fillRect(screenX, screenY, TILE_SIZE, TILE_SIZE);
+        }
         break;
 
       case TileType.Pellet:
-        this.ctx.fillStyle = COLORS.PELLET;
-        this.ctx.fillRect(
-          screenX + TILE_SIZE / 2 - 1,
-          screenY + TILE_SIZE / 2 - 1,
-          2,
-          2
-        );
+        if (this.spritesheet) {
+          const [row, col] = STATIC_SPRITE_MAP.PELLET;
+          this.ctx.drawImage(
+            this.spritesheet,
+            PALETTE_ORIGIN_X + (col * SOURCE_TILE_SIZE) + PALETTE_PADDING_X,
+            PALETTE_ORIGIN_Y + (row * SOURCE_TILE_SIZE) + PALETTE_PADDING_Y,
+            SOURCE_TILE_SIZE - PALETTE_PADDING_X,
+            SOURCE_TILE_SIZE - PALETTE_PADDING_Y,
+            screenX,
+            screenY,
+            TILE_SIZE,
+            TILE_SIZE
+          );
+        } else {
+          this.ctx.fillStyle = COLORS.PELLET;
+          this.ctx.fillRect(
+            screenX + TILE_SIZE / 2 - 1,
+            screenY + TILE_SIZE / 2 - 1,
+            2,
+            2
+          );
+        }
         break;
 
       case TileType.PowerPellet:
-        this.ctx.fillStyle = COLORS.PELLET;
-        this.ctx.beginPath();
-        this.ctx.arc(
-          screenX + TILE_SIZE / 2,
-          screenY + TILE_SIZE / 2,
-          3,
-          0,
-          Math.PI * 2
-        );
-        this.ctx.fill();
+        if (this.spritesheet) {
+          const [row, col] = STATIC_SPRITE_MAP.POWER_PELLET;
+          this.ctx.drawImage(
+            this.spritesheet,
+            PALETTE_ORIGIN_X + (col * SOURCE_TILE_SIZE) + PALETTE_PADDING_X,
+            PALETTE_ORIGIN_Y + (row * SOURCE_TILE_SIZE) + PALETTE_PADDING_Y,
+            SOURCE_TILE_SIZE - PALETTE_PADDING_X,
+            SOURCE_TILE_SIZE - PALETTE_PADDING_Y,
+            screenX,
+            screenY,
+            TILE_SIZE,
+            TILE_SIZE
+          );
+        } else {
+          this.ctx.fillStyle = COLORS.PELLET;
+          this.ctx.beginPath();
+          this.ctx.arc(
+            screenX + TILE_SIZE / 2,
+            screenY + TILE_SIZE / 2,
+            3,
+            0,
+            Math.PI * 2
+          );
+          this.ctx.fill();
+        }
         break;
 
       case TileType.Empty:
@@ -69,6 +108,37 @@ export class Renderer implements IRenderer {
       default:
         // Do nothing for these tiles
         break;
+    }
+  }
+
+  private renderWallAutotiled(grid: IGrid, x: number, y: number): void {
+    if (!this.spritesheet) return;
+
+    const mask = getTileMask(grid, x, y);
+    const quadrantSet = TILE_MAP[mask] || TILE_MAP[0]!;
+    const screenX = x * TILE_SIZE;
+    const screenY = y * TILE_SIZE;
+
+    const renderQuadrantSize = TILE_SIZE / 2;
+
+    for (let row = 0; row < 2; row++) {
+      const quadrantRow = quadrantSet[row as 0 | 1];
+      for (let col = 0; col < 2; col++) {
+        const coord = quadrantRow[col as 0 | 1];
+        const [sRow, sCol] = coord;
+
+        this.ctx.drawImage(
+          this.spritesheet,
+          PALETTE_ORIGIN_X + (sCol * SOURCE_QUADRANT_SIZE) + PALETTE_PADDING_X,
+          PALETTE_ORIGIN_Y + (sRow * SOURCE_QUADRANT_SIZE) + PALETTE_PADDING_Y,
+          SOURCE_QUADRANT_SIZE - PALETTE_PADDING_X,
+          SOURCE_QUADRANT_SIZE - PALETTE_PADDING_Y,
+          screenX + col * renderQuadrantSize,
+          screenY + row * renderQuadrantSize,
+          renderQuadrantSize,
+          renderQuadrantSize
+        );
+      }
     }
   }
 
