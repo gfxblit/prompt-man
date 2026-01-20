@@ -86,7 +86,7 @@ export class GameState implements IGameState {
 
     const isRequestedMoving = direction.dx !== 0 || direction.dy !== 0;
 
-    if (isRequestedMoving && this.grid.isWalkable(nextX, nextY) && !this.grid.isOutOfBounds(nextX, nextY)) {
+    if (isRequestedMoving && this.grid.isWalkable(nextX, nextY)) {
       this.movePacman(nextX, nextY);
       pacman.direction = direction;
       pacman.rotation = Math.atan2(direction.dy, direction.dx);
