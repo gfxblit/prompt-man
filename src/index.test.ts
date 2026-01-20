@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { init } from './index.js';
+import { setupMockImage, MockImage } from './test-utils.js';
 
 describe('index', () => {
   let container: HTMLElement;
@@ -70,15 +71,7 @@ describe('index', () => {
 
   it('should initialize the game and render to canvas', async () => {
     // Mock Image for AssetLoader
-    class MockImage {
-      _src: string = '';
-      onload: (() => void) | null = null;
-      set src(value: string) {
-        this._src = value;
-        setTimeout(() => { if (this.onload) this.onload(); }, 0);
-      }
-    }
-    vi.stubGlobal('Image', MockImage);
+    setupMockImage();
 
     await init(container);
 
@@ -103,15 +96,8 @@ describe('index', () => {
 
   it('should initialize with fallback when asset loading fails', async () => {
     // Mock Image for AssetLoader to fail
-    class MockImage {
-      _src: string = '';
-      onerror: (() => void) | null = null;
-      set src(value: string) {
-        this._src = value;
-        setTimeout(() => { if (this.onerror) this.onerror(); }, 0);
-      }
-    }
-    vi.stubGlobal('Image', MockImage);
+    setupMockImage();
+    MockImage.shouldFail = true;
 
     // Suppress console.error for this test
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -128,5 +114,6 @@ describe('index', () => {
     expect(context.fillRect).toHaveBeenCalled();
     
     consoleSpy.mockRestore();
+    MockImage.shouldFail = false;
   });
 });

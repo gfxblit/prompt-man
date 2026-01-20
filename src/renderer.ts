@@ -113,7 +113,6 @@ export class Renderer implements IRenderer {
 
   private renderWallAutotiled(grid: IGrid, x: number, y: number): void {
     if (!this.spritesheet) return;
-
     const mask = getTileMask(grid, x, y);
     const quadrantSet = TILE_MAP[mask] || TILE_MAP[0]!;
     const screenX = x * TILE_SIZE;
