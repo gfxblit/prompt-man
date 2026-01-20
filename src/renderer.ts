@@ -1,9 +1,13 @@
 import { TileType, EntityType } from './types.js';
 import type { Entity, IGrid, IRenderer, IGameState, IUIRenderer, JoystickState } from './types.js';
-import { TILE_SIZE, COLORS, JOYSTICK } from './config.js';
+import { TILE_SIZE, COLORS, QUADRANT_SIZE, WALL_SPRITE_COORDS, JOYSTICK } from './config.js';
+import { getQuadrantType } from './autotile.js';
 
 export class Renderer implements IRenderer {
-  constructor(private ctx: CanvasRenderingContext2D) { }
+  constructor(
+    private ctx: CanvasRenderingContext2D,
+    private spritesheet?: HTMLImageElement
+  ) { }
 
   render(grid: IGrid, state: IGameState): void {
     const width = grid.getWidth();
@@ -23,21 +27,25 @@ export class Renderer implements IRenderer {
           continue;
         }
 
-        this.renderTile(x, y, tile);
+        this.renderTile(grid, x, y, tile);
       }
     }
 
     this.renderEntities(state.getEntities());
   }
 
-  private renderTile(x: number, y: number, tile: TileType): void {
+  private renderTile(grid: IGrid, x: number, y: number, tile: TileType): void {
     const screenX = x * TILE_SIZE;
     const screenY = y * TILE_SIZE;
 
     switch (tile) {
       case TileType.Wall:
-        this.ctx.fillStyle = COLORS.WALL;
-        this.ctx.fillRect(screenX, screenY, TILE_SIZE, TILE_SIZE);
+        if (this.spritesheet) {
+          this.renderWallAutotiled(grid, x, y);
+        } else {
+          this.ctx.fillStyle = COLORS.WALL;
+          this.ctx.fillRect(screenX, screenY, TILE_SIZE, TILE_SIZE);
+        }
         break;
 
       case TileType.Pellet:
@@ -69,6 +77,38 @@ export class Renderer implements IRenderer {
       default:
         // Do nothing for these tiles
         break;
+    }
+  }
+
+  private renderWallAutotiled(grid: IGrid, x: number, y: number): void {
+    if (!this.spritesheet) return;
+
+    const screenX = x * TILE_SIZE;
+    const screenY = y * TILE_SIZE;
+
+    // Define the 4 quadrants: [dx, dy, offsetX, offsetY]
+    const quadrants: [ -1 | 1, -1 | 1, number, number ][] = [
+      [-1, -1, 0, 0], // TL
+      [1, -1, QUADRANT_SIZE, 0], // TR
+      [-1, 1, 0, QUADRANT_SIZE], // BL
+      [1, 1, QUADRANT_SIZE, QUADRANT_SIZE], // BR
+    ];
+
+    for (const [dx, dy, ox, oy] of quadrants) {
+      const type = getQuadrantType(grid, x, y, dx, dy);
+      const coords = WALL_SPRITE_COORDS[type];
+
+      this.ctx.drawImage(
+        this.spritesheet,
+        coords.x,
+        coords.y,
+        QUADRANT_SIZE,
+        QUADRANT_SIZE,
+        screenX + ox,
+        screenY + oy,
+        QUADRANT_SIZE,
+        QUADRANT_SIZE
+      );
     }
   }
 

@@ -46,7 +46,20 @@ describe('Renderer', () => {
     expect(renderer).toBeDefined();
   });
 
-  it('should render a Wall as a blue block', () => {
+  it('should render Wall using autotiling when spritesheet is provided', () => {
+    const mockSpritesheet = {} as HTMLImageElement;
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D, mockSpritesheet);
+    const mockDrawImage = vi.fn();
+    (mockContext as unknown as { drawImage: typeof mockDrawImage }).drawImage = mockDrawImage;
+    
+    const grid = Grid.fromString('#');
+    renderer.render(grid, mockState);
+
+    // Should call drawImage 4 times for the 4 quadrants of the wall
+    expect(mockDrawImage).toHaveBeenCalledTimes(4);
+  });
+
+  it('should render a Wall as a blue block when no spritesheet is provided', () => {
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
     const grid = new Grid(1, 1);
     grid.setTile(0, 0, TileType.Wall);
