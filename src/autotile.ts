@@ -1,4 +1,4 @@
-import { TileType, IGrid, QuadrantType } from './types.js';
+import { TileType, type IGrid, QuadrantType } from './types.js';
 
 /**
  * Determines the quadrant type for a specific corner of a tile.
