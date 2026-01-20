@@ -112,6 +112,7 @@ export class Renderer implements IRenderer {
   }
 
   private renderWallAutotiled(grid: IGrid, x: number, y: number): void {
+    if (!this.spritesheet) return;
     const mask = getTileMask(grid, x, y);
     const quadrantSet = TILE_MAP[mask] || TILE_MAP[0]!;
     const screenX = x * TILE_SIZE;
@@ -126,7 +127,7 @@ export class Renderer implements IRenderer {
         const [sRow, sCol] = coord;
 
         this.ctx.drawImage(
-          this.spritesheet!,
+          this.spritesheet,
           PALETTE_ORIGIN_X + (sCol * SOURCE_QUADRANT_SIZE) + PALETTE_PADDING_X,
           PALETTE_ORIGIN_Y + (sRow * SOURCE_QUADRANT_SIZE) + PALETTE_PADDING_Y,
           SOURCE_QUADRANT_SIZE - PALETTE_PADDING_X,
