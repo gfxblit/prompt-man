@@ -158,12 +158,19 @@ export class GameState implements IGameState {
             }
         } else {
             // Moving Left
-            // For moving left, check the tile we are moving into.
-            const wallTileX = Math.floor(pacman.x) - 1;
-            const wallBoundaryX = Math.floor(pacman.x);
-            if (proposedNextX < wallBoundaryX && !this.grid.isWalkable(wallTileX, Math.round(pacman.y))) {
-                newX = wallBoundaryX;
-                stoppedByCollision = true;
+            const wallTileX = Math.floor(pacman.x);
+            const wallBoundaryX = wallTileX;
+
+            if (proposedNextX <= wallBoundaryX) {
+                if (!this.grid.isWalkable(wallTileX - 1, Math.round(pacman.y))) {
+                    newX = wallBoundaryX;
+                    stoppedByCollision = true;
+                } else if (proposedNextX <= wallBoundaryX - 1 && !this.grid.isWalkable(wallTileX - 2, Math.round(pacman.y))) {
+                    newX = wallBoundaryX - 1;
+                    stoppedByCollision = true;
+                } else {
+                    newX = proposedNextX;
+                }
             } else {
                 newX = proposedNextX;
             }
@@ -194,11 +201,18 @@ export class GameState implements IGameState {
             }
         } else {
             // Moving Up
-            const wallTileY = Math.floor(pacman.y) - 1;
-            const wallBoundaryY = Math.floor(pacman.y);
-            if (proposedNextY < wallBoundaryY && !this.grid.isWalkable(Math.round(pacman.x), wallTileY)) {
-                newY = wallBoundaryY; // Stop at bottom edge of wall
-                stoppedByCollision = true;
+            const wallTileY = Math.floor(pacman.y);
+            const wallBoundaryY = wallTileY;
+            if (proposedNextY <= wallBoundaryY) {
+                if (!this.grid.isWalkable(Math.round(pacman.x), wallTileY - 1)) {
+                    newY = wallBoundaryY;
+                    stoppedByCollision = true;
+                } else if (proposedNextY <= wallBoundaryY - 1 && !this.grid.isWalkable(Math.round(pacman.x), wallTileY - 2)) {
+                    newY = wallBoundaryY - 1;
+                    stoppedByCollision = true;
+                } else {
+                    newY = proposedNextY;
+                }
             } else {
                 newY = proposedNextY;
             }

@@ -366,4 +366,58 @@ describe('GameState', () => {
     expect(pacman.y).toBe(1);
     expect(pacman.direction).toEqual({ dx: 0, dy: 0 });
   });
+
+  it('should not tunnel through walls moving left during lag spikes', () => {
+    const template = `
+#######
+#..#.P#
+#######
+    `.trim();
+    // Grid:
+    // (0,1) wall
+    // (1,1) walkable
+    // (2,1) walkable
+    // (3,1) wall
+    // (4,1) walkable
+    // (5,1) Pacman spawn
+    const grid = Grid.fromString(template);
+    const state = new GameState(grid);
+    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+
+    // Start at (5,1). Speed 5 tiles/sec.
+    // Move left for 0.4s -> 2.0 tiles.
+    // Without walls, would be at 3.0.
+    // But tile (3,1) is a wall. So it should stop at wall boundary x=4.0.
+    state.updatePacman({ dx: -1, dy: 0 }, 400);
+    expect(pacman.x).toBe(4);
+    expect(pacman.direction).toEqual({ dx: 0, dy: 0 });
+  });
+
+  it('should not tunnel through walls moving up during lag spikes', () => {
+    const template = `
+###
+#.#
+###
+#.#
+#P#
+###
+    `.trim();
+    // Row 0: ###
+    // Row 1: #.# (1,1) is walkable
+    // Row 2: ### (1,2) is wall
+    // Row 3: #.# (1,3) is walkable
+    // Row 4: #P# (1,4) is Pacman
+    // Row 5: ###
+    const grid = Grid.fromString(template);
+    const state = new GameState(grid);
+    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+
+    // Start at (1,4). Speed 5 tiles/sec.
+    // Move up for 0.4s -> 2.0 tiles.
+    // Should move to 2.0 if no walls.
+    // But tile (1,2) is a wall. Boundary is at y=3.0.
+    state.updatePacman({ dx: 0, dy: -1 }, 400);
+    expect(pacman.y).toBe(3);
+    expect(pacman.direction).toEqual({ dx: 0, dy: 0 });
+  });
 });
