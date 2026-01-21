@@ -1,6 +1,6 @@
 import { TileType, EntityType } from './types.js';
 import type { Entity, IGrid, IGameState, Direction } from './types.js';
-import { PELLET_SCORE, POWER_PELLET_SCORE } from './config.js';
+import { PELLET_SCORE, POWER_PELLET_SCORE, PACMAN_SPEED } from './config.js';
 
 export class GameState implements IGameState {
   private entities: Entity[] = [];
@@ -87,42 +87,116 @@ export class GameState implements IGameState {
 
   movePacman(x: number, y: number): void {
     const pacman = this.entities.find(e => e.type === EntityType.Pacman);
-    if (pacman && (pacman.x !== x || pacman.y !== y) && this.grid.isWalkable(x, y) && !this.grid.isOutOfBounds(x, y)) {
+    if (pacman && (pacman.x !== x || pacman.y !== y) && this.grid.isWalkable(Math.round(x), Math.round(y)) && !this.grid.isOutOfBounds(Math.round(x), Math.round(y))) {
       pacman.x = x;
       pacman.y = y;
-      this.consumePellet(x, y);
+      this.consumePellet(Math.round(x), Math.round(y));
     }
   }
 
-  updatePacman(direction: Direction): void {
+  updatePacman(direction: Direction, deltaTime: number = 0): void {
     const pacman = this.entities.find(e => e.type === EntityType.Pacman);
     if (!pacman) return;
 
-    const nextX = pacman.x + direction.dx;
-    const nextY = pacman.y + direction.dy;
+    const inputDirection = direction;
+    let currentMovementDirection = pacman.direction || { dx: 0, dy: 0 }; // Default to stopped if no direction
 
-    const isRequestedMoving = direction.dx !== 0 || direction.dy !== 0;
-
-    if (isRequestedMoving && this.grid.isWalkable(nextX, nextY)) {
-      this.movePacman(nextX, nextY);
-      pacman.direction = direction;
-      pacman.rotation = Math.atan2(direction.dy, direction.dx);
-    } else if (pacman.direction) {
-      const isCurrentMoving = pacman.direction.dx !== 0 || pacman.direction.dy !== 0;
-      if (isCurrentMoving) {
-        const currentNextX = pacman.x + pacman.direction.dx;
-        const currentNextY = pacman.y + pacman.direction.dy;
-        if (this.grid.isWalkable(currentNextX, currentNextY)) {
-          this.movePacman(currentNextX, currentNextY);
-          // Update pacman.direction even when continuing in the old direction
-          // to ensure it always reflects the current movement.
-          pacman.direction = { ...pacman.direction };
-          pacman.rotation = Math.atan2(pacman.direction.dy, pacman.direction.dx);
-        } else {
-          // If we hit a wall, stop movement but keep the rotation for rendering
-          pacman.direction = { dx: 0, dy: 0 };
+    // 1. Handle direction change requests (buffering)
+    if ((inputDirection.dx !== 0 || inputDirection.dy !== 0)) {
+        // Allow changing direction only if Pacman is roughly centered in a tile (to prevent cutting corners)
+        // Or if Pacman is currently stopped (allowing immediate direction change from standstill)
+        const isAlignedX = Math.abs(pacman.x - Math.round(pacman.x)) < 0.1;
+        const isAlignedY = Math.abs(pacman.y - Math.round(pacman.y)) < 0.1;
+        
+        // Determine the target tile if Pacman were to instantly turn in the input direction
+        const targetTurnTileX = Math.round(pacman.x) + inputDirection.dx;
+        const targetTurnTileY = Math.round(pacman.y) + inputDirection.dy;
+        
+        if (this.grid.isWalkable(targetTurnTileX, targetTurnTileY)) {
+            if ((isAlignedX && isAlignedY) || (currentMovementDirection.dx === 0 && currentMovementDirection.dy === 0)) {
+                currentMovementDirection = inputDirection;
+                pacman.direction = currentMovementDirection;
+                
+                // Snap to center of lane when turning
+                if (currentMovementDirection.dx !== 0) pacman.y = Math.round(pacman.y);
+                if (currentMovementDirection.dy !== 0) pacman.x = Math.round(pacman.x);
+            }
         }
-      }
     }
+    
+    // If no effective movement direction, return.
+    if (currentMovementDirection.dx === 0 && currentMovementDirection.dy === 0) {
+        return;
+    }
+
+    const distance = PACMAN_SPEED * deltaTime;
+    let newX = pacman.x;
+    let newY = pacman.y;
+    let stoppedByCollision = false;
+
+    // --- Horizontal movement ---
+    if (currentMovementDirection.dx !== 0) {
+        const proposedNextX = pacman.x + currentMovementDirection.dx * distance;
+        
+        if (currentMovementDirection.dx > 0) {
+            // Moving Right
+            const nextTileX = Math.floor(proposedNextX);
+            if (!this.grid.isWalkable(nextTileX, Math.round(pacman.y))) {
+                newX = nextTileX; // Stop at left edge of wall
+                stoppedByCollision = true;
+            } else {
+                newX = proposedNextX;
+            }
+        } else {
+            // Moving Left
+            const nextTileX = Math.floor(proposedNextX); // The tile we are entering
+            if (!this.grid.isWalkable(nextTileX, Math.round(pacman.y))) {
+                newX = nextTileX + 1; // Stop at right edge of wall
+                stoppedByCollision = true;
+            } else {
+                newX = proposedNextX;
+            }
+        }
+    }
+
+    // --- Vertical movement ---
+    if (currentMovementDirection.dy !== 0) {
+        const proposedNextY = pacman.y + currentMovementDirection.dy * distance;
+
+        if (currentMovementDirection.dy > 0) {
+             // Moving Down
+            const nextTileY = Math.floor(proposedNextY);
+            if (!this.grid.isWalkable(Math.round(pacman.x), nextTileY)) {
+                newY = nextTileY; // Stop at top edge of wall
+                stoppedByCollision = true;
+            } else {
+                newY = proposedNextY;
+            }
+        } else {
+            // Moving Up
+            const nextTileY = Math.floor(proposedNextY);
+            if (!this.grid.isWalkable(Math.round(pacman.x), nextTileY)) {
+                newY = nextTileY + 1; // Stop at bottom edge of wall
+                stoppedByCollision = true;
+            } else {
+                newY = proposedNextY;
+            }
+        }
+    }
+    
+    // Apply the calculated new positions
+    pacman.x = newX;
+    pacman.y = newY;
+
+    // If movement was stopped due to collision, clear Pacman's direction
+    if (stoppedByCollision) {
+        pacman.direction = { dx: 0, dy: 0 }; 
+    } else {
+        // Update Pacman's rotation to face the current movement direction
+        pacman.rotation = Math.atan2(currentMovementDirection.dy, currentMovementDirection.dx);
+    }
+
+    // Consume pellet at the rounded integer coordinates where Pacman's center is.
+    this.consumePellet(Math.round(pacman.x), Math.round(pacman.y));
   }
 }

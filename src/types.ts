@@ -90,8 +90,8 @@ export interface IGameState {
   isPelletEaten(x: number, y: number): boolean;
   /** Moves Pacman to the specified coordinates. */
   movePacman(x: number, y: number): void;
-  /** Updates Pacman's position based on a direction. */
-  updatePacman(direction: Direction): void;
+  /** Updates Pacman's position based on a direction and elapsed time. */
+  updatePacman(direction: Direction, deltaTime: number): void;
 }
 
 /**

@@ -99,6 +99,20 @@ describe('GameState', () => {
     expect(pacman.y).toBe(initialY);
   });
 
+  it('should update Pacman position based on direction and deltaTime', () => {
+    const state = new GameState(grid);
+    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+    const initialX = pacman.x;
+    const initialY = pacman.y;
+
+    // Move right (dx=1, dy=0) with 100ms deltaTime.
+    // Assuming speed is 1 tile / 200ms (5 tiles/sec).
+    // So 100ms should move it 0.5 tiles.
+    state.updatePacman({ dx: 1, dy: 0 }, 100);
+    expect(pacman.x).toBeCloseTo(initialX + 0.5);
+    expect(pacman.y).toBe(initialY);
+  });
+
   it('should update Pacman position based on direction', () => {
     const state = new GameState(grid);
     const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
@@ -106,7 +120,7 @@ describe('GameState', () => {
     const initialY = pacman.y;
 
     // Move right (dx=1, dy=0)
-    state.updatePacman({ dx: 1, dy: 0 });
+    state.updatePacman({ dx: 1, dy: 0 }, 200);
     expect(pacman.x).toBe(initialX + 1);
     expect(pacman.y).toBe(initialY);
   });
@@ -124,14 +138,14 @@ describe('GameState', () => {
 
     // Initially at (1,1).
     // Set initial direction to Right
-    state.updatePacman({ dx: 1, dy: 0 }); 
+    state.updatePacman({ dx: 1, dy: 0 }, 200); 
     expect(pacman.x).toBe(2);
     expect(pacman.y).toBe(1);
     expect(pacman.direction).toEqual({ dx: 1, dy: 0 });
 
     // Now at (2,1). Above (2,0) is wall. Right (3,1) is empty.
     // Request Up { dx: 0, dy: -1 }
-    state.updatePacman({ dx: 0, dy: -1 });
+    state.updatePacman({ dx: 0, dy: -1 }, 200);
     
     // Should NOT move Up (blocked), but SHOULD move Right (buffered)
     expect(pacman.x).toBe(3);
@@ -152,25 +166,25 @@ describe('GameState', () => {
     const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
 
     // 1. Move Right to (2,1)
-    state.updatePacman({ dx: 1, dy: 0 });
+    state.updatePacman({ dx: 1, dy: 0 }, 200);
     expect(pacman.x).toBe(2);
     expect(pacman.y).toBe(1);
     expect(pacman.direction).toEqual({ dx: 1, dy: 0 });
 
     // 2. Request Down. (2,2) is wall, so it should continue Right to (3,1)
-    state.updatePacman({ dx: 0, dy: 1 });
+    state.updatePacman({ dx: 0, dy: 1 }, 200);
     expect(pacman.x).toBe(3);
     expect(pacman.y).toBe(1);
     expect(pacman.direction).toEqual({ dx: 1, dy: 0 });
 
     // 3. Request Down again. Now at (3,1), (3,2) is walkable. Should move Down to (3,2)
-    state.updatePacman({ dx: 0, dy: 1 });
+    state.updatePacman({ dx: 0, dy: 1 }, 200);
     expect(pacman.x).toBe(3);
     expect(pacman.y).toBe(2);
     expect(pacman.direction).toEqual({ dx: 0, dy: 1 });
     
     // 4. Continue Down to (3,3)
-    state.updatePacman({ dx: 0, dy: 1 });
+    state.updatePacman({ dx: 0, dy: 1 }, 200);
     expect(pacman.x).toBe(3);
     expect(pacman.y).toBe(3);
     expect(pacman.direction).toEqual({ dx: 0, dy: 1 });
@@ -187,23 +201,123 @@ describe('GameState', () => {
     const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
 
     // 1. Move Right to (2,1)
-    state.updatePacman({ dx: 1, dy: 0 });
+    state.updatePacman({ dx: 1, dy: 0 }, 200);
     expect(pacman.x).toBe(2);
     expect(pacman.direction).toEqual({ dx: 1, dy: 0 });
 
     // 2. Move Right to (3,1)
-    state.updatePacman({ dx: 1, dy: 0 });
+    state.updatePacman({ dx: 1, dy: 0 }, 200);
     expect(pacman.x).toBe(3);
     expect(pacman.direction).toEqual({ dx: 1, dy: 0 });
 
     // 3. Try to move Right again, but (4,1) is a wall.
     // Also try to move Up (blocked).
-    state.updatePacman({ dx: 0, dy: -1 });
+    state.updatePacman({ dx: 0, dy: -1 }, 200);
 
-    expect(pacman.x).toBe(3); // Should not have moved
+    expect(pacman.x).toBe(4); // Should move up to the wall
     // Now reflects that movement has stopped
     expect(pacman.direction).toEqual({ dx: 0, dy: 0 });
     // But rotation should be preserved (facing Right)
     expect(pacman.rotation).toBeCloseTo(0);
+  });
+
+  it('should move Pacman smoothly with floating-point coordinates and stop precisely at wall', () => {
+    const customTemplate = `
+#####
+#P.#
+#####
+    `.trim();
+    const customGrid = Grid.fromString(customTemplate);
+    const state = new GameState(customGrid);
+    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+
+    // Initial position (1,1)
+    expect(pacman.x).toBe(1);
+    expect(pacman.y).toBe(1);
+
+    const smallDeltaTime = 50; // ms, resulting in 0.25 tiles movement per update
+
+    // Move right by 0.25 tiles
+    state.updatePacman({ dx: 1, dy: 0 }, smallDeltaTime);
+    expect(pacman.x).toBeCloseTo(1 + 0.25);
+    expect(pacman.y).toBe(1);
+    expect(pacman.direction).toEqual({ dx: 1, dy: 0 });
+
+    // Move right again by 0.25 tiles (total 0.5 from start)
+    state.updatePacman({ dx: 1, dy: 0 }, smallDeltaTime);
+    expect(pacman.x).toBeCloseTo(1 + 0.5);
+    expect(pacman.y).toBe(1);
+    expect(pacman.direction).toEqual({ dx: 1, dy: 0 });
+
+    // Move right again by 0.25 tiles (total 0.75 from start)
+    state.updatePacman({ dx: 1, dy: 0 }, smallDeltaTime);
+    expect(pacman.x).toBeCloseTo(1 + 0.75);
+    expect(pacman.y).toBe(1);
+    expect(pacman.direction).toEqual({ dx: 1, dy: 0 });
+
+    // Move right again by 0.25 tiles. This would put it at 2.0.
+    // The tile at (2,1) is '.', which is walkable. So it should move.
+    state.updatePacman({ dx: 1, dy: 0 }, smallDeltaTime);
+    expect(pacman.x).toBeCloseTo(2.0);
+    expect(pacman.y).toBe(1);
+    expect(pacman.direction).toEqual({ dx: 1, dy: 0 });
+
+    // Move right again by 0.25 tiles. This would put it at 2.25.
+    // The tile at (2,1) is '.', walkable. So it should move.
+    state.updatePacman({ dx: 1, dy: 0 }, smallDeltaTime);
+    expect(pacman.x).toBeCloseTo(2.25);
+    expect(pacman.y).toBe(1);
+    expect(pacman.direction).toEqual({ dx: 1, dy: 0 });
+
+    // Move right again by 0.25 tiles. This would put it at 2.50.
+    // The tile at (2,1) is '.', walkable. So it should move.
+    state.updatePacman({ dx: 1, dy: 0 }, smallDeltaTime);
+    expect(pacman.x).toBeCloseTo(2.50);
+    expect(pacman.y).toBe(1);
+    expect(pacman.direction).toEqual({ dx: 1, dy: 0 });
+    
+    // Move right again by 0.25 tiles. This would put it at 2.75.
+    // The tile at (2,1) is '.', walkable. So it should move.
+    state.updatePacman({ dx: 1, dy: 0 }, smallDeltaTime);
+    expect(pacman.x).toBeCloseTo(2.75);
+    expect(pacman.y).toBe(1);
+    expect(pacman.direction).toEqual({ dx: 1, dy: 0 });
+
+    // One more step. This would put it at 3.0.
+    // The tile at (3,1) is a wall. It should stop *at* the wall, not go into it.
+    // The logic should prevent it from passing x=3.
+    state.updatePacman({ dx: 1, dy: 0 }, smallDeltaTime);
+    expect(pacman.x).toBeCloseTo(3); // Should stop just before the wall
+    expect(pacman.y).toBe(1);
+    // Direction should be cleared when hitting a wall
+    expect(pacman.direction).toEqual({ dx: 0, dy: 0 });
+
+    // Try to move again, should not move
+    state.updatePacman({ dx: 1, dy: 0 }, smallDeltaTime);
+    expect(pacman.x).toBeCloseTo(3 - Number.EPSILON);
+    expect(pacman.y).toBe(1);
+    expect(pacman.direction).toEqual({ dx: 0, dy: 0 });
+  });
+
+  it('should allow Pacman to eat pellets at fractional positions', () => {
+    const customTemplate = `
+#####
+#P..#
+#####
+    `.trim();
+    const customGrid = Grid.fromString(customTemplate);
+    const state = new GameState(customGrid);
+    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+
+    expect(state.isPelletEaten(2,1)).toBe(false);
+
+    const smallDeltaTime = 100; // ms, resulting in 0.5 tiles movement per update
+
+    // Move right, crossing the pellet at (2,1)
+    state.updatePacman({ dx: 1, dy: 0 }, smallDeltaTime * 2); // move 1 tile to (2,1)
+    expect(pacman.x).toBeCloseTo(2);
+    expect(pacman.y).toBe(1);
+    expect(state.isPelletEaten(2,1)).toBe(true);
+    expect(state.getScore()).toBe(10);
   });
 });
