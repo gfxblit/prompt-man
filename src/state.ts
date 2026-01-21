@@ -140,10 +140,19 @@ export class GameState implements IGameState {
         
         if (currentMovementDirection.dx > 0) {
             // Moving Right
-            const nextTileX = Math.floor(proposedNextX);
-            if (!this.grid.isWalkable(nextTileX, Math.round(pacman.y))) {
-                newX = nextTileX; // Stop at left edge of wall
-                stoppedByCollision = true;
+            const wallTileX = Math.ceil(pacman.x);
+            const wallBoundaryX = wallTileX;
+
+            if (proposedNextX >= wallBoundaryX) {
+                if (!this.grid.isWalkable(wallTileX, Math.round(pacman.y))) {
+                    newX = wallBoundaryX;
+                    stoppedByCollision = true;
+                } else if (proposedNextX >= wallBoundaryX + 1 && !this.grid.isWalkable(wallTileX + 1, Math.round(pacman.y))) {
+                    newX = wallBoundaryX + 1;
+                    stoppedByCollision = true;
+                } else {
+                    newX = proposedNextX;
+                }
             } else {
                 newX = proposedNextX;
             }
@@ -167,10 +176,19 @@ export class GameState implements IGameState {
 
         if (currentMovementDirection.dy > 0) {
              // Moving Down
-            const nextTileY = Math.floor(proposedNextY);
-            if (!this.grid.isWalkable(Math.round(pacman.x), nextTileY)) {
-                newY = nextTileY; // Stop at top edge of wall
-                stoppedByCollision = true;
+            const wallTileY = Math.ceil(pacman.y);
+            const wallBoundaryY = wallTileY;
+
+            if (proposedNextY >= wallBoundaryY) {
+                if (!this.grid.isWalkable(Math.round(pacman.x), wallTileY)) {
+                    newY = wallBoundaryY;
+                    stoppedByCollision = true;
+                } else if (proposedNextY >= wallBoundaryY + 1 && !this.grid.isWalkable(Math.round(pacman.x), wallTileY + 1)) {
+                    newY = wallBoundaryY + 1;
+                    stoppedByCollision = true;
+                } else {
+                    newY = proposedNextY;
+                }
             } else {
                 newY = proposedNextY;
             }
