@@ -50,8 +50,8 @@ describe('index', () => {
           };
           // Define innerText with a spy on the setter
           Object.defineProperty(div, 'innerText', {
-            get: function() { return this._innerText; },
-            set: vi.fn(function(val) { this._innerText = val; }),
+            get: function(this: any) { return this._innerText; },
+            set: vi.fn(function(this: any, val: string) { this._innerText = val; }),
             configurable: true,
             enumerable: true
           });
