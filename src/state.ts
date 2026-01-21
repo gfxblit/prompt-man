@@ -18,7 +18,7 @@ export class GameState implements IGameState {
     // Load high score
     const savedHighScore = localStorage.getItem(this.HIGH_SCORE_KEY);
     if (savedHighScore) {
-      this.highScore = parseInt(savedHighScore, 10);
+      this.highScore = parseInt(savedHighScore, 10) || 0;
     }
 
     // Find Pacman spawn

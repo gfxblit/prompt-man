@@ -79,4 +79,10 @@ describe('GameState - High Score', () => {
     expect(state.getHighScore()).toBe(1000);
     expect(localStorage.getItem('prompt-man-high-score')).toBe('1000');
   });
+
+  it('should default to 0 if high score in localStorage is invalid', () => {
+    localStorage.setItem('prompt-man-high-score', 'invalid');
+    const state = new GameState(grid);
+    expect(state.getHighScore()).toBe(0);
+  });
 });
