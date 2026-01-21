@@ -35,6 +35,7 @@ describe('Renderer', () => {
     mockState = {
       getEntities: vi.fn().mockReturnValue([]),
       getScore: vi.fn().mockReturnValue(0),
+      getHighScore: vi.fn().mockReturnValue(0),
       getRemainingPellets: vi.fn().mockReturnValue(0),
       consumePellet: vi.fn(),
       isPelletEaten: vi.fn().mockReturnValue(false),

@@ -40,6 +40,24 @@ describe('index', () => {
     vi.stubGlobal('document', {
       createElement: vi.fn((tagName: string) => {
         if (tagName === 'canvas') return canvas;
+        if (tagName === 'div') {
+          const div = {
+            id: '',
+            classList: {
+              add: vi.fn(),
+            },
+            _innerText: '',
+            appendChild: vi.fn(),
+          };
+          // Define innerText with a spy on the setter
+          Object.defineProperty(div, 'innerText', {
+            get: function(this: { _innerText: string }) { return this._innerText; },
+            set: vi.fn(function(this: { _innerText: string }, val: string) { this._innerText = val; }),
+            configurable: true,
+            enumerable: true
+          });
+          return div;
+        }
         throw new Error(`Unexpected tag name: ${tagName}`);
       }),
     });
@@ -63,6 +81,14 @@ describe('index', () => {
     vi.stubGlobal('cancelAnimationFrame', vi.fn(() => {
       // Mock implementation
     }));
+
+    // Mock localStorage
+    const localStorageMock = {
+      getItem: vi.fn(),
+      setItem: vi.fn(),
+      clear: vi.fn(),
+    };
+    vi.stubGlobal('localStorage', localStorageMock);
   });
 
   afterEach(() => {
@@ -92,6 +118,34 @@ describe('index', () => {
     // It should draw Pacman and ghosts (still using primitives)
     expect(context.lineTo).toHaveBeenCalled();
     expect(context.closePath).toHaveBeenCalled();
+
+    // Check for score board
+    expect(document.createElement).toHaveBeenCalledWith('div');
+    const divCalls = vi.mocked(document.createElement).mock.results
+      .filter(result => result.type === 'return' && result.value.innerText !== undefined)
+      .map(result => result.value);
+    
+    expect(divCalls).toHaveLength(3);
+    const scoreEl = divCalls.find(d => d.id === 'score');
+    const highScoreEl = divCalls.find(d => d.id === 'highscore');
+
+    expect(scoreEl).toBeDefined();
+    expect(highScoreEl).toBeDefined();
+
+    // Initial call + one tick call
+    const scoreSetter = Object.getOwnPropertyDescriptor(scoreEl!, 'innerText')?.set;
+    const highScoreSetter = Object.getOwnPropertyDescriptor(highScoreEl!, 'innerText')?.set;
+    expect(scoreSetter).toHaveBeenCalledTimes(1);
+    expect(highScoreSetter).toHaveBeenCalledTimes(1);
+    
+    // We expect exactly 3 divs: container, score, highscore
+    // Actually implementation detail might vary, but let's assume structure:
+    // <div class="flex ..."> 
+    //   <div id="score">Score: 0</div>
+    //   <div id="highScore">High Score: 0</div>
+    // </div>
+    // Container appended to main container
+    expect(container.appendChild).toHaveBeenCalledTimes(2); // Canvas + Score container
   });
 
   it('should initialize with fallback when asset loading fails', async () => {

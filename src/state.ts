@@ -5,14 +5,22 @@ import { PELLET_SCORE, POWER_PELLET_SCORE } from './config.js';
 export class GameState implements IGameState {
   private entities: Entity[] = [];
   private score: number = 0;
+  private highScore: number = 0;
   private remainingPellets: number = 0;
   private eatenPellets: Set<string> = new Set();
+  private readonly HIGH_SCORE_KEY = 'prompt-man-high-score';
 
   constructor(private grid: IGrid) {
     this.initialize();
   }
 
   private initialize(): void {
+    // Load high score
+    const savedHighScore = localStorage.getItem(this.HIGH_SCORE_KEY);
+    if (savedHighScore) {
+      this.highScore = parseInt(savedHighScore, 10) || 0;
+    }
+
     // Find Pacman spawn
     const pacmanSpawns = this.grid.findTiles(TileType.PacmanSpawn);
     for (const spawn of pacmanSpawns) {
@@ -47,6 +55,10 @@ export class GameState implements IGameState {
     return this.score;
   }
 
+  getHighScore(): number {
+    return this.highScore;
+  }
+
   getRemainingPellets(): number {
     return this.remainingPellets;
   }
@@ -65,6 +77,11 @@ export class GameState implements IGameState {
       this.eatenPellets.add(`${x},${y}`);
       this.remainingPellets--;
       this.score += tile === TileType.Pellet ? PELLET_SCORE : POWER_PELLET_SCORE;
+
+      if (this.score > this.highScore) {
+        this.highScore = this.score;
+        localStorage.setItem(this.HIGH_SCORE_KEY, this.highScore.toString());
+      }
     }
   }
 
