@@ -40,6 +40,15 @@ describe('index', () => {
     vi.stubGlobal('document', {
       createElement: vi.fn((tagName: string) => {
         if (tagName === 'canvas') return canvas;
+        if (tagName === 'div') {
+          return {
+            classList: {
+              add: vi.fn(),
+            },
+            innerText: '',
+            appendChild: vi.fn(),
+          };
+        }
         throw new Error(`Unexpected tag name: ${tagName}`);
       }),
     });
@@ -63,6 +72,14 @@ describe('index', () => {
     vi.stubGlobal('cancelAnimationFrame', vi.fn(() => {
       // Mock implementation
     }));
+
+    // Mock localStorage
+    const localStorageMock = {
+      getItem: vi.fn(),
+      setItem: vi.fn(),
+      clear: vi.fn(),
+    };
+    vi.stubGlobal('localStorage', localStorageMock);
   });
 
   afterEach(() => {
@@ -92,6 +109,17 @@ describe('index', () => {
     // It should draw Pacman and ghosts (still using primitives)
     expect(context.lineTo).toHaveBeenCalled();
     expect(context.closePath).toHaveBeenCalled();
+
+    // Check for score board
+    expect(document.createElement).toHaveBeenCalledWith('div');
+    // We expect at least 3 divs: container, score, highscore
+    // Actually implementation detail might vary, but let's assume structure:
+    // <div class="flex ..."> 
+    //   <div id="score">Score: 0</div>
+    //   <div id="highScore">High Score: 0</div>
+    // </div>
+    // Container appended to main container
+    expect(container.appendChild).toHaveBeenCalledTimes(2); // Canvas + Score container
   });
 
   it('should initialize with fallback when asset loading fails', async () => {

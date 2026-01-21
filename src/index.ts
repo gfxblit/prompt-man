@@ -19,6 +19,17 @@ export async function init(container: HTMLElement): Promise<void> {
   const state = new GameState(grid);
   const inputHandler = InputHandler.getInstance();
 
+  // Create score bar
+  const scoreContainer = document.createElement('div');
+  scoreContainer.classList.add('flex', 'justify-between', 'w-full', 'mb-2', 'text-white', 'font-bold', 'font-mono', 'text-xl');
+  
+  const scoreEl = document.createElement('div');
+  const highScoreEl = document.createElement('div');
+  
+  scoreContainer.appendChild(scoreEl);
+  scoreContainer.appendChild(highScoreEl);
+  container.appendChild(scoreContainer);
+
   const canvas = document.createElement('canvas');
   canvas.width = grid.getWidth() * TILE_SIZE;
   canvas.height = grid.getHeight() * TILE_SIZE;
@@ -40,6 +51,10 @@ export async function init(container: HTMLElement): Promise<void> {
         state.updatePacman(inputHandler.getDirection());
         lastTime = time;
       }
+
+      // Update score display
+      scoreEl.innerText = `Score: ${state.getScore()}`;
+      highScoreEl.innerText = `High Score: ${state.getHighScore()}`;
       
       renderer.render(grid, state);
       uiRenderer.render(inputHandler.getJoystickState());
