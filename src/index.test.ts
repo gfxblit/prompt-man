@@ -42,6 +42,7 @@ describe('index', () => {
         if (tagName === 'canvas') return canvas;
         if (tagName === 'div') {
           const div = {
+            id: '',
             classList: {
               add: vi.fn(),
             },
@@ -125,13 +126,15 @@ describe('index', () => {
       .map(result => result.value);
     
     expect(divCalls).toHaveLength(3);
-    // divCalls[1] is scoreEl, divCalls[2] is highScoreEl (based on implementation order)
-    const scoreEl = divCalls[1];
-    const highScoreEl = divCalls[2];
+    const scoreEl = divCalls.find(d => d.id === 'score');
+    const highScoreEl = divCalls.find(d => d.id === 'highscore');
+
+    expect(scoreEl).toBeDefined();
+    expect(highScoreEl).toBeDefined();
 
     // Initial call + one tick call
-    const scoreSetter = Object.getOwnPropertyDescriptor(scoreEl, 'innerText')?.set;
-    const highScoreSetter = Object.getOwnPropertyDescriptor(highScoreEl, 'innerText')?.set;
+    const scoreSetter = Object.getOwnPropertyDescriptor(scoreEl!, 'innerText')?.set;
+    const highScoreSetter = Object.getOwnPropertyDescriptor(highScoreEl!, 'innerText')?.set;
     expect(scoreSetter).toHaveBeenCalledTimes(2);
     expect(highScoreSetter).toHaveBeenCalledTimes(2);
     

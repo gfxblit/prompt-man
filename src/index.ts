@@ -24,7 +24,9 @@ export async function init(container: HTMLElement): Promise<void> {
   scoreContainer.classList.add('flex', 'justify-between', 'w-full', 'mb-2', 'text-white', 'font-bold', 'font-mono', 'text-xl');
   
   const scoreEl = document.createElement('div');
+  scoreEl.id = 'score';
   const highScoreEl = document.createElement('div');
+  highScoreEl.id = 'highscore';
   
   scoreContainer.appendChild(scoreEl);
   scoreContainer.appendChild(highScoreEl);
