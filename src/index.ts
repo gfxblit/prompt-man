@@ -30,6 +30,10 @@ export async function init(container: HTMLElement): Promise<void> {
   scoreContainer.appendChild(highScoreEl);
   container.appendChild(scoreContainer);
 
+  // Initialize score display
+  scoreEl.innerText = `Score: ${state.getScore()}`;
+  highScoreEl.innerText = `High Score: ${state.getHighScore()}`;
+
   const canvas = document.createElement('canvas');
   canvas.width = grid.getWidth() * TILE_SIZE;
   canvas.height = grid.getHeight() * TILE_SIZE;
@@ -50,11 +54,11 @@ export async function init(container: HTMLElement): Promise<void> {
       if (time - lastTime > TICK_RATE) {
         state.updatePacman(inputHandler.getDirection());
         lastTime = time;
-      }
 
-      // Update score display
-      scoreEl.innerText = `Score: ${state.getScore()}`;
-      highScoreEl.innerText = `High Score: ${state.getHighScore()}`;
+        // Update score display
+        scoreEl.innerText = `Score: ${state.getScore()}`;
+        highScoreEl.innerText = `High Score: ${state.getHighScore()}`;
+      }
       
       renderer.render(grid, state);
       uiRenderer.render(inputHandler.getJoystickState());

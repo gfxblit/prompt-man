@@ -41,13 +41,21 @@ describe('index', () => {
       createElement: vi.fn((tagName: string) => {
         if (tagName === 'canvas') return canvas;
         if (tagName === 'div') {
-          return {
+          const div = {
             classList: {
               add: vi.fn(),
             },
-            innerText: '',
+            _innerText: '',
             appendChild: vi.fn(),
           };
+          // Define innerText with a spy on the setter
+          Object.defineProperty(div, 'innerText', {
+            get: function() { return this._innerText; },
+            set: vi.fn(function(val) { this._innerText = val; }),
+            configurable: true,
+            enumerable: true
+          });
+          return div;
         }
         throw new Error(`Unexpected tag name: ${tagName}`);
       }),
@@ -112,7 +120,22 @@ describe('index', () => {
 
     // Check for score board
     expect(document.createElement).toHaveBeenCalledWith('div');
-    // We expect at least 3 divs: container, score, highscore
+    const divCalls = vi.mocked(document.createElement).mock.results
+      .filter(result => result.type === 'return' && result.value.innerText !== undefined)
+      .map(result => result.value);
+    
+    expect(divCalls).toHaveLength(3);
+    // divCalls[1] is scoreEl, divCalls[2] is highScoreEl (based on implementation order)
+    const scoreEl = divCalls[1];
+    const highScoreEl = divCalls[2];
+
+    // Initial call + one tick call
+    const scoreSetter = Object.getOwnPropertyDescriptor(scoreEl, 'innerText')?.set;
+    const highScoreSetter = Object.getOwnPropertyDescriptor(highScoreEl, 'innerText')?.set;
+    expect(scoreSetter).toHaveBeenCalledTimes(2);
+    expect(highScoreSetter).toHaveBeenCalledTimes(2);
+    
+    // We expect exactly 3 divs: container, score, highscore
     // Actually implementation detail might vary, but let's assume structure:
     // <div class="flex ..."> 
     //   <div id="score">Score: 0</div>
