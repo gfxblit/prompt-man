@@ -98,6 +98,8 @@ export class GameState implements IGameState {
     // Default to current direction or stopped
     let moveDir = pacman.direction || { dx: 0, dy: 0 };
 
+    const distance = PACMAN_SPEED * deltaTime;
+
     // Try to apply nextDirection
     if (this.nextDirection && (this.nextDirection.dx !== 0 || this.nextDirection.dy !== 0)) {
       const nextDir = this.nextDirection;
@@ -110,10 +112,16 @@ export class GameState implements IGameState {
       } 
       // 2. Check for Turn (Requires alignment and walkability)
       else {
+        // A small tolerance to check for grid alignment. This prevents floating point
+        // inaccuracies from breaking the turning logic. The tolerance should be at 
+        // least half of the maximum expected per-frame movement distance to prevent 
+        // skipping the alignment point on low-framerate devices.
+        const ALIGNMENT_TOLERANCE = Math.max(0.05, distance / 2);
+
         // We need to be aligned on the axis perpendicular to the NEW direction.
         // E.g. to turn Up (dy=-1), we must be aligned on X.
-        const alignedX = Math.abs(pacman.x - Math.round(pacman.x)) < 0.1;
-        const alignedY = Math.abs(pacman.y - Math.round(pacman.y)) < 0.1;
+        const alignedX = Math.abs(pacman.x - Math.round(pacman.x)) < ALIGNMENT_TOLERANCE;
+        const alignedY = Math.abs(pacman.y - Math.round(pacman.y)) < ALIGNMENT_TOLERANCE;
         
         const canTurn = (nextDir.dx !== 0 && alignedY) || (nextDir.dy !== 0 && alignedX);
 
@@ -143,7 +151,6 @@ export class GameState implements IGameState {
     pacman.rotation = Math.atan2(moveDir.dy, moveDir.dx);
 
     // Perform movement
-    const distance = PACMAN_SPEED * deltaTime;
     this.moveEntity(pacman, distance);
 
     // Consume pellet at the center
