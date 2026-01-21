@@ -294,7 +294,7 @@ describe('GameState', () => {
 
     // Try to move again, should not move
     state.updatePacman({ dx: 1, dy: 0 }, smallDeltaTime);
-    expect(pacman.x).toBeCloseTo(3 - Number.EPSILON);
+    expect(pacman.x).toBeCloseTo(3);
     expect(pacman.y).toBe(1);
     expect(pacman.direction).toEqual({ dx: 0, dy: 0 });
   });
@@ -319,5 +319,51 @@ describe('GameState', () => {
     expect(pacman.y).toBe(1);
     expect(state.isPelletEaten(2,1)).toBe(true);
     expect(state.getScore()).toBe(10);
+  });
+
+  it('should stop precisely at wall when moving left', () => {
+    const template = `
+#####
+#..P#
+#####
+    `.trim();
+    const grid = Grid.fromString(template);
+    const state = new GameState(grid);
+    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+
+    // Start at (3,1). Speed 5 tiles/sec.
+    // Move left for 0.4s -> 2.0 tiles. Ends at (1,1)
+    state.updatePacman({ dx: -1, dy: 0 }, 400);
+    expect(pacman.x).toBeCloseTo(1);
+    expect(pacman.direction).toEqual({ dx: -1, dy: 0 });
+
+    // Move left for 0.1s -> 0.5 tiles. Should hit wall at x=1.0 (boundary of tile 0)
+    state.updatePacman({ dx: -1, dy: 0 }, 100);
+    expect(pacman.x).toBe(1);
+    expect(pacman.direction).toEqual({ dx: 0, dy: 0 });
+  });
+
+  it('should stop precisely at wall when moving up', () => {
+    const template = `
+#####
+#...#
+#...#
+#P..#
+#####
+    `.trim();
+    const grid = Grid.fromString(template);
+    const state = new GameState(grid);
+    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+
+    // Start at (1,3). Speed 5 tiles/sec.
+    // Move up for 0.4s -> 2.0 tiles. Ends at (1,1)
+    state.updatePacman({ dx: 0, dy: -1 }, 400);
+    expect(pacman.y).toBeCloseTo(1);
+    expect(pacman.direction).toEqual({ dx: 0, dy: -1 });
+
+    // Move up for 0.1s -> 0.5 tiles. Should hit wall at y=1.0 (boundary of tile 0)
+    state.updatePacman({ dx: 0, dy: -1 }, 100);
+    expect(pacman.y).toBe(1);
+    expect(pacman.direction).toEqual({ dx: 0, dy: 0 });
   });
 });

@@ -149,9 +149,11 @@ export class GameState implements IGameState {
             }
         } else {
             // Moving Left
-            const nextTileX = Math.floor(proposedNextX); // The tile we are entering
-            if (!this.grid.isWalkable(nextTileX, Math.round(pacman.y))) {
-                newX = nextTileX + 1; // Stop at right edge of wall
+            // For moving left, check the tile we are moving into.
+            const wallTileX = Math.floor(pacman.x) - 1;
+            const wallBoundaryX = Math.floor(pacman.x);
+            if (proposedNextX < wallBoundaryX && !this.grid.isWalkable(wallTileX, Math.round(pacman.y))) {
+                newX = wallBoundaryX;
                 stoppedByCollision = true;
             } else {
                 newX = proposedNextX;
@@ -174,9 +176,10 @@ export class GameState implements IGameState {
             }
         } else {
             // Moving Up
-            const nextTileY = Math.floor(proposedNextY);
-            if (!this.grid.isWalkable(Math.round(pacman.x), nextTileY)) {
-                newY = nextTileY + 1; // Stop at bottom edge of wall
+            const wallTileY = Math.floor(pacman.y) - 1;
+            const wallBoundaryY = Math.floor(pacman.y);
+            if (proposedNextY < wallBoundaryY && !this.grid.isWalkable(Math.round(pacman.x), wallTileY)) {
+                newY = wallBoundaryY; // Stop at bottom edge of wall
                 stoppedByCollision = true;
             } else {
                 newY = proposedNextY;
