@@ -86,6 +86,10 @@ export class GameState implements IGameState {
     }
   }
 
+  private getWrappedCoordinate(val: number, max: number): number {
+    return (val % max + max) % max;
+  }
+
   updatePacman(direction: Direction, deltaTime: number = 0): void {
     const pacman = this.entities.find(e => e.type === EntityType.Pacman);
     if (!pacman) return;
@@ -124,8 +128,12 @@ export class GameState implements IGameState {
         const canTurn = (nextDir.dx !== 0 && alignedY) || (nextDir.dy !== 0 && alignedX);
 
         if (canTurn) {
-          const targetX = Math.round(pacman.x) + nextDir.dx;
-          const targetY = Math.round(pacman.y) + nextDir.dy;
+          let targetX = Math.round(pacman.x) + nextDir.dx;
+          let targetY = Math.round(pacman.y) + nextDir.dy;
+
+          // Wrap target coordinates for walkability check
+          targetX = this.getWrappedCoordinate(targetX, this.grid.getWidth());
+          targetY = this.getWrappedCoordinate(targetY, this.grid.getHeight());
 
           if (this.grid.isWalkable(targetX, targetY)) {
             moveDir = nextDir;
@@ -152,7 +160,9 @@ export class GameState implements IGameState {
     this.moveEntity(pacman, distance);
 
     // Consume pellet at the center
-    this.consumePellet(Math.round(pacman.x), Math.round(pacman.y));
+    const consumeX = this.getWrappedCoordinate(Math.round(pacman.x), this.grid.getWidth());
+    const consumeY = this.getWrappedCoordinate(Math.round(pacman.y), this.grid.getHeight());
+    this.consumePellet(consumeX, consumeY);
   }
 
   private moveEntity(entity: Entity, distance: number): void {
@@ -177,12 +187,14 @@ export class GameState implements IGameState {
   private attemptMove(pos: number, dir: number, dist: number, crossPos: number, isHorizontal: boolean): { pos: number, stopped: boolean } {
     const proposed = pos + dir * dist;
     const currentCenter = Math.round(pos);
+    const max = isHorizontal ? this.grid.getWidth() : this.grid.getHeight();
 
     if (dir > 0) {
       if (proposed > currentCenter) {
         const nextTile = currentCenter + 1;
-        const tileX = isHorizontal ? nextTile : crossPos;
-        const tileY = isHorizontal ? crossPos : nextTile;
+        const wrappedNextTile = this.getWrappedCoordinate(nextTile, max);
+        const tileX = isHorizontal ? wrappedNextTile : crossPos;
+        const tileY = isHorizontal ? crossPos : wrappedNextTile;
         
         if (!this.grid.isWalkable(tileX, tileY)) {
           return { pos: currentCenter, stopped: true };
@@ -191,8 +203,9 @@ export class GameState implements IGameState {
     } else {
       if (proposed < currentCenter) {
         const nextTile = currentCenter - 1;
-        const tileX = isHorizontal ? nextTile : crossPos;
-        const tileY = isHorizontal ? crossPos : nextTile;
+        const wrappedNextTile = this.getWrappedCoordinate(nextTile, max);
+        const tileX = isHorizontal ? wrappedNextTile : crossPos;
+        const tileY = isHorizontal ? crossPos : wrappedNextTile;
         
         if (!this.grid.isWalkable(tileX, tileY)) {
           return { pos: currentCenter, stopped: true };
@@ -200,6 +213,6 @@ export class GameState implements IGameState {
       }
     }
 
-    return { pos: proposed, stopped: false };
+    return { pos: this.getWrappedCoordinate(proposed, max), stopped: false };
   }
 }
