@@ -32,10 +32,6 @@ export async function init(container: HTMLElement): Promise<void> {
   scoreContainer.appendChild(highScoreEl);
   container.appendChild(scoreContainer);
 
-  // Initialize score display
-  scoreEl.innerText = `Score: ${state.getScore()}`;
-  highScoreEl.innerText = `High Score: ${state.getHighScore()}`;
-
   const canvas = document.createElement('canvas');
   canvas.width = grid.getWidth() * TILE_SIZE;
   canvas.height = grid.getHeight() * TILE_SIZE;
