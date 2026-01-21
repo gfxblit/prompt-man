@@ -250,63 +250,8 @@ describe('GameState', () => {
     // 3. Move Right again. (4,1) is wall.
     state.updatePacman({ dx: 1, dy: 0 }, 200);
 
-    expect(pacman.x).toBe(3); // Should be stopped at boundary (actually ceil(3) = 3... wait)
-    // If x=3.0, moving right (+). Boundary is ceil(3) = 3?
-    // If x=3.0, ceil(x)=3. proposed > boundary?
-    // My logic: boundary = Math.ceil(pos). If pos is integer, boundary = pos.
-    // proposed = 3.5. 3.5 >= 3.
-    // Tile is boundary (3). Wall check at (3,1)? No.
-    // If I am at 3.0. Moving right.
-    // Current tile is 3. Target is 4.
-    // My logic: 
-    // const boundary = Math.ceil(pos);
-    // if (proposed >= boundary) ...
-    // If pos=3.0, boundary=3. proposed=3.5. 3.5>=3.
-    // tileX = boundary = 3.
-    // isWalkable(3,1)? (3,1) is current tile. It is walkable.
-    // So it allows move?
-    // Wait. If I am at 3.0. I want to move to 4.0.
-    // I should check tile 4.
-    // If pos=3.0. I am IN tile 3.
-    // Boundary to next tile is 4.0?
-    // Math.ceil(3.0) is 3.
-    // If I use Math.floor(pos) + 1 for positive boundary?
-    // If pos=3.0, floor=3. +1 = 4.
-    // If pos=3.1, floor=3. +1 = 4.
-    // Correct.
-    
-    // BUT, if pos=3.0 exactly. Math.ceil is 3.
-    // So I check tile 3. Tile 3 is walkable.
-    // It proceeds to 3.5.
-    // Next frame: pos=3.5. Ceil=4.
-    // proposed=4.0. >= 4.
-    // tileX = 4. isWalkable(4,1) -> Wall.
-    // Stop at 4.
-    // So it moves INTO the wall tile (visually overlap)?
-    // Usually x=3 means "center of tile 3".
-    // Entities are points? Or occupy space?
-    // If entity is point at 3.0.
-    // Wall is at 4.0 (center of tile 4).
-    // Usually tiles are 0..1, 1..2. Center is 0.5, 1.5.
-    // Current coordinates seem to be integers at center?
-    // "pacman.x = spawn.x" -> 1.
-    // Grid.findTiles returns integers.
-    // So x=1 means center of tile (1,y).
-    // Wall is at x=0.
-    // Distance between them is 1.0.
-    // If I move from 1 to 0.
-    // Wall starts at 0.5?
-    // The renderer usually draws tile at (x*SIZE, y*SIZE).
-    // If x=1, it draws at 1*SIZE.
-    // So coordinates are integer indices.
-    // So (1,1) is the center of the tile visually?
-    // Actually, usually in tilemaps, (1,1) is top-left corner of tile (1,1).
-    // If Pacman is at (1,1), he is at top-left.
-    // If he moves to (1.5, 1.5), he is in center.
-    // Let's check `renderer.ts`.
-    
-    // Expecting to stop at wall.
-    // Note: My logic in `state.ts` used `Math.ceil`.
-    // Let's verify if that's correct for "integer coordinates = top-left".
+    // After moving from x=3, pacman should stop exactly at the boundary of the next tile (x=4), which is a wall.
+    expect(pacman.x).toBe(4);
+    expect(pacman.direction?.dx).toBe(0); // Should be stopped
   });
 });

@@ -175,12 +175,12 @@ export class GameState implements IGameState {
     if (dir > 0) {
       const boundary = Math.floor(pos);
       // If we cross or reach the boundary to the next tile
-      if (proposed > boundary) {
+      if (proposed >= boundary + 1) {
         const tileX = isHorizontal ? boundary + 1 : crossPos;
         const tileY = isHorizontal ? crossPos : boundary + 1;
         
         if (!this.grid.isWalkable(tileX, tileY)) {
-          return { pos: boundary, stopped: true };
+          return { pos: boundary + 1, stopped: true };
         }
       }
     } else {
