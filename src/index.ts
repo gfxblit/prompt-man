@@ -33,9 +33,18 @@ export async function init(container: HTMLElement): Promise<void> {
   scoreContainer.appendChild(highScoreEl);
   container.appendChild(scoreContainer);
 
+  let lastScore = -1;
+  let lastHighScore = -1;
+
   const updateScoreDisplay = () => {
-    scoreEl.innerText = `Score: ${state.getScore()}`;
-    highScoreEl.innerText = `High Score: ${state.getHighScore()}`;
+    const currentScore = state.getScore();
+    const currentHighScore = state.getHighScore();
+    if (currentScore !== lastScore || currentHighScore !== lastHighScore) {
+      scoreEl.innerText = `Score: ${currentScore}`;
+      highScoreEl.innerText = `High Score: ${currentHighScore}`;
+      lastScore = currentScore;
+      lastHighScore = currentHighScore;
+    }
   };
 
   // Initial UI update
@@ -54,8 +63,6 @@ export async function init(container: HTMLElement): Promise<void> {
   const uiRenderer = ctx ? new UIRenderer(ctx) : null;
 
   let lastTime = performance.now();
-  let lastScore = state.getScore();
-  let lastHighScore = state.getHighScore();
 
   const loop = (time: number) => {
     const deltaTime = time - lastTime;
@@ -65,12 +72,7 @@ export async function init(container: HTMLElement): Promise<void> {
     state.updateGhosts(deltaTime);
 
     // Update score display only if changed
-    const currentScore = state.getScore();
-    if (currentScore !== lastScore || state.getHighScore() !== lastHighScore) {
-      updateScoreDisplay();
-      lastScore = currentScore;
-      lastHighScore = state.getHighScore();
-    }
+    updateScoreDisplay();
 
     if (renderer && uiRenderer) {
       renderer.render(grid, state, time);
