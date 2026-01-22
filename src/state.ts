@@ -10,8 +10,8 @@ export class GameState implements IGameState {
   private eatenPellets: Set<string> = new Set();
   private readonly HIGH_SCORE_KEY = 'prompt-man-high-score';
   private nextDirection: Direction | null = null;
-  private width: number;
-  private height: number;
+  private readonly width: number;
+  private readonly height: number;
 
   constructor(private grid: IGrid) {
     this.width = grid.getWidth();
