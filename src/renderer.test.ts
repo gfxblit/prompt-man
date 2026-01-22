@@ -39,7 +39,6 @@ describe('Renderer', () => {
       getRemainingPellets: vi.fn().mockReturnValue(0),
       consumePellet: vi.fn(),
       isPelletEaten: vi.fn().mockReturnValue(false),
-      movePacman: vi.fn(),
       updatePacman: vi.fn(),
     };
   });

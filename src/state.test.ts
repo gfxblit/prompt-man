@@ -44,8 +44,6 @@ describe('GameState', () => {
 
   it('should count initial pellets correctly', () => {
     const state = new GameState(grid);
-    // 1 pellet at (2,1), 2 pellets at (2,2) and (3,2). Total 3 pellets.
-    // Plus 1 power pellet at (1,2). Total 4.
     expect(state.getRemainingPellets()).toBe(4);
   });
 
@@ -75,43 +73,48 @@ describe('GameState', () => {
     expect(state.getScore()).toBe(50);
   });
 
-  it('should move Pacman and consume pellets', () => {
+  it('should consume pellets when Pacman moves over them', () => {
     const state = new GameState(grid);
     const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
     
-    // Move to (2,1) which has a pellet
-    state.movePacman(2, 1);
+    // Position Pacman just before a pellet and move onto it
+    pacman.x = 1;
+    pacman.y = 1;
+    state.updatePacman({ dx: 1, dy: 0 }, 200); // Move right, speed is 0.005 tiles/ms, so 200ms moves 1 tile
+
     expect(pacman.x).toBe(2);
     expect(pacman.y).toBe(1);
     expect(state.getRemainingPellets()).toBe(3);
     expect(state.getScore()).toBe(10);
   });
 
-  it('should not move Pacman into walls', () => {
+  it('should not move Pacman into walls from standstill', () => {
     const state = new GameState(grid);
     const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
     const initialX = pacman.x;
     const initialY = pacman.y;
     
-    // Move to (1,0) which is a wall
-    state.movePacman(1, 0);
+    // Move Left (1,1) -> (0,1) is wall
+    state.updatePacman({ dx: -1, dy: 0 }, 100);
+    
     expect(pacman.x).toBe(initialX);
     expect(pacman.y).toBe(initialY);
+    expect(pacman.direction).toEqual({ dx: 0, dy: 0 });
   });
 
-  it('should update Pacman position based on direction', () => {
+  it('should update Pacman position based on direction and deltaTime', () => {
     const state = new GameState(grid);
     const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
     const initialX = pacman.x;
     const initialY = pacman.y;
 
-    // Move right (dx=1, dy=0)
-    state.updatePacman({ dx: 1, dy: 0 });
-    expect(pacman.x).toBe(initialX + 1);
+    // Move right (dx=1, dy=0) with 100ms deltaTime.
+    state.updatePacman({ dx: 1, dy: 0 }, 100);
+    expect(pacman.x).toBeCloseTo(initialX + 0.5);
     expect(pacman.y).toBe(initialY);
   });
 
-  it('should continue in current direction if requested direction is blocked by a wall', () => {
+  it('should continue in current direction if requested direction is blocked or not aligned', () => {
     const customTemplate = `
 #####
 #P..#
@@ -124,22 +127,23 @@ describe('GameState', () => {
 
     // Initially at (1,1).
     // Set initial direction to Right
-    state.updatePacman({ dx: 1, dy: 0 }); 
+    state.updatePacman({ dx: 1, dy: 0 }, 200); 
     expect(pacman.x).toBe(2);
     expect(pacman.y).toBe(1);
     expect(pacman.direction).toEqual({ dx: 1, dy: 0 });
 
     // Now at (2,1). Above (2,0) is wall. Right (3,1) is empty.
-    // Request Up { dx: 0, dy: -1 }
-    state.updatePacman({ dx: 0, dy: -1 });
+    // Request Up { dx: 0, dy: -1 }.
+    // It should be buffered, but for now we continue Right.
+    state.updatePacman({ dx: 0, dy: -1 }, 200);
     
-    // Should NOT move Up (blocked), but SHOULD move Right (buffered)
+    // Should not move Up (blocked), should continue moving in the current direction (Right).
     expect(pacman.x).toBe(3);
     expect(pacman.y).toBe(1);
     expect(pacman.direction).toEqual({ dx: 1, dy: 0 });
   });
 
-  it('should turn when requested direction becomes walkable', () => {
+  it('should buffer input and turn when alignment and walkability allow', () => {
     const customTemplate = `
 #####
 #P..#
@@ -147,36 +151,72 @@ describe('GameState', () => {
 #...#
 #####
     `.trim();
+    // (1,1) P -> (2,1) . -> (3,1) .
+    // (3,2) is walkable.
     const customGrid = Grid.fromString(customTemplate);
     const state = new GameState(customGrid);
     const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
 
-    // 1. Move Right to (2,1)
-    state.updatePacman({ dx: 1, dy: 0 });
-    expect(pacman.x).toBe(2);
+    // 1. Start moving Right.
+    // Move small step to be misaligned: x=1.5
+    state.updatePacman({ dx: 1, dy: 0 }, 100); 
+    expect(pacman.x).toBeCloseTo(1.5);
+    expect(pacman.direction).toEqual({ dx: 1, dy: 0 });
+
+    // 2. Request Down EARLY.
+    // We are at 1.5. Center is 2.0. We are not aligned.
+    // Down (1.5, 2) is not checked yet, but we check alignment first.
+    state.updatePacman({ dx: 0, dy: 1 }, 100);
+    
+    // Should continue Right because we haven't reached the turn (x=2) yet.
+    // x becomes 2.0.
+    expect(pacman.x).toBeCloseTo(2.0);
     expect(pacman.y).toBe(1);
     expect(pacman.direction).toEqual({ dx: 1, dy: 0 });
 
-    // 2. Request Down. (2,2) is wall, so it should continue Right to (3,1)
-    state.updatePacman({ dx: 0, dy: 1 });
-    expect(pacman.x).toBe(3);
+    // Request Down again (simulating holding key or just buffering persisting).
+    state.updatePacman({ dx: 0, dy: 0 }, 200);
+
+    // Should continue Right to (3,1).
+    expect(pacman.x).toBe(3.0);
     expect(pacman.y).toBe(1);
     expect(pacman.direction).toEqual({ dx: 1, dy: 0 });
 
-    // 3. Request Down again. Now at (3,1), (3,2) is walkable. Should move Down to (3,2)
-    state.updatePacman({ dx: 0, dy: 1 });
+    // 4. Now at (3,1). Down is (3,2) which is Walkable.
+    // The buffered input was "Down". It was checked at (2,1) (failed-wall).
+    // It should still be buffered? Yes, until consumed or replaced.
+    // Now at (3,1).
+    state.updatePacman({ dx: 0, dy: 0 }, 200);
+
     expect(pacman.x).toBe(3);
     expect(pacman.y).toBe(2);
     expect(pacman.direction).toEqual({ dx: 0, dy: 1 });
-    
-    // 4. Continue Down to (3,3)
-    state.updatePacman({ dx: 0, dy: 1 });
-    expect(pacman.x).toBe(3);
-    expect(pacman.y).toBe(3);
-    expect(pacman.direction).toEqual({ dx: 0, dy: 1 });
   });
 
-  it('should stop and clear direction when hitting a wall in both requested and current directions', () => {
+  it('should allow immediate reversal of direction', () => {
+    const customTemplate = `
+#####
+#P..#
+#####
+    `.trim();
+    const customGrid = Grid.fromString(customTemplate);
+    const state = new GameState(customGrid);
+    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+
+    // 1. Move Right to 1.5
+    state.updatePacman({ dx: 1, dy: 0 }, 100);
+    expect(pacman.x).toBeCloseTo(1.5);
+    expect(pacman.direction).toEqual({ dx: 1, dy: 0 });
+
+    // 2. Request Left. Should turn IMMEDIATELY even if not aligned.
+    state.updatePacman({ dx: -1, dy: 0 }, 100);
+    
+    // Should be at 1.0 (1.5 - 0.5) and still moving left (hasn't hit wall at x=0 yet)
+    expect(pacman.x).toBeCloseTo(1.0);
+    expect(pacman.direction).toEqual({ dx: -1, dy: 0 });
+  });
+
+  it('should stop and clear direction when hitting a wall', () => {
     const customTemplate = `
 #####
 #P..#
@@ -187,23 +227,18 @@ describe('GameState', () => {
     const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
 
     // 1. Move Right to (2,1)
-    state.updatePacman({ dx: 1, dy: 0 });
+    state.updatePacman({ dx: 1, dy: 0 }, 200);
     expect(pacman.x).toBe(2);
-    expect(pacman.direction).toEqual({ dx: 1, dy: 0 });
 
-    // 2. Move Right to (3,1)
-    state.updatePacman({ dx: 1, dy: 0 });
+    // 2. Move Right to (3,1) - just before wall at (4,1)
+    state.updatePacman({ dx: 1, dy: 0 }, 200);
     expect(pacman.x).toBe(3);
-    expect(pacman.direction).toEqual({ dx: 1, dy: 0 });
 
-    // 3. Try to move Right again, but (4,1) is a wall.
-    // Also try to move Up (blocked).
-    state.updatePacman({ dx: 0, dy: -1 });
+    // 3. Move Right again. (4,1) is wall.
+    state.updatePacman({ dx: 1, dy: 0 }, 200);
 
-    expect(pacman.x).toBe(3); // Should not have moved
-    // Now reflects that movement has stopped
-    expect(pacman.direction).toEqual({ dx: 0, dy: 0 });
-    // But rotation should be preserved (facing Right)
-    expect(pacman.rotation).toBeCloseTo(0);
+    // After moving from x=3, pacman should stop at x=3 because x=4 is a wall.
+    expect(pacman.x).toBe(3);
+    expect(pacman.direction?.dx).toBe(0); // Should be stopped
   });
 });

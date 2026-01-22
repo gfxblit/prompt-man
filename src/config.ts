@@ -5,6 +5,8 @@
 export const PELLET_SCORE = 10;
 /** Points awarded for collecting a power pellet. */
 export const POWER_PELLET_SCORE = 50;
+/** Pacman speed in tiles per millisecond. */
+export const PACMAN_SPEED = 5 / 1000;
 
 /**
  * Assets configuration
