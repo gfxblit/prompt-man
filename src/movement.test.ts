@@ -4,14 +4,12 @@ import { Grid } from './grid.js';
 import { EntityType } from './types.js';
 
 describe('Movement - Wrapping', () => {
-  // Row 1: (0,1) and (4,1) are empty walkable spaces at the edges.
   const horizontalTemplate = `
 #####
  P.. 
 #####
   `.trim();
 
-  // Column 1: (1,0) is Pacman at the top, (1,4) is a pellet at the bottom.
   const verticalTemplate = `
 #P#
 #.#
@@ -23,7 +21,10 @@ describe('Movement - Wrapping', () => {
   const setup = (template: string) => {
     const grid = Grid.fromString(template);
     const state = new GameState(grid);
-    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
+    if (!pacman) {
+      throw new Error('Pacman entity not found in test template');
+    }
     return { state, pacman };
   };
 

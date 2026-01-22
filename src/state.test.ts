@@ -75,7 +75,8 @@ describe('GameState', () => {
 
   it('should consume pellets when Pacman moves over them', () => {
     const state = new GameState(grid);
-    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
+    if (!pacman) throw new Error('Pacman not found');
     
     // Position Pacman just before a pellet and move onto it
     pacman.x = 1;
@@ -90,7 +91,8 @@ describe('GameState', () => {
 
   it('should not move Pacman into walls from standstill', () => {
     const state = new GameState(grid);
-    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
+    if (!pacman) throw new Error('Pacman not found');
     const initialX = pacman.x;
     const initialY = pacman.y;
     
@@ -104,7 +106,8 @@ describe('GameState', () => {
 
   it('should update Pacman position based on direction and deltaTime', () => {
     const state = new GameState(grid);
-    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
+    if (!pacman) throw new Error('Pacman not found');
     const initialX = pacman.x;
     const initialY = pacman.y;
 
@@ -123,7 +126,8 @@ describe('GameState', () => {
     `.trim();
     const customGrid = Grid.fromString(customTemplate);
     const state = new GameState(customGrid);
-    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
+    if (!pacman) throw new Error('Pacman not found');
 
     // Initially at (1,1).
     // Set initial direction to Right
@@ -155,7 +159,8 @@ describe('GameState', () => {
     // (3,2) is walkable.
     const customGrid = Grid.fromString(customTemplate);
     const state = new GameState(customGrid);
-    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
+    if (!pacman) throw new Error('Pacman not found');
 
     // 1. Start moving Right.
     // Move small step to be misaligned: x=1.5
@@ -224,7 +229,8 @@ describe('GameState', () => {
     `.trim();
     const customGrid = Grid.fromString(customTemplate);
     const state = new GameState(customGrid);
-    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
+    if (!pacman) throw new Error('Pacman not found');
 
     // 1. Move Right to (2,1)
     state.updatePacman({ dx: 1, dy: 0 }, 200);
