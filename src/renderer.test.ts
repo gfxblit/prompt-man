@@ -51,6 +51,7 @@ describe('Renderer', () => {
       updatePacman: vi.fn(),
       updateGhosts: vi.fn(),
       isGameOver: vi.fn().mockReturnValue(false),
+      getBufferedDirection: vi.fn().mockReturnValue(null),
     };
   });
 
@@ -60,7 +61,7 @@ describe('Renderer', () => {
   });
 
   it('should render Wall using autotiling when spritesheet is provided', () => {
-    const mockSpritesheet = { width: 10, height: 10 } as HTMLImageElement;
+    const mockSpritesheet = { width: 1024, height: 1024 } as HTMLImageElement;
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D, mockSpritesheet);
     
     const grid = Grid.fromString('#');
@@ -95,7 +96,7 @@ describe('Renderer', () => {
     // Case 2: With spritesheet
     vi.clearAllMocks();
     vi.mocked(mockState.isPelletEaten).mockReturnValue(true);
-    const mockSpritesheet = { width: 10, height: 10 } as HTMLImageElement;
+    const mockSpritesheet = { width: 1024, height: 1024 } as HTMLImageElement;
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D, mockSpritesheet);
     renderer.render(grid, mockState, 0);
     expect(mockContext.fill).not.toHaveBeenCalled();
@@ -139,7 +140,7 @@ describe('Renderer', () => {
     const grid = new Grid(1, 1);
     // Facing down (rotation for PI/2)
     const rotation = Math.PI / 2;
-    const entities = [{ 
+    const entities = [{
       type: EntityType.Pacman, 
       x: 0, 
       y: 0, 
@@ -261,7 +262,7 @@ describe('Renderer', () => {
     { type: TileType.PowerPellet, time: 0, expected: true, isPower: true, useSpritesheet: true },
     { type: TileType.PowerPellet, time: PELLET_BLINK_RATE, expected: false, isPower: true, useSpritesheet: true },
   ])('should render $type at time $time (spritesheet: $useSpritesheet)', ({ type, time, expected, isPower, useSpritesheet }) => {
-    const mockSpritesheet = useSpritesheet ? { width: 10, height: 10 } as HTMLImageElement : undefined;
+    const mockSpritesheet = useSpritesheet ? { width: 1024, height: 1024 } as HTMLImageElement : undefined;
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D, mockSpritesheet);
     const grid = new Grid(1, 1);
     grid.setTile(0, 0, type);

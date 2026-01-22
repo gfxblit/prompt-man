@@ -96,6 +96,8 @@ export interface IGameState {
   updateGhosts(deltaTime: number): void;
   /** Returns true if the game is over. */
   isGameOver(): boolean;
+  /** Returns the current buffered direction, if any. */
+  getBufferedDirection(): Direction | null;
 }
 
 /**

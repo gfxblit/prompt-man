@@ -186,8 +186,8 @@ export class Renderer implements IRenderer {
     if (!this.spritesheet) return;
     this.ctx.drawImage(
       this.spritesheet,
-      PALETTE_ORIGIN_X + sCol * (sSize + PALETTE_PADDING_X) + PALETTE_PADDING_X,
-      PALETTE_ORIGIN_Y + sRow * (sSize + PALETTE_PADDING_Y) + PALETTE_PADDING_Y,
+      PALETTE_ORIGIN_X + sCol * (SOURCE_TILE_SIZE + PALETTE_PADDING_X) + PALETTE_PADDING_X,
+      PALETTE_ORIGIN_Y + sRow * (SOURCE_TILE_SIZE + PALETTE_PADDING_Y) + PALETTE_PADDING_Y,
       sSize,
       sSize,
       dX,
