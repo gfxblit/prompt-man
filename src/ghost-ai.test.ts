@@ -37,8 +37,9 @@ describe('Ghost AI', () => {
     
     expect(ghosts).toHaveLength(4);
     const colors = ghosts.map(g => g.color);
-    // Should have distinct colors from the predefined set
-    expect(new Set(colors).size).toBeGreaterThan(1);
+    // Should have distinct colors from the predefined set and cycle through them
+    expect(new Set(colors).size).toBe(4);
+    expect(colors).toEqual(expect.arrayContaining(['red', 'pink', 'cyan', 'orange']));
   });
 
   it('should move ghosts in updateGhosts', () => {
