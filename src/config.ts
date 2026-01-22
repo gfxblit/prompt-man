@@ -7,6 +7,10 @@ export const PELLET_SCORE = 10;
 export const POWER_PELLET_SCORE = 50;
 /** Pacman speed in tiles per millisecond. */
 export const PACMAN_SPEED = 5 / 1000;
+/** Ghost speed in tiles per millisecond. */
+export const GHOST_SPEED = 4 / 1000;
+/** A small tolerance to check for grid alignment. */
+export const ALIGNMENT_TOLERANCE = 0.05;
 
 /**
  * Assets configuration
@@ -33,6 +37,7 @@ export const COLORS = {
   WALL: 'blue',
   PELLET: 'peachpuff',
   PACMAN: 'yellow',
+  GHOST_COLORS: ['red', 'pink', 'cyan', 'orange'],
   GHOST_DEFAULT: 'red',
 } as const;
 
@@ -61,7 +66,7 @@ export const LEVEL_TEMPLATE = `
 #......##....##....##......#
 ######.##### ## #####.######
      #.##### ## #####.#     
-     #.##    G     ##.#     
+     #.##  G G G G ##.#     
      #.## ######## ##.#     
 ######.## #      # ##.######
       .   #      #   .      

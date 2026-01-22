@@ -56,6 +56,7 @@ export async function init(container: HTMLElement): Promise<void> {
     lastTime = time;
 
     state.updatePacman(inputHandler.getDirection(), deltaTime);
+    state.updateGhosts(deltaTime);
 
     // Update score display only if changed
     const currentScore = state.getScore();
