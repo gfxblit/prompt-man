@@ -90,6 +90,10 @@ export class GameState implements IGameState {
     return this.remainingPellets;
   }
 
+  getBufferedDirection(): Direction | null {
+    return this.nextDirection;
+  }
+
   isGameOver(): boolean {
     return this.gameOver;
   }
