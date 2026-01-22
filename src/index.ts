@@ -43,76 +43,41 @@ export async function init(container: HTMLElement): Promise<void> {
 
   inputHandler.setTargetElement(canvas);
 
-    const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext('2d');
+  const renderer = ctx ? new Renderer(ctx, palette) : null;
+  const uiRenderer = ctx ? new UIRenderer(ctx) : null;
 
-    if (ctx) {
+  let lastTime = performance.now();
+  let lastScore = state.getScore();
+  let lastHighScore = state.getHighScore();
 
-      const renderer = new Renderer(ctx, palette);
+  const loop = (time: number) => {
+    const deltaTime = time - lastTime;
+    lastTime = time;
 
-      const uiRenderer = new UIRenderer(ctx);
+    state.updatePacman(inputHandler.getDirection(), deltaTime);
 
-      
-
-      let lastTime = performance.now();
-
-      let lastScore = state.getScore();
-
-      let lastHighScore = state.getHighScore();
-
-  
-
-      const loop = (time: number) => {
-
-        const deltaTime = time - lastTime;
-
-        lastTime = time;
-
-  
-
-        state.updatePacman(inputHandler.getDirection(), deltaTime);
-
-        
-
-        // Update score display only if changed
-
-        const currentScore = state.getScore();
-
-        if (currentScore !== lastScore) {
-
-          scoreEl.innerText = `Score: ${currentScore}`;
-
-          lastScore = currentScore;
-
-        }
-
-  
-
-        const currentHighScore = state.getHighScore();
-
-        if (currentHighScore !== lastHighScore) {
-
-          highScoreEl.innerText = `High Score: ${currentHighScore}`;
-
-          lastHighScore = currentHighScore;
-
-        }
-
-        
-
-        renderer.render(grid, state);
-
-        uiRenderer.render(inputHandler.getJoystickState());
-
-        requestAnimationFrame(loop);
-
-      };
-
-  
-
-      requestAnimationFrame(loop);
-
+    // Update score display only if changed
+    const currentScore = state.getScore();
+    if (currentScore !== lastScore) {
+      scoreEl.innerText = `Score: ${currentScore}`;
+      lastScore = currentScore;
     }
 
-  }
+    const currentHighScore = state.getHighScore();
+    if (currentHighScore !== lastHighScore) {
+      highScoreEl.innerText = `High Score: ${currentHighScore}`;
+      lastHighScore = currentHighScore;
+    }
+
+    if (renderer && uiRenderer) {
+      renderer.render(grid, state);
+      uiRenderer.render(inputHandler.getJoystickState());
+    }
+    requestAnimationFrame(loop);
+  };
+
+  requestAnimationFrame(loop);
+}
 
   

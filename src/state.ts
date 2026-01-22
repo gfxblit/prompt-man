@@ -91,6 +91,9 @@ export class GameState implements IGameState {
   }
 
   private getWrappedCoordinate(val: number, max: number): number {
+    if (max <= 0) {
+      return val;
+    }
     return (val % max + max) % max;
   }
 
