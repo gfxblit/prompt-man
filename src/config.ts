@@ -38,6 +38,7 @@ export const COLORS = {
   PELLET: 'peachpuff',
   PACMAN: 'yellow',
   GHOST_COLORS: ['red', 'pink', 'cyan', 'orange'],
+  GHOST_DEFAULT: 'red',
 } as const;
 
 /**
