@@ -284,8 +284,8 @@ describe('Renderer', () => {
     const grid = new Grid(1, 1);
     grid.setTile(0, 0, TileType.PowerPellet);
 
-    // 250ms is "off" phase if PELLET_BLINK_RATE is 250
-    renderer.render(grid, mockState, 250);
+    // PELLET_BLINK_RATE is "off" phase
+    renderer.render(grid, mockState, PELLET_BLINK_RATE);
 
     expect(mockContext.fill).not.toHaveBeenCalled();
   });
@@ -306,8 +306,8 @@ describe('Renderer', () => {
     const grid = new Grid(1, 1);
     grid.setTile(0, 0, TileType.Pellet);
 
-    // 250ms is "off" phase
-    renderer.render(grid, mockState, 250);
+    // PELLET_BLINK_RATE is "off" phase
+    renderer.render(grid, mockState, PELLET_BLINK_RATE);
 
     expect(mockContext.fillRect).not.toHaveBeenCalledWith(
       TILE_SIZE / 2 - 1,
