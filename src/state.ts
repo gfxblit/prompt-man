@@ -1,6 +1,13 @@
 import { TileType, EntityType } from './types.js';
 import type { Entity, IGrid, IGameState, Direction } from './types.js';
-import { PELLET_SCORE, POWER_PELLET_SCORE, PACMAN_SPEED, GHOST_SPEED, COLORS } from './config.js';
+import {
+  PELLET_SCORE,
+  POWER_PELLET_SCORE,
+  PACMAN_SPEED,
+  GHOST_SPEED,
+  ALIGNMENT_TOLERANCE,
+  COLORS,
+} from './config.js';
 
 export class GameState implements IGameState {
   private entities: Entity[] = [];
@@ -126,10 +133,6 @@ export class GameState implements IGameState {
       } 
       // 2. Check for Turn (Requires alignment and walkability)
       else {
-        // A small tolerance to check for grid alignment. This prevents floating point
-        // inaccuracies from breaking the turning logic.
-        const ALIGNMENT_TOLERANCE = 0.05; // A small, fixed tolerance
-
         // We need to be aligned on the axis perpendicular to the NEW direction.
         // E.g. to turn Up (dy=-1), we must be aligned on X.
         const alignedX = Math.abs(pacman.x - Math.round(pacman.x)) < ALIGNMENT_TOLERANCE;
@@ -185,7 +188,6 @@ export class GameState implements IGameState {
         this.chooseGhostDirection(ghost);
       } else {
         // 2. If at an intersection (aligned with grid), maybe change direction
-        const ALIGNMENT_TOLERANCE = 0.05;
         const isAlignedX = Math.abs(ghost.x - Math.round(ghost.x)) < ALIGNMENT_TOLERANCE;
         const isAlignedY = Math.abs(ghost.y - Math.round(ghost.y)) < ALIGNMENT_TOLERANCE;
 
@@ -193,12 +195,15 @@ export class GameState implements IGameState {
           const x = Math.round(ghost.x);
           const y = Math.round(ghost.y);
           
-          // Check if we are at an intersection or hit a wall
-          const possibleDirs = this.getPossibleDirections(x, y, ghost.direction);
-          const canContinue = this.grid.isWalkable(x + ghost.direction.dx, y + ghost.direction.dy);
+          // Check if continuing in the current direction is possible
+          const canContinueStraight = this.grid.isWalkable(x + ghost.direction.dx, y + ghost.direction.dy);
+          const allPossibleDirs = this.getPossibleDirections(x, y); // Get all directions, including reverse for dead-end check
+          const nonReversePossibleDirs = allPossibleDirs.filter(
+            dir => !(dir.dx === -ghost.direction!.dx && dir.dy === -ghost.direction!.dy)
+          );
 
           // Change direction if we hit a wall or at an intersection (more than 1 choice besides going back)
-          if (!canContinue || possibleDirs.length > 1) {
+          if (!canContinueStraight || nonReversePossibleDirs.length > 1) {
             // Only change if we are actually close to the center to avoid "jitter"
             ghost.x = x;
             ghost.y = y;
@@ -223,7 +228,7 @@ export class GameState implements IGameState {
     ];
 
     return dirs.filter(dir => {
-      // Don't allow immediate reversal unless it's the only option
+      // Don't allow immediate reversal
       if (currentDir && dir.dx === -currentDir.dx && dir.dy === -currentDir.dy) {
         return false;
       }
@@ -240,9 +245,7 @@ export class GameState implements IGameState {
       // If no other way, allow reversal
       if (ghost.direction) {
         const reverseDir = { dx: -ghost.direction.dx, dy: -ghost.direction.dy };
-        if (this.grid.isWalkable(x + reverseDir.dx, y + reverseDir.dy)) {
-          possibleDirs = [reverseDir];
-        }
+        possibleDirs = [reverseDir]; // Force reversal
       }
     }
 
@@ -250,8 +253,6 @@ export class GameState implements IGameState {
       const newDir = possibleDirs[Math.floor(Math.random() * possibleDirs.length)]!;
       ghost.direction = newDir;
       ghost.rotation = Math.atan2(newDir.dy, newDir.dx);
-    } else {
-      ghost.direction = { dx: 0, dy: 0 };
     }
   }
 

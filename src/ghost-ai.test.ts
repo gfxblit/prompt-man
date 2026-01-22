@@ -93,10 +93,18 @@ describe('Ghost AI', () => {
     ghost.y = 1;
     ghost.direction = { dx: 1, dy: 0 };
     
-    // We want to test many times to ensure randomness doesn't favor reversal
-    for (let i = 0; i < 20; i++) {
-      state.updateGhosts(0); // 0 deltaTime means it stays at center but re-evaluates direction
-      expect(ghost.direction).not.toEqual({ dx: -1, dy: 0 });
-    }
+    // Mock random to always choose the last option (if it were allowed to reverse, 
+    // it would be one of the options)
+    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    state.updateGhosts(0);
+    expect(ghost.direction).not.toEqual({ dx: -1, dy: 0 });
+
+    // Reset and try another mock value
+    ghost.direction = { dx: 1, dy: 0 };
+    vi.spyOn(Math, 'random').mockReturnValue(0.01);
+    state.updateGhosts(0);
+    expect(ghost.direction).not.toEqual({ dx: -1, dy: 0 });
+
+    vi.restoreAllMocks();
   });
 });
