@@ -1,4 +1,4 @@
-import { Direction, Entity, IGrid } from './types.js';
+import type { Direction, Entity, IGrid } from './types.js';
 
 export class GhostAI {
   /**

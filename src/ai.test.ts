@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { GhostAI } from './ghost-ai.js';
 import { Grid } from './grid.js';
-import { EntityType, Direction } from './types.js';
+import { EntityType, type Direction } from './types.js';
 
 describe('GhostAI', () => {
   const grid = Grid.fromString(`
