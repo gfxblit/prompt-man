@@ -82,22 +82,17 @@ describe('Renderer', () => {
     expect(mockContext.fillRect).toHaveBeenCalledWith(0, 0, TILE_SIZE, TILE_SIZE);
   });
 
-  it('should NOT render a Pellet if it is eaten', () => {
+  it.each([
+    { useSpritesheet: false },
+    { useSpritesheet: true },
+  ])('should NOT render a Pellet if it is eaten (spritesheet: $useSpritesheet)', ({ useSpritesheet }) => {
     vi.mocked(mockState.isPelletEaten).mockReturnValue(true);
+    const mockSpritesheet = useSpritesheet ? { width: 1024, height: 1024 } as HTMLImageElement : undefined;
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D, mockSpritesheet);
+    
     const grid = new Grid(1, 1);
     grid.setTile(0, 0, TileType.Pellet);
 
-    // Case 1: No spritesheet
-    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
-    renderer.render(grid, mockState, 0);
-    expect(mockContext.fill).not.toHaveBeenCalled();
-    expect(mockContext.drawImage).not.toHaveBeenCalled();
-
-    // Case 2: With spritesheet
-    vi.clearAllMocks();
-    vi.mocked(mockState.isPelletEaten).mockReturnValue(true);
-    const mockSpritesheet = { width: 1024, height: 1024 } as HTMLImageElement;
-    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D, mockSpritesheet);
     renderer.render(grid, mockState, 0);
     expect(mockContext.fill).not.toHaveBeenCalled();
     expect(mockContext.drawImage).not.toHaveBeenCalled();
