@@ -279,41 +279,24 @@ describe('Renderer', () => {
     expect(mockContext.fill).toHaveBeenCalledTimes(2);
   });
 
-  it('should NOT render a PowerPellet when it is in the "off" phase of blinking', () => {
+  it.each([
+    { type: TileType.Pellet, time: PELLET_BLINK_RATE, expected: false },
+    { type: TileType.Pellet, time: 0, expected: true },
+    { type: TileType.PowerPellet, time: PELLET_BLINK_RATE, expected: false },
+    { type: TileType.PowerPellet, time: 0, expected: true },
+  ])('should render $type correctly at time $time', ({ type, time, expected }) => {
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
     const grid = new Grid(1, 1);
-    grid.setTile(0, 0, TileType.PowerPellet);
+    grid.setTile(0, 0, type);
 
-    // PELLET_BLINK_RATE is "off" phase
-    renderer.render(grid, mockState, PELLET_BLINK_RATE);
+    renderer.render(grid, mockState, time);
 
-    expect(mockContext.fill).not.toHaveBeenCalled();
-  });
-
-  it('should render a PowerPellet when it is in the "on" phase of blinking', () => {
-    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
-    const grid = new Grid(1, 1);
-    grid.setTile(0, 0, TileType.PowerPellet);
-
-    // 0ms is "on" phase
-    renderer.render(grid, mockState, 0);
-
-    expect(mockContext.fill).toHaveBeenCalled();
-  });
-
-  it('should NOT render a regular Pellet when it is in the "off" phase of blinking', () => {
-    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
-    const grid = new Grid(1, 1);
-    grid.setTile(0, 0, TileType.Pellet);
-
-    // PELLET_BLINK_RATE is "off" phase
-    renderer.render(grid, mockState, PELLET_BLINK_RATE);
-
-    // If spritesheet is mocked or not available, it calls arc and fill
-    // If spritesheet is available, it calls drawImage
-    // We need to ensure neither is called when not visible
-    expect(mockContext.fill).not.toHaveBeenCalled();
-    expect(mockContext.drawImage).not.toHaveBeenCalled();
+    if (expected) {
+      expect(mockContext.fill).toHaveBeenCalled();
+    } else {
+      expect(mockContext.fill).not.toHaveBeenCalled();
+      expect(mockContext.drawImage).not.toHaveBeenCalled();
+    }
   });
 });
 
