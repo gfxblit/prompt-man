@@ -371,9 +371,11 @@ export const STATIC_SPRITE_MAP = {
 
 /**
  * Pixel size of a single quadrant in the sprite sheet.
+ * These are 8px to match the asset dimensions in the palette sheet.
  */
 export const SOURCE_QUADRANT_SIZE = 8;
 /**
  * Pixel size of a full tile in the sprite sheet.
+ * These are 8px to match the asset dimensions in the palette sheet.
  */
 export const SOURCE_TILE_SIZE = 8;
