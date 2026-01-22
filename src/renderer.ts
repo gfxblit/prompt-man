@@ -172,7 +172,7 @@ export class Renderer implements IRenderer {
 
   /**
    * Draws an image from the spritesheet, accounting for padding and origin.
-   * @param sSize Total size of the sprite in the palette including the 1px padding (e.g. 9px).
+   * @param sSize The effective size of the sprite content (e.g. 8px).
    */
   private drawImageFromSpritesheet(
     sRow: number,
@@ -186,10 +186,10 @@ export class Renderer implements IRenderer {
     if (!this.spritesheet) return;
     this.ctx.drawImage(
       this.spritesheet,
-      PALETTE_ORIGIN_X + (sCol * sSize) + PALETTE_PADDING_X,
-      PALETTE_ORIGIN_Y + (sRow * sSize) + PALETTE_PADDING_Y,
-      sSize - PALETTE_PADDING_X,
-      sSize - PALETTE_PADDING_Y,
+      PALETTE_ORIGIN_X + sCol * (sSize + PALETTE_PADDING_X) + PALETTE_PADDING_X,
+      PALETTE_ORIGIN_Y + sRow * (sSize + PALETTE_PADDING_Y) + PALETTE_PADDING_Y,
+      sSize,
+      sSize,
       dX,
       dY,
       dWidth,
