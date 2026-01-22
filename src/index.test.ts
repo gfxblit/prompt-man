@@ -65,6 +65,9 @@ describe('index', () => {
     // Mock container
     container = {
       appendChild: vi.fn(),
+      classList: {
+        add: vi.fn(),
+      },
     } as unknown as HTMLElement;
 
     // Mock requestAnimationFrame
@@ -108,7 +111,7 @@ describe('index', () => {
     expect(canvas.getContext).toHaveBeenCalledWith('2d');
     
     // Check for border classes
-    expect(canvas.classList.add).toHaveBeenCalledWith('border-2', 'border-gray-600');
+    expect(canvas.classList.add).toHaveBeenCalledWith('game-canvas', 'border-2', 'border-gray-600');
     
     // Check if render was called (by checking context calls)
     // The grid is non-empty, so it should clear rect and draw something
@@ -162,7 +165,7 @@ describe('index', () => {
 
     expect(document.createElement).toHaveBeenCalledWith('canvas');
     expect(container.appendChild).toHaveBeenCalledWith(canvas);
-    expect(canvas.classList.add).toHaveBeenCalledWith('border-2', 'border-gray-600');
+    expect(canvas.classList.add).toHaveBeenCalledWith('game-canvas', 'border-2', 'border-gray-600');
     expect(canvas.getContext).toHaveBeenCalledWith('2d');
     
     expect(context.clearRect).toHaveBeenCalled();
