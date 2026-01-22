@@ -37,11 +37,11 @@ export interface Entity {
   /** Vertical position in grid coordinates. */
   y: number;
   /** Optional movement direction. */
-  direction?: Direction;
+  direction?: Direction | undefined;
   /** Optional rotation in radians for rendering. */
-  rotation?: number;
+  rotation?: number | undefined;
   /** Optional CSS color string for rendering. */
-  color?: string;
+  color?: string | undefined;
 }
 
 /**

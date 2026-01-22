@@ -10,8 +10,12 @@ export class GameState implements IGameState {
   private eatenPellets: Set<string> = new Set();
   private readonly HIGH_SCORE_KEY = 'prompt-man-high-score';
   private nextDirection: Direction | null = null;
+  private readonly width: number;
+  private readonly height: number;
 
   constructor(private grid: IGrid) {
+    this.width = grid.getWidth();
+    this.height = grid.getHeight();
     this.initialize();
   }
 
@@ -86,6 +90,13 @@ export class GameState implements IGameState {
     }
   }
 
+  private getWrappedCoordinate(val: number, max: number): number {
+    if (max <= 0) {
+      return val;
+    }
+    return (val % max + max) % max;
+  }
+
   updatePacman(direction: Direction, deltaTime: number = 0): void {
     const pacman = this.entities.find(e => e.type === EntityType.Pacman);
     if (!pacman) return;
@@ -124,16 +135,20 @@ export class GameState implements IGameState {
         const canTurn = (nextDir.dx !== 0 && alignedY) || (nextDir.dy !== 0 && alignedX);
 
         if (canTurn) {
-          const targetX = Math.round(pacman.x) + nextDir.dx;
-          const targetY = Math.round(pacman.y) + nextDir.dy;
+          let targetX = Math.round(pacman.x) + nextDir.dx;
+          let targetY = Math.round(pacman.y) + nextDir.dy;
+
+          // Wrap target coordinates for walkability check
+          targetX = this.getWrappedCoordinate(targetX, this.width);
+          targetY = this.getWrappedCoordinate(targetY, this.height);
 
           if (this.grid.isWalkable(targetX, targetY)) {
             moveDir = nextDir;
             this.nextDirection = null; // Consumed
 
             // Snap to center of the lane we are leaving
-            if (moveDir.dx !== 0) pacman.y = Math.round(pacman.y);
-            if (moveDir.dy !== 0) pacman.x = Math.round(pacman.x);
+            if (moveDir.dx !== 0) pacman.y = this.getWrappedCoordinate(Math.round(pacman.y), this.height);
+            if (moveDir.dy !== 0) pacman.x = this.getWrappedCoordinate(Math.round(pacman.x), this.width);
           }
         }
       }
@@ -152,7 +167,9 @@ export class GameState implements IGameState {
     this.moveEntity(pacman, distance);
 
     // Consume pellet at the center
-    this.consumePellet(Math.round(pacman.x), Math.round(pacman.y));
+    const consumeX = this.getWrappedCoordinate(Math.round(pacman.x), this.width);
+    const consumeY = this.getWrappedCoordinate(Math.round(pacman.y), this.height);
+    this.consumePellet(consumeX, consumeY);
   }
 
   private moveEntity(entity: Entity, distance: number): void {
@@ -164,9 +181,11 @@ export class GameState implements IGameState {
     if (dx !== 0) {
       result = this.attemptMove(entity.x, dx, distance, Math.round(entity.y), true);
       entity.x = result.pos;
+      entity.y = this.getWrappedCoordinate(entity.y, this.height);
     } else if (dy !== 0) {
       result = this.attemptMove(entity.y, dy, distance, Math.round(entity.x), false);
       entity.y = result.pos;
+      entity.x = this.getWrappedCoordinate(entity.x, this.width);
     }
 
     if (result.stopped) {
@@ -175,31 +194,38 @@ export class GameState implements IGameState {
   }
 
   private attemptMove(pos: number, dir: number, dist: number, crossPos: number, isHorizontal: boolean): { pos: number, stopped: boolean } {
+    const max = isHorizontal ? this.width : this.height;
+    if (max === 0) return { pos: 0, stopped: true };
+
+    const crossMax = isHorizontal ? this.height : this.width;
+    const wrappedCrossPos = this.getWrappedCoordinate(crossPos, crossMax);
+
     const proposed = pos + dir * dist;
-    const currentCenter = Math.round(pos);
+    const currentTile = Math.floor(pos + 0.5);
+    const proposedTile = Math.floor(proposed + 0.5);
 
     if (dir > 0) {
-      if (proposed > currentCenter) {
-        const nextTile = currentCenter + 1;
-        const tileX = isHorizontal ? nextTile : crossPos;
-        const tileY = isHorizontal ? crossPos : nextTile;
+      if (proposedTile > currentTile) {
+        const wrappedNextTile = this.getWrappedCoordinate(proposedTile, max);
+        const tileX = isHorizontal ? wrappedNextTile : wrappedCrossPos;
+        const tileY = isHorizontal ? wrappedCrossPos : wrappedNextTile;
         
         if (!this.grid.isWalkable(tileX, tileY)) {
-          return { pos: currentCenter, stopped: true };
+          return { pos: currentTile, stopped: true };
         }
       }
     } else {
-      if (proposed < currentCenter) {
-        const nextTile = currentCenter - 1;
-        const tileX = isHorizontal ? nextTile : crossPos;
-        const tileY = isHorizontal ? crossPos : nextTile;
+      if (proposedTile < currentTile) {
+        const wrappedNextTile = this.getWrappedCoordinate(proposedTile, max);
+        const tileX = isHorizontal ? wrappedNextTile : wrappedCrossPos;
+        const tileY = isHorizontal ? wrappedCrossPos : wrappedNextTile;
         
         if (!this.grid.isWalkable(tileX, tileY)) {
-          return { pos: currentCenter, stopped: true };
+          return { pos: currentTile, stopped: true };
         }
       }
     }
 
-    return { pos: proposed, stopped: false };
+    return { pos: this.getWrappedCoordinate(proposed, max), stopped: false };
   }
 }
