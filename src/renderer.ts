@@ -33,6 +33,50 @@ export class Renderer implements IRenderer {
     }
 
     this.renderEntities(state.getEntities());
+    this.renderLives(grid, state.getLives());
+
+    if (state.isGameOver()) {
+      this.renderGameOver(grid);
+    }
+  }
+
+  private renderGameOver(grid: IGrid): void {
+    const width = grid.getWidth() * TILE_SIZE;
+    const height = grid.getHeight() * TILE_SIZE;
+
+    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+    this.ctx.fillRect(0, 0, width, height);
+
+    this.ctx.fillStyle = '#ff0000';
+    this.ctx.font = 'bold 32px monospace';
+    this.ctx.textAlign = 'center';
+    this.ctx.textBaseline = 'middle';
+    this.ctx.fillText('GAME OVER', width / 2, height / 2);
+  }
+
+  private renderLives(grid: IGrid, lives: number): void {
+    const height = grid.getHeight();
+    const startX = TILE_SIZE * 2; // Start a bit offset from the left edge
+    const startY = (height - 1) * TILE_SIZE; // Bottom row
+    const gap = TILE_SIZE * 1.2;
+
+    for (let i = 0; i < lives; i++) {
+      const x = startX + i * gap + TILE_SIZE / 2;
+      const y = startY + TILE_SIZE / 2;
+
+      // Draw Pacman icon (facing right)
+      this.ctx.fillStyle = COLORS.PACMAN;
+      this.ctx.beginPath();
+      
+      const radius = TILE_SIZE / 2 - 2;
+      const startAngle = 0.2 * Math.PI;
+      const endAngle = 1.8 * Math.PI;
+      
+      this.ctx.arc(x, y, radius, startAngle, endAngle);
+      this.ctx.lineTo(x, y);
+      this.ctx.closePath();
+      this.ctx.fill();
+    }
   }
 
   private renderTile(grid: IGrid, x: number, y: number, tile: TileType): void {

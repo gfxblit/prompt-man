@@ -16,6 +16,10 @@ describe('Renderer', () => {
     closePath: ReturnType<typeof vi.fn>;
     drawImage: ReturnType<typeof vi.fn>;
     fillStyle: string;
+    fillText: ReturnType<typeof vi.fn>;
+    font: string;
+    textAlign: string;
+    textBaseline: string;
   };
   let mockState: IGameState;
   let renderer: Renderer;
@@ -31,16 +35,22 @@ describe('Renderer', () => {
       closePath: vi.fn(),
       drawImage: vi.fn(),
       fillStyle: '',
+      fillText: vi.fn(),
+      font: '',
+      textAlign: '',
+      textBaseline: '',
     };
     mockState = {
       getEntities: vi.fn().mockReturnValue([]),
       getScore: vi.fn().mockReturnValue(0),
       getHighScore: vi.fn().mockReturnValue(0),
+      getLives: vi.fn().mockReturnValue(0),
       getRemainingPellets: vi.fn().mockReturnValue(0),
       consumePellet: vi.fn(),
       isPelletEaten: vi.fn().mockReturnValue(false),
       updatePacman: vi.fn(),
       updateGhosts: vi.fn(),
+      isGameOver: vi.fn().mockReturnValue(false),
     };
   });
 
@@ -240,6 +250,33 @@ describe('Renderer', () => {
       0,
       Math.PI * 2
     );
+  });
+
+  it('should render GAME OVER when game is over', () => {
+    vi.mocked(mockState.isGameOver).mockReturnValue(true);
+    
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
+    const grid = new Grid(10, 10);
+    
+    renderer.render(grid, mockState);
+
+    expect(mockContext.fillRect).toHaveBeenCalledWith(0, 0, 10 * TILE_SIZE, 10 * TILE_SIZE);
+    expect(mockContext.fillStyle).toBe('#ff0000');
+    expect(mockContext.fillText).toHaveBeenCalledWith('GAME OVER', (10 * TILE_SIZE) / 2, (10 * TILE_SIZE) / 2);
+  });
+
+  it('should render lives as Pacman icons', () => {
+    vi.mocked(mockState.getLives).mockReturnValue(2);
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
+    const grid = new Grid(10, 10);
+
+    renderer.render(grid, mockState);
+
+    // 2 lives means 2 calls to beginPath, arc, fill (specifically for the lives)
+    // Since getEntities returns [], no other entities are drawn
+    expect(mockContext.beginPath).toHaveBeenCalledTimes(2);
+    expect(mockContext.arc).toHaveBeenCalledTimes(2);
+    expect(mockContext.fill).toHaveBeenCalledTimes(2);
   });
 });
 
