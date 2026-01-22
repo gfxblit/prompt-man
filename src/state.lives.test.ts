@@ -86,4 +86,61 @@ describe('GameState Lives and Collision', () => {
     expect(ghost.x).toBe(initialGhostX);
     expect(ghost.y).toBe(initialGhostY);
   });
+
+  it('should set gameOver to true when lives reach 0', () => {
+    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+    const ghost = state.getEntities().find(e => e.type === EntityType.Ghost)!;
+
+    // First collision: 2 -> 1 life
+    pacman.x = 2;
+    pacman.y = 1;
+    ghost.x = 2;
+    ghost.y = 1;
+    state.updatePacman({ dx: 0, dy: 0 }, 16);
+    expect(state.getLives()).toBe(1);
+    expect(state.isGameOver()).toBe(false);
+
+    // Second collision: 1 -> 0 lives
+    pacman.x = 2;
+    pacman.y = 1;
+    ghost.x = 2;
+    ghost.y = 1;
+    state.updatePacman({ dx: 0, dy: 0 }, 16);
+    expect(state.getLives()).toBe(0);
+    expect(state.isGameOver()).toBe(true);
+  });
+
+  it('should stop updating entities when gameOver is true', () => {
+    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+    const ghost = state.getEntities().find(e => e.type === EntityType.Ghost)!;
+
+    // Force game over
+    pacman.x = 2;
+    pacman.y = 1;
+    ghost.x = 2;
+    ghost.y = 1;
+    state.updatePacman({ dx: 0, dy: 0 }, 16); // 1 life left
+    
+    // Move them together again after reset
+    pacman.x = 2;
+    pacman.y = 1;
+    ghost.x = 2;
+    ghost.y = 1;
+    state.updatePacman({ dx: 0, dy: 0 }, 16); // 0 lives left, gameOver = true
+
+    expect(state.isGameOver()).toBe(true);
+
+    const posAfterGameOver = { x: pacman.x, y: pacman.y };
+    
+    // Try to move Pacman
+    state.updatePacman({ dx: 1, dy: 0 }, 16);
+    expect(pacman.x).toBe(posAfterGameOver.x);
+    expect(pacman.y).toBe(posAfterGameOver.y);
+
+    // Try to move ghosts
+    const ghostPosAfterGameOver = { x: ghost.x, y: ghost.y };
+    state.updateGhosts(16);
+    expect(ghost.x).toBe(ghostPosAfterGameOver.x);
+    expect(ghost.y).toBe(ghostPosAfterGameOver.y);
+  });
 });

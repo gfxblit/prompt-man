@@ -34,6 +34,24 @@ export class Renderer implements IRenderer {
 
     this.renderEntities(state.getEntities());
     this.renderLives(grid, state.getLives());
+
+    if (state.isGameOver()) {
+      this.renderGameOver(grid);
+    }
+  }
+
+  private renderGameOver(grid: IGrid): void {
+    const width = grid.getWidth() * TILE_SIZE;
+    const height = grid.getHeight() * TILE_SIZE;
+
+    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+    this.ctx.fillRect(0, 0, width, height);
+
+    this.ctx.fillStyle = '#ff0000';
+    this.ctx.font = 'bold 32px monospace';
+    this.ctx.textAlign = 'center';
+    this.ctx.textBaseline = 'middle';
+    this.ctx.fillText('GAME OVER', width / 2, height / 2);
   }
 
   private renderLives(grid: IGrid, lives: number): void {

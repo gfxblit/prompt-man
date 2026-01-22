@@ -15,6 +15,7 @@ export class GameState implements IGameState {
   private score: number = 0;
   private highScore: number = 0;
   private lives: number = 2;
+  private gameOver: boolean = false;
   private remainingPellets: number = 0;
   private eatenPellets: Set<string> = new Set();
   private readonly HIGH_SCORE_KEY = 'prompt-man-high-score';
@@ -89,6 +90,10 @@ export class GameState implements IGameState {
     return this.remainingPellets;
   }
 
+  isGameOver(): boolean {
+    return this.gameOver;
+  }
+
   isPelletEaten(x: number, y: number): boolean {
     return this.eatenPellets.has(`${x},${y}`);
   }
@@ -120,7 +125,7 @@ export class GameState implements IGameState {
 
   updatePacman(direction: Direction, deltaTime: number = 0): void {
     const pacman = this.entities.find(e => e.type === EntityType.Pacman);
-    if (!pacman) return;
+    if (!pacman || this.gameOver) return;
 
     // Check collisions
     this.checkCollisions(pacman);
@@ -208,8 +213,15 @@ export class GameState implements IGameState {
   }
 
   private handleCollision(): void {
+    if (this.gameOver) return;
+
     this.lives--;
-    this.resetPositions();
+    if (this.lives <= 0) {
+      this.lives = 0;
+      this.gameOver = true;
+    } else {
+      this.resetPositions();
+    }
   }
 
   private resetPositions(): void {
@@ -226,6 +238,8 @@ export class GameState implements IGameState {
   }
 
   updateGhosts(deltaTime: number): void {
+    if (this.gameOver) return;
+
     const ghosts = this.entities.filter(e => e.type === EntityType.Ghost);
     const distance = GHOST_SPEED * deltaTime;
 

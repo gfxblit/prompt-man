@@ -42,6 +42,7 @@ describe('Renderer', () => {
       isPelletEaten: vi.fn().mockReturnValue(false),
       updatePacman: vi.fn(),
       updateGhosts: vi.fn(),
+      isGameOver: vi.fn().mockReturnValue(false),
     };
   });
 
@@ -241,6 +242,26 @@ describe('Renderer', () => {
       0,
       Math.PI * 2
     );
+  });
+
+  it('should render GAME OVER when game is over', () => {
+    vi.mocked(mockState.isGameOver).mockReturnValue(true);
+    const mockCtx = mockContext as unknown as CanvasRenderingContext2D & {
+      fillText: ReturnType<typeof vi.fn>;
+      textAlign: string;
+      textBaseline: string;
+      font: string;
+    };
+    mockCtx.fillText = vi.fn();
+    
+    renderer = new Renderer(mockCtx);
+    const grid = new Grid(10, 10);
+    
+    renderer.render(grid, mockState);
+
+    expect(mockCtx.fillRect).toHaveBeenCalledWith(0, 0, 10 * TILE_SIZE, 10 * TILE_SIZE);
+    expect(mockCtx.fillStyle).toBe('#ff0000');
+    expect(mockCtx.fillText).toHaveBeenCalledWith('GAME OVER', (10 * TILE_SIZE) / 2, (10 * TILE_SIZE) / 2);
   });
 });
 

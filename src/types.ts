@@ -94,6 +94,8 @@ export interface IGameState {
   updatePacman(direction: Direction, deltaTime: number): void;
   /** Updates all Ghost entities' positions and AI. */
   updateGhosts(deltaTime: number): void;
+  /** Returns true if the game is over. */
+  isGameOver(): boolean;
 }
 
 /**
