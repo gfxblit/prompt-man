@@ -150,7 +150,7 @@ describe('GameState', () => {
     expect(pacman.x).toBe(3);
     expect(pacman.y).toBe(1);
     expect(pacman.direction).toEqual({ dx: 1, dy: 0 });
-    expect((state as any).nextDirection).toEqual({ dx: 0, dy: -1 });
+    expect(state.getBufferedDirection()).toEqual({ dx: 0, dy: -1 });
   });
 
   it('should buffer input and turn when alignment and walkability allow', () => {
@@ -184,7 +184,7 @@ describe('GameState', () => {
     expect(pacman.x).toBeCloseTo(2.0);
     expect(pacman.y).toBe(1);
     expect(pacman.direction).toEqual({ dx: 1, dy: 0 });
-    expect((state as any).nextDirection).toEqual({ dx: 0, dy: 1 });
+    expect(state.getBufferedDirection()).toEqual({ dx: 0, dy: 1 });
 
     // Request Down again (simulating holding key or just buffering persisting).
     state.updatePacman({ dx: 0, dy: 0 }, deltaTimeForOneTile);
