@@ -44,6 +44,8 @@ describe('GameState', () => {
 
   it('should count initial pellets correctly', () => {
     const state = new GameState(grid);
+    // 1 pellet at (2,1), 2 pellets at (2,2) and (3,2). Total 3 pellets.
+    // Plus 1 power pellet at (1,2). Total 4.
     expect(state.getRemainingPellets()).toBe(4);
   });
 
@@ -78,9 +80,7 @@ describe('GameState', () => {
     const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
     if (!pacman) throw new Error('Pacman not found');
     
-    // Position Pacman just before a pellet and move onto it
-    pacman.x = 1;
-    pacman.y = 1;
+    // Move Pacman to (2,1) which has a pellet
     state.updatePacman({ dx: 1, dy: 0 }, 200); // Move right, speed is 0.005 tiles/ms, so 200ms moves 1 tile
 
     expect(pacman.x).toBe(2);
@@ -95,6 +95,7 @@ describe('GameState', () => {
     if (!pacman) throw new Error('Pacman not found');
     const initialX = pacman.x;
     const initialY = pacman.y;
+    pacman.direction = { dx: 0, dy: 0 }; // Ensure starting from standstill
     
     // Move Left (1,1) -> (0,1) is wall
     state.updatePacman({ dx: -1, dy: 0 }, 100);
@@ -243,7 +244,7 @@ describe('GameState', () => {
     // 3. Move Right again. (4,1) is wall.
     state.updatePacman({ dx: 1, dy: 0 }, 200);
 
-    // After moving from x=3, pacman should stop at x=3 because x=4 is a wall.
+    // After attempting to move right from x=3, Pacman should remain at x=3 because x=4 is a wall.
     expect(pacman.x).toBe(3);
     expect(pacman.direction?.dx).toBe(0); // Should be stopped
   });

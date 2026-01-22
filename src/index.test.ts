@@ -134,7 +134,7 @@ describe('index', () => {
 
     if (!scoreEl || !highScoreEl) throw new Error('Score elements not found');
 
-    // Initial call + two loop calls from mock requestAnimationFrame
+    // Initial call + two loop calls from mocked requestAnimationFrame
     const scoreSetter = Object.getOwnPropertyDescriptor(scoreEl, 'innerText')?.set;
     const highScoreSetter = Object.getOwnPropertyDescriptor(highScoreEl, 'innerText')?.set;
     expect(scoreSetter).toHaveBeenCalledTimes(3);
