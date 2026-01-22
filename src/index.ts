@@ -72,7 +72,7 @@ export async function init(container: HTMLElement): Promise<void> {
     }
 
     if (renderer && uiRenderer) {
-      renderer.render(grid, state);
+      renderer.render(grid, state, time);
       uiRenderer.render(inputHandler.getJoystickState());
     }
     requestAnimationFrame(loop);
@@ -80,5 +80,3 @@ export async function init(container: HTMLElement): Promise<void> {
 
   requestAnimationFrame(loop);
 }
-
-  
