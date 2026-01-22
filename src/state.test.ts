@@ -48,8 +48,7 @@ describe('GameState', () => {
 
   it('should count initial pellets correctly', () => {
     const state = new GameState(grid);
-    // 1 pellet at (2,1), 2 pellets at (2,2) and (3,2). Total 3 pellets.
-    // Plus 1 power pellet at (1,2). Total 4.
+    // 3 pellets at (2,1), (2,2), (3,2) plus 1 power pellet at (1,2). Total 4.
     expect(state.getRemainingPellets()).toBe(4);
   });
 

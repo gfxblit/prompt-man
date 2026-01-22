@@ -26,15 +26,20 @@ export async function init(container: HTMLElement): Promise<void> {
   
   const scoreEl = document.createElement('div');
   scoreEl.id = 'score';
-  scoreEl.innerText = `Score: ${state.getScore()}`;
-
   const highScoreEl = document.createElement('div');
   highScoreEl.id = 'highscore';
-  highScoreEl.innerText = `High Score: ${state.getHighScore()}`;
   
   scoreContainer.appendChild(scoreEl);
   scoreContainer.appendChild(highScoreEl);
   container.appendChild(scoreContainer);
+
+  const updateScoreDisplay = () => {
+    scoreEl.innerText = `Score: ${state.getScore()}`;
+    highScoreEl.innerText = `High Score: ${state.getHighScore()}`;
+  };
+
+  // Initial UI update
+  updateScoreDisplay();
 
   const canvas = document.createElement('canvas');
   canvas.width = grid.getWidth() * TILE_SIZE;
@@ -61,15 +66,10 @@ export async function init(container: HTMLElement): Promise<void> {
 
     // Update score display only if changed
     const currentScore = state.getScore();
-    if (currentScore !== lastScore) {
-      scoreEl.innerText = `Score: ${currentScore}`;
+    if (currentScore !== lastScore || state.getHighScore() !== lastHighScore) {
+      updateScoreDisplay();
       lastScore = currentScore;
-    }
-
-    const currentHighScore = state.getHighScore();
-    if (currentHighScore !== lastHighScore) {
-      highScoreEl.innerText = `High Score: ${currentHighScore}`;
-      lastHighScore = currentHighScore;
+      lastHighScore = state.getHighScore();
     }
 
     if (renderer && uiRenderer) {
