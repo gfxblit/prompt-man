@@ -36,6 +36,14 @@ describe('Issue #42: iPhone portrait mode cropping', () => {
       },
     } as unknown as HTMLCanvasElement;
 
+    // Mock container
+    container = {
+      appendChild: vi.fn(),
+      classList: {
+        add: vi.fn(),
+      },
+    } as unknown as HTMLElement;
+
     // Mock document
     vi.stubGlobal('document', {
       createElement: vi.fn((tagName: string) => {
@@ -55,11 +63,6 @@ describe('Issue #42: iPhone portrait mode cropping', () => {
         };
       }),
     });
-
-    // Mock container
-    container = {
-      appendChild: vi.fn(),
-    } as unknown as HTMLElement;
 
     // Mock requestAnimationFrame
     vi.stubGlobal('requestAnimationFrame', vi.fn());
@@ -85,5 +88,20 @@ describe('Issue #42: iPhone portrait mode cropping', () => {
     const allAddedClasses = addSpy.mock.calls.flat();
     
     expect(allAddedClasses).toContain('game-canvas');
+  });
+
+  it('should apply responsive classes to the container for mobile centering', async () => {
+    setupMockImage();
+    await init(container);
+
+    const addSpy = container.classList.add as unknown as { mock: { calls: string[][] } };
+    const allAddedClasses = addSpy.mock.calls.flat();
+    
+    expect(allAddedClasses).toContain('flex');
+    expect(allAddedClasses).toContain('flex-col');
+    expect(allAddedClasses).toContain('items-center');
+    expect(allAddedClasses).toContain('justify-center');
+    expect(allAddedClasses).toContain('max-w-full');
+    expect(allAddedClasses).toContain('max-h-full');
   });
 });

@@ -65,6 +65,9 @@ describe('index', () => {
     // Mock container
     container = {
       appendChild: vi.fn(),
+      classList: {
+        add: vi.fn(),
+      },
     } as unknown as HTMLElement;
 
     // Mock requestAnimationFrame
