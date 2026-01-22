@@ -89,12 +89,15 @@ describe('Renderer', () => {
     renderer.render(grid, mockState, 0);
 
     expect(mockContext.fillStyle).toBe(COLORS.PELLET);
-    expect(mockContext.fillRect).toHaveBeenCalledWith(
-      TILE_SIZE / 2 - 1,
-      TILE_SIZE / 2 - 1,
-      2,
-      2
+    expect(mockContext.beginPath).toHaveBeenCalled();
+    expect(mockContext.arc).toHaveBeenCalledWith(
+      TILE_SIZE / 2,
+      TILE_SIZE / 2,
+      1,
+      0,
+      Math.PI * 2
     );
+    expect(mockContext.fill).toHaveBeenCalled();
   });
 
   it('should NOT render a Pellet if it is eaten', () => {
@@ -106,12 +109,8 @@ describe('Renderer', () => {
 
     renderer.render(grid, mockState, 0);
 
-    expect(mockContext.fillRect).not.toHaveBeenCalledWith(
-      TILE_SIZE / 2 - 1,
-      TILE_SIZE / 2 - 1,
-      2,
-      2
-    );
+    expect(mockContext.fill).not.toHaveBeenCalled();
+    expect(mockContext.drawImage).not.toHaveBeenCalled();
   });
 
   it('should render a PowerPellet as a large peach circle', () => {
@@ -235,11 +234,12 @@ describe('Renderer', () => {
     expect(mockContext.fillRect).toHaveBeenCalledWith(0, 0, TILE_SIZE, TILE_SIZE);
 
     // Pellet at (1,0)
-    expect(mockContext.fillRect).toHaveBeenCalledWith(
-      TILE_SIZE + TILE_SIZE / 2 - 1,
-      TILE_SIZE / 2 - 1,
-      2,
-      2
+    expect(mockContext.arc).toHaveBeenCalledWith(
+      TILE_SIZE + TILE_SIZE / 2,
+      TILE_SIZE / 2,
+      1,
+      0,
+      Math.PI * 2
     );
 
     // PowerPellet at (0,1)
@@ -309,12 +309,11 @@ describe('Renderer', () => {
     // PELLET_BLINK_RATE is "off" phase
     renderer.render(grid, mockState, PELLET_BLINK_RATE);
 
-    expect(mockContext.fillRect).not.toHaveBeenCalledWith(
-      TILE_SIZE / 2 - 1,
-      TILE_SIZE / 2 - 1,
-      2,
-      2
-    );
+    // If spritesheet is mocked or not available, it calls arc and fill
+    // If spritesheet is available, it calls drawImage
+    // We need to ensure neither is called when not visible
+    expect(mockContext.fill).not.toHaveBeenCalled();
+    expect(mockContext.drawImage).not.toHaveBeenCalled();
   });
 });
 
