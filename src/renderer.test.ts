@@ -81,25 +81,6 @@ describe('Renderer', () => {
     expect(mockContext.fillRect).toHaveBeenCalledWith(0, 0, TILE_SIZE, TILE_SIZE);
   });
 
-  it('should render a Pellet as a small peach dot', () => {
-    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
-    const grid = new Grid(1, 1);
-    grid.setTile(0, 0, TileType.Pellet);
-
-    renderer.render(grid, mockState, 0);
-
-    expect(mockContext.fillStyle).toBe(COLORS.PELLET);
-    expect(mockContext.beginPath).toHaveBeenCalled();
-    expect(mockContext.arc).toHaveBeenCalledWith(
-      TILE_SIZE / 2,
-      TILE_SIZE / 2,
-      1,
-      0,
-      Math.PI * 2
-    );
-    expect(mockContext.fill).toHaveBeenCalled();
-  });
-
   it('should NOT render a Pellet if it is eaten', () => {
     vi.mocked(mockState.isPelletEaten).mockReturnValue(true);
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
@@ -111,25 +92,6 @@ describe('Renderer', () => {
 
     expect(mockContext.fill).not.toHaveBeenCalled();
     expect(mockContext.drawImage).not.toHaveBeenCalled();
-  });
-
-  it('should render a PowerPellet as a large peach circle', () => {
-    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
-    const grid = new Grid(1, 1);
-    grid.setTile(0, 0, TileType.PowerPellet);
-
-    renderer.render(grid, mockState, 0);
-
-    expect(mockContext.fillStyle).toBe(COLORS.PELLET);
-    expect(mockContext.beginPath).toHaveBeenCalled();
-    expect(mockContext.arc).toHaveBeenCalledWith(
-      TILE_SIZE / 2,
-      TILE_SIZE / 2,
-      3,
-      0,
-      Math.PI * 2
-    );
-    expect(mockContext.fill).toHaveBeenCalled();
   });
 
   it('should clear the canvas before rendering', () => {
@@ -280,19 +242,40 @@ describe('Renderer', () => {
   });
 
   it.each([
-    { type: TileType.Pellet, time: PELLET_BLINK_RATE, expected: false },
-    { type: TileType.Pellet, time: 0, expected: true },
-    { type: TileType.PowerPellet, time: PELLET_BLINK_RATE, expected: false },
-    { type: TileType.PowerPellet, time: 0, expected: true },
-  ])('should render $type correctly at time $time', ({ type, time, expected }) => {
-    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
+    // No spritesheet
+    { type: TileType.Pellet, time: 0, expected: true, isPower: false, useSpritesheet: false },
+    { type: TileType.Pellet, time: PELLET_BLINK_RATE, expected: false, isPower: false, useSpritesheet: false },
+    { type: TileType.PowerPellet, time: 0, expected: true, isPower: true, useSpritesheet: false },
+    { type: TileType.PowerPellet, time: PELLET_BLINK_RATE, expected: false, isPower: true, useSpritesheet: false },
+    // With spritesheet
+    { type: TileType.Pellet, time: 0, expected: true, isPower: false, useSpritesheet: true },
+    { type: TileType.Pellet, time: PELLET_BLINK_RATE, expected: false, isPower: false, useSpritesheet: true },
+    { type: TileType.PowerPellet, time: 0, expected: true, isPower: true, useSpritesheet: true },
+    { type: TileType.PowerPellet, time: PELLET_BLINK_RATE, expected: false, isPower: true, useSpritesheet: true },
+  ])('should render $type at time $time (spritesheet: $useSpritesheet)', ({ type, time, expected, isPower, useSpritesheet }) => {
+    const mockSpritesheet = useSpritesheet ? {} as HTMLImageElement : undefined;
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D, mockSpritesheet);
     const grid = new Grid(1, 1);
     grid.setTile(0, 0, type);
 
     renderer.render(grid, mockState, time);
 
     if (expected) {
-      expect(mockContext.fill).toHaveBeenCalled();
+      if (useSpritesheet) {
+        expect(mockContext.drawImage).toHaveBeenCalled();
+        expect(mockContext.fill).not.toHaveBeenCalled();
+      } else {
+        expect(mockContext.fillStyle).toBe(COLORS.PELLET);
+        expect(mockContext.beginPath).toHaveBeenCalled();
+        expect(mockContext.arc).toHaveBeenCalledWith(
+          TILE_SIZE / 2,
+          TILE_SIZE / 2,
+          isPower ? 3 : 1,
+          0,
+          Math.PI * 2
+        );
+        expect(mockContext.fill).toHaveBeenCalled();
+      }
     } else {
       expect(mockContext.fill).not.toHaveBeenCalled();
       expect(mockContext.drawImage).not.toHaveBeenCalled();

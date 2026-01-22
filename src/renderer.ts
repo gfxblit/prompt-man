@@ -119,13 +119,10 @@ export class Renderer implements IRenderer {
 
     if (this.spritesheet) {
       const sprite = isPower ? STATIC_SPRITE_MAP.POWER_PELLET : STATIC_SPRITE_MAP.PELLET;
-      const [row, col] = sprite;
-      this.ctx.drawImage(
-        this.spritesheet,
-        PALETTE_ORIGIN_X + (col * SOURCE_TILE_SIZE) + PALETTE_PADDING_X,
-        PALETTE_ORIGIN_Y + (row * SOURCE_TILE_SIZE) + PALETTE_PADDING_Y,
-        SOURCE_TILE_SIZE - PALETTE_PADDING_X,
-        SOURCE_TILE_SIZE - PALETTE_PADDING_Y,
+      this.drawImageFromSpritesheet(
+        sprite[0],
+        sprite[1],
+        SOURCE_TILE_SIZE,
         screenX,
         screenY,
         TILE_SIZE,
@@ -160,12 +157,10 @@ export class Renderer implements IRenderer {
         const coord = quadrantRow[col as 0 | 1];
         const [sRow, sCol] = coord;
 
-        this.ctx.drawImage(
-          this.spritesheet,
-          PALETTE_ORIGIN_X + (sCol * SOURCE_QUADRANT_SIZE) + PALETTE_PADDING_X,
-          PALETTE_ORIGIN_Y + (sRow * SOURCE_QUADRANT_SIZE) + PALETTE_PADDING_Y,
-          SOURCE_QUADRANT_SIZE - PALETTE_PADDING_X,
-          SOURCE_QUADRANT_SIZE - PALETTE_PADDING_Y,
+        this.drawImageFromSpritesheet(
+          sRow,
+          sCol,
+          SOURCE_QUADRANT_SIZE,
           screenX + col * renderQuadrantSize,
           screenY + row * renderQuadrantSize,
           renderQuadrantSize,
@@ -173,6 +168,29 @@ export class Renderer implements IRenderer {
         );
       }
     }
+  }
+
+  private drawImageFromSpritesheet(
+    sRow: number,
+    sCol: number,
+    sSize: number,
+    dX: number,
+    dY: number,
+    dWidth: number,
+    dHeight: number
+  ): void {
+    if (!this.spritesheet) return;
+    this.ctx.drawImage(
+      this.spritesheet,
+      PALETTE_ORIGIN_X + (sCol * sSize) + PALETTE_PADDING_X,
+      PALETTE_ORIGIN_Y + (sRow * sSize) + PALETTE_PADDING_Y,
+      sSize - PALETTE_PADDING_X,
+      sSize - PALETTE_PADDING_Y,
+      dX,
+      dY,
+      dWidth,
+      dHeight
+    );
   }
 
   private renderEntities(entities: Entity[]): void {
