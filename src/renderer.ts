@@ -10,7 +10,7 @@ export class Renderer implements IRenderer {
     private spritesheet?: HTMLImageElement
   ) { }
 
-  render(grid: IGrid, state: IGameState, time: number = 0): void {
+  render(grid: IGrid, state: IGameState, time: number): void {
     const width = grid.getWidth();
     const height = grid.getHeight();
 
@@ -170,6 +170,10 @@ export class Renderer implements IRenderer {
     }
   }
 
+  /**
+   * Draws an image from the spritesheet, accounting for padding and origin.
+   * @param sSize Total size of the sprite in the palette including the 1px padding (e.g. 9px).
+   */
   private drawImageFromSpritesheet(
     sRow: number,
     sCol: number,
