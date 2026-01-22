@@ -38,7 +38,7 @@ export async function init(container: HTMLElement): Promise<void> {
   const canvas = document.createElement('canvas');
   canvas.width = grid.getWidth() * TILE_SIZE;
   canvas.height = grid.getHeight() * TILE_SIZE;
-  canvas.classList.add('border-2', 'border-gray-600');
+  canvas.classList.add('game-canvas', 'border-2', 'border-gray-600');
   container.appendChild(canvas);
 
   inputHandler.setTargetElement(canvas);
