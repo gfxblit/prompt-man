@@ -248,12 +248,12 @@ describe('Renderer', () => {
   it.each([
     // No spritesheet
     { type: TileType.Pellet, time: 0, expected: true, isPower: false, useSpritesheet: false },
-    { type: TileType.Pellet, time: PELLET_BLINK_RATE, expected: false, isPower: false, useSpritesheet: false },
+    { type: TileType.Pellet, time: PELLET_BLINK_RATE, expected: true, isPower: false, useSpritesheet: false },
     { type: TileType.PowerPellet, time: 0, expected: true, isPower: true, useSpritesheet: false },
     { type: TileType.PowerPellet, time: PELLET_BLINK_RATE, expected: false, isPower: true, useSpritesheet: false },
     // With spritesheet
     { type: TileType.Pellet, time: 0, expected: true, isPower: false, useSpritesheet: true },
-    { type: TileType.Pellet, time: PELLET_BLINK_RATE, expected: false, isPower: false, useSpritesheet: true },
+    { type: TileType.Pellet, time: PELLET_BLINK_RATE, expected: true, isPower: false, useSpritesheet: true },
     { type: TileType.PowerPellet, time: 0, expected: true, isPower: true, useSpritesheet: true },
     { type: TileType.PowerPellet, time: PELLET_BLINK_RATE, expected: false, isPower: true, useSpritesheet: true },
   ])('should render $type at time $time (spritesheet: $useSpritesheet)', ({ type, time, expected, isPower, useSpritesheet }) => {

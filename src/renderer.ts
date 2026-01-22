@@ -111,8 +111,10 @@ export class Renderer implements IRenderer {
   }
 
   private renderPellet(x: number, y: number, isPower: boolean, time: number): void {
-    const isVisible = Math.floor(time / PELLET_BLINK_RATE) % 2 === 0;
-    if (!isVisible) return;
+    if (isPower) {
+      const isVisible = Math.floor(time / PELLET_BLINK_RATE) % 2 === 0;
+      if (!isVisible) return;
+    }
 
     const screenX = x * TILE_SIZE;
     const screenY = y * TILE_SIZE;
