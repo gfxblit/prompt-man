@@ -134,11 +134,11 @@ describe('index', () => {
 
     if (!scoreEl || !highScoreEl) throw new Error('Score elements not found');
 
-    // Initial call + two loop calls from mocked requestAnimationFrame
+    // Initial call (loop calls skipped because score hasn't changed)
     const scoreSetter = Object.getOwnPropertyDescriptor(scoreEl, 'innerText')?.set;
     const highScoreSetter = Object.getOwnPropertyDescriptor(highScoreEl, 'innerText')?.set;
-    expect(scoreSetter).toHaveBeenCalledTimes(3);
-    expect(highScoreSetter).toHaveBeenCalledTimes(3);
+    expect(scoreSetter).toHaveBeenCalledTimes(1);
+    expect(highScoreSetter).toHaveBeenCalledTimes(1);
     
     // We expect exactly 3 divs: container, score, highscore
     // Actually implementation detail might vary, but let's assume structure:

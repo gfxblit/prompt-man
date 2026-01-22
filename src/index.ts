@@ -43,28 +43,76 @@ export async function init(container: HTMLElement): Promise<void> {
 
   inputHandler.setTargetElement(canvas);
 
-  const ctx = canvas.getContext('2d');
-  if (ctx) {
-    const renderer = new Renderer(ctx, palette);
-    const uiRenderer = new UIRenderer(ctx);
-    
-    let lastTime = performance.now();
+    const ctx = canvas.getContext('2d');
 
-    const loop = (time: number) => {
-      const deltaTime = time - lastTime;
-      lastTime = time;
+    if (ctx) {
 
-      state.updatePacman(inputHandler.getDirection(), deltaTime);
+      const renderer = new Renderer(ctx, palette);
+
+      const uiRenderer = new UIRenderer(ctx);
+
       
-      // Update score display
-      scoreEl.innerText = `Score: ${state.getScore()}`;
-      highScoreEl.innerText = `High Score: ${state.getHighScore()}`;
-      
-      renderer.render(grid, state);
-      uiRenderer.render(inputHandler.getJoystickState());
+
+      let lastTime = performance.now();
+
+      let lastScore = state.getScore();
+
+      let lastHighScore = state.getHighScore();
+
+  
+
+      const loop = (time: number) => {
+
+        const deltaTime = time - lastTime;
+
+        lastTime = time;
+
+  
+
+        state.updatePacman(inputHandler.getDirection(), deltaTime);
+
+        
+
+        // Update score display only if changed
+
+        const currentScore = state.getScore();
+
+        if (currentScore !== lastScore) {
+
+          scoreEl.innerText = `Score: ${currentScore}`;
+
+          lastScore = currentScore;
+
+        }
+
+  
+
+        const currentHighScore = state.getHighScore();
+
+        if (currentHighScore !== lastHighScore) {
+
+          highScoreEl.innerText = `High Score: ${currentHighScore}`;
+
+          lastHighScore = currentHighScore;
+
+        }
+
+        
+
+        renderer.render(grid, state);
+
+        uiRenderer.render(inputHandler.getJoystickState());
+
+        requestAnimationFrame(loop);
+
+      };
+
+  
+
       requestAnimationFrame(loop);
-    };
 
-    requestAnimationFrame(loop);
+    }
+
   }
-}
+
+  

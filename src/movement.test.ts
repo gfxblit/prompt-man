@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { GameState } from './state.js';
 import { Grid } from './grid.js';
 import { EntityType } from './types.js';
+import { PACMAN_SPEED } from './config.js';
 
 describe('Movement - Wrapping', () => {
   const horizontalTemplate = `
@@ -17,6 +18,8 @@ describe('Movement - Wrapping', () => {
 #.#
 #.#
   `.trim();
+
+  const deltaTimeForOneTile = 1 / PACMAN_SPEED;
 
   const setup = (template: string) => {
     const grid = Grid.fromString(template);
@@ -49,8 +52,7 @@ describe('Movement - Wrapping', () => {
     expect(pacman.x).toBe(4);
     
     // Now move Right again. Should wrap to (0,1).
-    // deltaTime = 200ms with speed 5/1000 = 1 tile
-    state.updatePacman({ dx: 1, dy: 0 }, 200);
+    state.updatePacman({ dx: 1, dy: 0 }, deltaTimeForOneTile);
     
     expect(pacman.x).toBe(0);
     expect(pacman.y).toBe(1);
@@ -65,7 +67,7 @@ describe('Movement - Wrapping', () => {
     expect(pacman.x).toBe(0);
     
     // Now move Left again. Should wrap to (4,1).
-    state.updatePacman({ dx: -1, dy: 0 }, 200);
+    state.updatePacman({ dx: -1, dy: 0 }, deltaTimeForOneTile);
     
     expect(pacman.x).toBe(4);
     expect(pacman.y).toBe(1);
@@ -80,7 +82,7 @@ describe('Movement - Wrapping', () => {
     expect(pacman.y).toBe(4);
     
     // Now move Down again. Should wrap to (1,0).
-    state.updatePacman({ dx: 0, dy: 1 }, 200);
+    state.updatePacman({ dx: 0, dy: 1 }, deltaTimeForOneTile);
     
     expect(pacman.x).toBe(1);
     expect(pacman.y).toBe(0);
@@ -93,34 +95,33 @@ describe('Movement - Wrapping', () => {
     expect(pacman.y).toBe(0);
     
     // Now move Up. Should wrap to (1,4).
-    state.updatePacman({ dx: 0, dy: -1 }, 200);
+    state.updatePacman({ dx: 0, dy: -1 }, deltaTimeForOneTile);
     
     expect(pacman.x).toBe(1);
     expect(pacman.y).toBe(4);
   });
 
   it('should not wrap around if the destination is a wall', () => {
-    const blockedTemplate = `
+    // Case 1: Wrap Left from 0 to 4, where 4 is a wall.
+    const blockedLeftTemplate = `
+.P..#
 #####
-#P..#
 #####
     `.trim();
-    const { state, pacman } = setup(blockedTemplate);
+    const { state: stateL, pacman: pacmanL } = setup(blockedLeftTemplate);
+    pacmanL.x = 0;
+    stateL.updatePacman({ dx: -1, dy: 0 }, deltaTimeForOneTile);
+    expect(pacmanL.x).toBe(0);
     
-    // Move to (1,1) - already there.
-    // Try to move Left. (0,1) is a wall. Wrapped destination (4,1) is a wall.
-    state.updatePacman({ dx: -1, dy: 0 }, 200);
-    
-    expect(pacman.x).toBe(1);
-    expect(pacman.y).toBe(1);
-    
-    // Move to (3,1)
-    pacman.x = 3;
-    pacman.y = 1;
-    expect(pacman.x).toBe(3);
-    
-    // Try to move Right. (4,1) is a wall. Wrapped destination (0,1) is a wall.
-    state.updatePacman({ dx: 1, dy: 0 }, 200);
-    expect(pacman.x).toBe(3);
+    // Case 2: Wrap Right from 4 to 0, where 0 is a wall.
+    const blockedRightTemplate = `
+#..P.
+#####
+#####
+    `.trim();
+    const { state: stateR, pacman: pacmanR } = setup(blockedRightTemplate);
+    pacmanR.x = 4;
+    stateR.updatePacman({ dx: 1, dy: 0 }, deltaTimeForOneTile);
+    expect(pacmanR.x).toBe(4);
   });
 });
