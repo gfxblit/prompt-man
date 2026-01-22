@@ -56,6 +56,7 @@ export async function init(container: HTMLElement): Promise<void> {
     lastTime = time;
 
     state.updatePacman(inputHandler.getDirection(), deltaTime);
+    state.updateGhosts(deltaTime);
 
     // Update score display only if changed
     const currentScore = state.getScore();
@@ -71,6 +72,11 @@ export async function init(container: HTMLElement): Promise<void> {
     }
 
     if (renderer && uiRenderer) {
+      renderer.render(grid, state);
+      uiRenderer.render(inputHandler.getJoystickState());
+    }
+    requestAnimationFrame(loop);
+  };
       renderer.render(grid, state);
       uiRenderer.render(inputHandler.getJoystickState());
     }

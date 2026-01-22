@@ -90,6 +90,8 @@ export interface IGameState {
   isPelletEaten(x: number, y: number): boolean;
   /** Updates Pacman's position based on a direction and elapsed time. */
   updatePacman(direction: Direction, deltaTime: number): void;
+  /** Updates all Ghost entities' positions and AI. */
+  updateGhosts(deltaTime: number): void;
 }
 
 /**

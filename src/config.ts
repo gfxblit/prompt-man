@@ -7,6 +7,8 @@ export const PELLET_SCORE = 10;
 export const POWER_PELLET_SCORE = 50;
 /** Pacman speed in tiles per millisecond. */
 export const PACMAN_SPEED = 5 / 1000;
+/** Ghost speed in tiles per millisecond. */
+export const GHOST_SPEED = 4 / 1000;
 
 /**
  * Assets configuration
@@ -34,6 +36,7 @@ export const COLORS = {
   PELLET: 'peachpuff',
   PACMAN: 'yellow',
   GHOST_DEFAULT: 'red',
+  GHOST_COLORS: ['red', 'pink', 'cyan', 'orange'],
 } as const;
 
 /**
