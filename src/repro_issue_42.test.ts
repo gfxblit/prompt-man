@@ -97,11 +97,6 @@ describe('Issue #42: iPhone portrait mode cropping', () => {
     const addSpy = container.classList.add as unknown as { mock: { calls: string[][] } };
     const allAddedClasses = addSpy.mock.calls.flat();
     
-    expect(allAddedClasses).toContain('flex');
-    expect(allAddedClasses).toContain('flex-col');
-    expect(allAddedClasses).toContain('items-center');
-    expect(allAddedClasses).toContain('justify-center');
-    expect(allAddedClasses).toContain('max-w-full');
-    expect(allAddedClasses).toContain('max-h-full');
+    expect(allAddedClasses).toContain('game-container-responsive');
   });
 });

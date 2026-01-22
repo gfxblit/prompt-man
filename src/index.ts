@@ -6,7 +6,7 @@ import { TILE_SIZE, LEVEL_TEMPLATE, PALETTE_URL } from './config.js';
 import { AssetLoader } from './assets.js';
 
 export async function init(container: HTMLElement): Promise<void> {
-  container.classList.add('flex', 'flex-col', 'items-center', 'justify-center', 'max-w-full', 'max-h-full');
+  container.classList.add('game-container-responsive');
   const assetLoader = new AssetLoader();
   let palette: HTMLImageElement | undefined;
 
