@@ -77,11 +77,6 @@ export async function init(container: HTMLElement): Promise<void> {
     }
     requestAnimationFrame(loop);
   };
-      renderer.render(grid, state);
-      uiRenderer.render(inputHandler.getJoystickState());
-    }
-    requestAnimationFrame(loop);
-  };
 
   requestAnimationFrame(loop);
 }
