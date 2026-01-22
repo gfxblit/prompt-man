@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { GameState } from './state.js';
 import { Grid } from './grid.js';
-import { EntityType, TileType } from './types.js';
+import { EntityType } from './types.js';
 
 describe('Issue #20 - Reaching edge with no wall', () => {
   beforeEach(() => {
