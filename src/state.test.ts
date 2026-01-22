@@ -150,6 +150,7 @@ describe('GameState', () => {
     expect(pacman.x).toBe(3);
     expect(pacman.y).toBe(1);
     expect(pacman.direction).toEqual({ dx: 1, dy: 0 });
+    expect((state as any).nextDirection).toEqual({ dx: 0, dy: -1 });
   });
 
   it('should buffer input and turn when alignment and walkability allow', () => {
@@ -183,6 +184,7 @@ describe('GameState', () => {
     expect(pacman.x).toBeCloseTo(2.0);
     expect(pacman.y).toBe(1);
     expect(pacman.direction).toEqual({ dx: 1, dy: 0 });
+    expect((state as any).nextDirection).toEqual({ dx: 0, dy: 1 });
 
     // Request Down again (simulating holding key or just buffering persisting).
     state.updatePacman({ dx: 0, dy: 0 }, deltaTimeForOneTile);
@@ -250,6 +252,6 @@ describe('GameState', () => {
 
     // After attempting to move right from x=3, Pacman should remain at x=3 because x=4 is a wall.
     expect(pacman.x).toBe(3);
-    expect(pacman.direction?.dx).toBe(0); // Should be stopped
+    expect(pacman.direction).toEqual({ dx: 0, dy: 0 });
   });
 });

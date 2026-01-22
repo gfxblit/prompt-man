@@ -60,7 +60,7 @@ describe('Renderer', () => {
   });
 
   it('should render Wall using autotiling when spritesheet is provided', () => {
-    const mockSpritesheet = {} as HTMLImageElement;
+    const mockSpritesheet = { width: 10, height: 10 } as HTMLImageElement;
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D, mockSpritesheet);
     
     const grid = Grid.fromString('#');
@@ -83,13 +83,21 @@ describe('Renderer', () => {
 
   it('should NOT render a Pellet if it is eaten', () => {
     vi.mocked(mockState.isPelletEaten).mockReturnValue(true);
-    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
-    
     const grid = new Grid(1, 1);
     grid.setTile(0, 0, TileType.Pellet);
 
+    // Case 1: No spritesheet
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
     renderer.render(grid, mockState, 0);
+    expect(mockContext.fill).not.toHaveBeenCalled();
+    expect(mockContext.drawImage).not.toHaveBeenCalled();
 
+    // Case 2: With spritesheet
+    vi.clearAllMocks();
+    vi.mocked(mockState.isPelletEaten).mockReturnValue(true);
+    const mockSpritesheet = { width: 10, height: 10 } as HTMLImageElement;
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D, mockSpritesheet);
+    renderer.render(grid, mockState, 0);
     expect(mockContext.fill).not.toHaveBeenCalled();
     expect(mockContext.drawImage).not.toHaveBeenCalled();
   });
@@ -253,7 +261,7 @@ describe('Renderer', () => {
     { type: TileType.PowerPellet, time: 0, expected: true, isPower: true, useSpritesheet: true },
     { type: TileType.PowerPellet, time: PELLET_BLINK_RATE, expected: false, isPower: true, useSpritesheet: true },
   ])('should render $type at time $time (spritesheet: $useSpritesheet)', ({ type, time, expected, isPower, useSpritesheet }) => {
-    const mockSpritesheet = useSpritesheet ? {} as HTMLImageElement : undefined;
+    const mockSpritesheet = useSpritesheet ? { width: 10, height: 10 } as HTMLImageElement : undefined;
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D, mockSpritesheet);
     const grid = new Grid(1, 1);
     grid.setTile(0, 0, type);

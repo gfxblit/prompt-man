@@ -124,7 +124,7 @@ export interface IRenderer {
    * @param state The current game state including entities and eaten pellets.
    * @param time The current game time in milliseconds.
    */
-  render(grid: IGrid, state: IGameState, time?: number): void;
+  render(grid: IGrid, state: IGameState, time: number): void;
 }
 
 /**

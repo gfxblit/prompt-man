@@ -168,22 +168,29 @@ export class GameState implements IGameState {
           targetY = this.getWrappedCoordinate(targetY, this.height);
 
           if (this.grid.isWalkable(targetX, targetY)) {
+            // Snap to center of the lane we are entering
+            if (nextDir.dx !== 0) pacman.y = Math.round(pacman.y);
+            if (nextDir.dy !== 0) pacman.x = Math.round(pacman.x);
+
             moveDir = nextDir;
             this.nextDirection = null; // Consumed
-
-            // Snap to center of the lane we are leaving
-            if (moveDir.dx !== 0) pacman.y = this.getWrappedCoordinate(Math.round(pacman.y), this.height);
-            if (moveDir.dy !== 0) pacman.x = this.getWrappedCoordinate(Math.round(pacman.x), this.width);
           }
         }
       }
     }
 
     // Set the direction on entity
+    const prevDirection = pacman.direction;
     pacman.direction = moveDir;
 
     // Stop if no direction
-    if (moveDir.dx === 0 && moveDir.dy === 0) return;
+    if (moveDir.dx === 0 && moveDir.dy === 0) {
+      // Preserve rotation if stopped
+      if (prevDirection && (prevDirection.dx !== 0 || prevDirection.dy !== 0)) {
+        pacman.rotation = Math.atan2(prevDirection.dy, prevDirection.dx);
+      }
+      return;
+    }
 
     // Update rotation
     pacman.rotation = Math.atan2(moveDir.dy, moveDir.dx);

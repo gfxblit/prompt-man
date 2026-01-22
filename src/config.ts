@@ -11,6 +11,8 @@ export const PACMAN_SPEED = 5 / 1000;
 export const GHOST_SPEED = 4 / 1000;
 /** Alignment tolerance for turning (in tiles). */
 export const ALIGNMENT_TOLERANCE = 0.05;
+/** The blink rate for pellets in milliseconds. */
+export const PELLET_BLINK_RATE = 250;
 
 /**
  * Assets configuration
@@ -29,7 +31,6 @@ export const PALETTE_PADDING_Y = 1;
  * Rendering configuration
  */
 export const TILE_SIZE = 18;
-export const PELLET_BLINK_RATE = 250; // ms
 
 /**
  * Game color palette
