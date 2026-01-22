@@ -40,6 +40,7 @@ describe('Renderer', () => {
       consumePellet: vi.fn(),
       isPelletEaten: vi.fn().mockReturnValue(false),
       updatePacman: vi.fn(),
+      updateGhosts: vi.fn(),
     };
   });
 

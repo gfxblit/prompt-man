@@ -40,12 +40,12 @@ export class GameState implements IGameState {
     const ghostSpawns = this.grid.findTiles(TileType.GhostSpawn);
     const ghostColors = COLORS.GHOST_COLORS;
     for (let i = 0; i < ghostSpawns.length; i++) {
-      const spawn = ghostSpawns[i];
+      const spawn = ghostSpawns[i]!;
       this.entities.push({
         type: EntityType.Ghost,
         x: spawn.x,
         y: spawn.y,
-        color: ghostColors[i % ghostColors.length],
+        color: ghostColors[i % ghostColors.length]!,
       });
     }
 
@@ -247,7 +247,7 @@ export class GameState implements IGameState {
     }
 
     if (possibleDirs.length > 0) {
-      const newDir = possibleDirs[Math.floor(Math.random() * possibleDirs.length)];
+      const newDir = possibleDirs[Math.floor(Math.random() * possibleDirs.length)]!;
       ghost.direction = newDir;
       ghost.rotation = Math.atan2(newDir.dy, newDir.dx);
     } else {
