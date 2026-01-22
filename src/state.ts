@@ -8,6 +8,7 @@ import {
   ALIGNMENT_TOLERANCE,
   COLORS,
 } from './config.js';
+import { GhostAI } from './ghost-ai.js';
 
 export class GameState implements IGameState {
   private entities: Entity[] = [];
@@ -237,23 +238,14 @@ export class GameState implements IGameState {
   }
 
   private chooseGhostDirection(ghost: Entity): void {
-    const x = Math.round(ghost.x);
-    const y = Math.round(ghost.y);
-    let possibleDirs = this.getPossibleDirections(x, y, ghost.direction);
+    const pacman = this.entities.find(e => e.type === EntityType.Pacman);
+    const target = pacman 
+      ? { x: Math.round(pacman.x), y: Math.round(pacman.y) }
+      : { x: Math.round(ghost.x), y: Math.round(ghost.y) };
 
-    if (possibleDirs.length === 0) {
-      // If no other way, allow reversal
-      if (ghost.direction) {
-        const reverseDir = { dx: -ghost.direction.dx, dy: -ghost.direction.dy };
-        possibleDirs = [reverseDir]; // Force reversal
-      }
-    }
-
-    if (possibleDirs.length > 0) {
-      const newDir = possibleDirs[Math.floor(Math.random() * possibleDirs.length)]!;
-      ghost.direction = newDir;
-      ghost.rotation = Math.atan2(newDir.dy, newDir.dx);
-    }
+    const newDir = GhostAI.pickDirection(ghost, target, this.grid);
+    ghost.direction = newDir;
+    ghost.rotation = Math.atan2(newDir.dy, newDir.dx);
   }
 
   private moveEntity(entity: Entity, distance: number): void {

@@ -108,4 +108,39 @@ describe('Ghost AI', () => {
 
     vi.restoreAllMocks();
   });
+
+  it('should move ghosts towards Pacman using Manhattan distance', () => {
+    const chaseTemplate = `
+#######
+#G....#
+#.....#
+#....P#
+#######
+    `.trim();
+    // G is at (1,1), P is at (5,3)
+    const customGrid = Grid.fromString(chaseTemplate);
+    const state = new GameState(customGrid);
+    const ghost = state.getEntities().find(e => e.type === EntityType.Ghost)!;
+    
+    // Starting at (1,1), possible moves are:
+    // Right (2,1) -> Manhattan to (5,3): |5-2| + |3-1| = 3 + 2 = 5
+    // Down (1,2) -> Manhattan to (5,3): |5-1| + |3-2| = 4 + 1 = 5
+    // Both are equal, let's say it picks the first one in list (Up, Left, Down, Right)
+    // Wait, the list is [Up, Left, Down, Right].
+    // At (1,1):
+    // Up (1,0) - Wall
+    // Left (0,1) - Wall
+    // Down (1,2) - Walkable
+    // Right (2,1) - Walkable
+    
+    state.updateGhosts(0); // Trigger direction picking
+    
+    // It should pick either Down or Right. 
+    // In our implementation, we pick the first one that has the minimum distance.
+    // Down (1,2) has distance 5.
+    // Right (2,1) has distance 5.
+    // Since Down comes before Right in the list, it should pick Down.
+    
+    expect(ghost.direction).toEqual({ dx: 0, dy: 1 });
+  });
 });
