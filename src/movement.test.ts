@@ -94,5 +94,29 @@ describe('Movement - Wrapping', () => {
     expect(pacman.x).toBe(1);
     expect(pacman.y).toBe(4);
   });
+
+  it('should not wrap around if the destination is a wall', () => {
+    const blockedTemplate = `
+#####
+#P..#
+#####
+    `.trim();
+    const { state, pacman } = setup(blockedTemplate);
+    
+    // Move to (1,1) - already there.
+    // Try to move Left. (0,1) is a wall. Wrapped destination (4,1) is a wall.
+    state.updatePacman({ dx: -1, dy: 0 });
+    
+    expect(pacman.x).toBe(1);
+    expect(pacman.y).toBe(1);
+    
+    // Move to (3,1)
+    state.movePacman(3, 1);
+    expect(pacman.x).toBe(3);
+    
+    // Try to move Right. (4,1) is a wall. Wrapped destination (0,1) is a wall.
+    state.updatePacman({ dx: 1, dy: 0 });
+    expect(pacman.x).toBe(3);
+  });
 });
 
