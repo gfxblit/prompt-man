@@ -9,7 +9,7 @@ export const POWER_PELLET_SCORE = 50;
 export const PACMAN_SPEED = 5 / 1000;
 /** Ghost speed in tiles per millisecond. */
 export const GHOST_SPEED = 4 / 1000;
-/** A small tolerance to check for grid alignment. */
+/** Alignment tolerance for turning (in tiles). */
 export const ALIGNMENT_TOLERANCE = 0.05;
 
 /**
