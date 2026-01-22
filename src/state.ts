@@ -113,10 +113,8 @@ export class GameState implements IGameState {
       // 2. Check for Turn (Requires alignment and walkability)
       else {
         // A small tolerance to check for grid alignment. This prevents floating point
-        // inaccuracies from breaking the turning logic. The tolerance should be at 
-        // least half of the maximum expected per-frame movement distance to prevent 
-        // skipping the alignment point on low-framerate devices.
-        const ALIGNMENT_TOLERANCE = Math.max(0.05, distance / 2);
+        // inaccuracies from breaking the turning logic.
+        const ALIGNMENT_TOLERANCE = 0.05; // A small, fixed tolerance
 
         // We need to be aligned on the axis perpendicular to the NEW direction.
         // E.g. to turn Up (dy=-1), we must be aligned on X.
@@ -178,27 +176,26 @@ export class GameState implements IGameState {
 
   private attemptMove(pos: number, dir: number, dist: number, crossPos: number, isHorizontal: boolean): { pos: number, stopped: boolean } {
     const proposed = pos + dir * dist;
+    const currentCenter = Math.round(pos);
 
     if (dir > 0) {
-      const boundary = Math.floor(pos);
-      // If we cross or reach the boundary to the next tile
-      if (proposed >= boundary + 1) {
-        const tileX = isHorizontal ? boundary + 1 : crossPos;
-        const tileY = isHorizontal ? crossPos : boundary + 1;
+      if (proposed > currentCenter) {
+        const nextTile = currentCenter + 1;
+        const tileX = isHorizontal ? nextTile : crossPos;
+        const tileY = isHorizontal ? crossPos : nextTile;
         
         if (!this.grid.isWalkable(tileX, tileY)) {
-          return { pos: boundary + 1, stopped: true };
+          return { pos: currentCenter, stopped: true };
         }
       }
     } else {
-      const boundary = Math.floor(pos);
-      // If we cross or reach the boundary to the previous tile
-      if (proposed <= boundary) {
-        const tileX = isHorizontal ? boundary - 1 : crossPos;
-        const tileY = isHorizontal ? crossPos : boundary - 1;
+      if (proposed < currentCenter) {
+        const nextTile = currentCenter - 1;
+        const tileX = isHorizontal ? nextTile : crossPos;
+        const tileY = isHorizontal ? crossPos : nextTile;
         
         if (!this.grid.isWalkable(tileX, tileY)) {
-          return { pos: boundary, stopped: true };
+          return { pos: currentCenter, stopped: true };
         }
       }
     }
