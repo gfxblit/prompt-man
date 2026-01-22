@@ -1,20 +1,38 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { GameState } from './state.js';
 import { Grid } from './grid.js';
 import { EntityType } from './types.js';
 
 describe('Movement - Wrapping', () => {
-  it('should wrap around from right edge to left edge', () => {
-    // 5 wide (0-4). Row 1 is empty.
-    const template = `
+  const horizontalTemplate = `
 #####
  P.. 
 #####
-    `.trim();
-    // P is at (1,1).
-    // Width is 5.
-    
-    const grid = Grid.fromString(template);
+  `.trim();
+
+  const verticalTemplate = `
+#P#
+#.#
+#.#
+#.#
+#.#
+  `.trim();
+
+  beforeEach(() => {
+    vi.stubGlobal('localStorage', {
+      getItem: vi.fn(),
+      setItem: vi.fn(),
+      clear: vi.fn(),
+    });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('should wrap around from right edge to left edge', () => {
+    // 5 wide (0-4).
+    const grid = Grid.fromString(horizontalTemplate);
     const state = new GameState(grid);
     const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
     
@@ -31,12 +49,7 @@ describe('Movement - Wrapping', () => {
 
   it('should wrap around from left edge to right edge', () => {
      // 5 wide (0-4).
-    const template = `
-#####
- P.. 
-#####
-    `.trim();
-    const grid = Grid.fromString(template);
+    const grid = Grid.fromString(horizontalTemplate);
     const state = new GameState(grid);
     const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
     
@@ -52,17 +65,8 @@ describe('Movement - Wrapping', () => {
   });
 
   it('should wrap around from bottom edge to top edge', () => {
-    // 5 high (0-4). Column 1 is empty.
-    const template = `
-#P#
-#.#
-#.#
-#.#
-#.#
-    `.trim();
-    // P is at (1,0), so we move it to the bottom first. Height is 5.
-    
-    const grid = Grid.fromString(template);
+    // 5 high (0-4).
+    const grid = Grid.fromString(verticalTemplate);
     const state = new GameState(grid);
     const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
     
@@ -78,17 +82,8 @@ describe('Movement - Wrapping', () => {
   });
 
   it('should wrap around from top edge to bottom edge', () => {
-    // 5 high (0-4). Column 1 is empty.
-    const template = `
-#P#
-#.#
-#.#
-#.#
-#.#
-    `.trim();
-    // P starts at (1,0). Height is 5.
-    
-    const grid = Grid.fromString(template);
+    // 5 high (0-4).
+    const grid = Grid.fromString(verticalTemplate);
     const state = new GameState(grid);
     const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
     
@@ -102,3 +97,4 @@ describe('Movement - Wrapping', () => {
     expect(pacman.y).toBe(4);
   });
 });
+

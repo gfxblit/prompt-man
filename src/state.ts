@@ -10,8 +10,12 @@ export class GameState implements IGameState {
   private eatenPellets: Set<string> = new Set();
   private readonly HIGH_SCORE_KEY = 'prompt-man-high-score';
   private nextDirection: Direction | null = null;
+  private width: number;
+  private height: number;
 
   constructor(private grid: IGrid) {
+    this.width = grid.getWidth();
+    this.height = grid.getHeight();
     this.initialize();
   }
 
@@ -132,8 +136,8 @@ export class GameState implements IGameState {
           let targetY = Math.round(pacman.y) + nextDir.dy;
 
           // Wrap target coordinates for walkability check
-          targetX = this.getWrappedCoordinate(targetX, this.grid.getWidth());
-          targetY = this.getWrappedCoordinate(targetY, this.grid.getHeight());
+          targetX = this.getWrappedCoordinate(targetX, this.width);
+          targetY = this.getWrappedCoordinate(targetY, this.height);
 
           if (this.grid.isWalkable(targetX, targetY)) {
             moveDir = nextDir;
@@ -160,8 +164,8 @@ export class GameState implements IGameState {
     this.moveEntity(pacman, distance);
 
     // Consume pellet at the center
-    const consumeX = this.getWrappedCoordinate(Math.round(pacman.x), this.grid.getWidth());
-    const consumeY = this.getWrappedCoordinate(Math.round(pacman.y), this.grid.getHeight());
+    const consumeX = this.getWrappedCoordinate(Math.round(pacman.x), this.width);
+    const consumeY = this.getWrappedCoordinate(Math.round(pacman.y), this.height);
     this.consumePellet(consumeX, consumeY);
   }
 
@@ -187,7 +191,7 @@ export class GameState implements IGameState {
   private attemptMove(pos: number, dir: number, dist: number, crossPos: number, isHorizontal: boolean): { pos: number, stopped: boolean } {
     const proposed = pos + dir * dist;
     const currentCenter = Math.round(pos);
-    const max = isHorizontal ? this.grid.getWidth() : this.grid.getHeight();
+    const max = isHorizontal ? this.width : this.height;
 
     if (dir > 0) {
       if (proposed > currentCenter) {
