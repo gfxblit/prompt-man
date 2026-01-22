@@ -14,12 +14,14 @@ export class GameState implements IGameState {
   private entities: Entity[] = [];
   private score: number = 0;
   private highScore: number = 0;
+  private lives: number = 2;
   private remainingPellets: number = 0;
   private eatenPellets: Set<string> = new Set();
   private readonly HIGH_SCORE_KEY = 'prompt-man-high-score';
   private nextDirection: Direction | null = null;
   private readonly width: number;
   private readonly height: number;
+  private initialPositions: Map<Entity, { x: number, y: number }> = new Map();
 
   constructor(private grid: IGrid) {
     this.width = grid.getWidth();
@@ -37,11 +39,13 @@ export class GameState implements IGameState {
     // Find Pacman spawn
     const pacmanSpawns = this.grid.findTiles(TileType.PacmanSpawn);
     for (const spawn of pacmanSpawns) {
-      this.entities.push({
+      const pacman: Entity = {
         type: EntityType.Pacman,
         x: spawn.x,
         y: spawn.y,
-      });
+      };
+      this.entities.push(pacman);
+      this.initialPositions.set(pacman, { x: spawn.x, y: spawn.y });
     }
 
     // Find Ghost spawns
@@ -49,12 +53,14 @@ export class GameState implements IGameState {
     const ghostColors = COLORS.GHOST_COLORS;
     for (let i = 0; i < ghostSpawns.length; i++) {
       const spawn = ghostSpawns[i]!;
-      this.entities.push({
+      const ghost: Entity = {
         type: EntityType.Ghost,
         x: spawn.x,
         y: spawn.y,
         color: ghostColors[i % ghostColors.length]!,
-      });
+      };
+      this.entities.push(ghost);
+      this.initialPositions.set(ghost, { x: spawn.x, y: spawn.y });
     }
 
     // Count pellets
@@ -69,6 +75,10 @@ export class GameState implements IGameState {
 
   getScore(): number {
     return this.score;
+  }
+
+  getLives(): number {
+    return this.lives;
   }
 
   getHighScore(): number {
@@ -111,6 +121,9 @@ export class GameState implements IGameState {
   updatePacman(direction: Direction, deltaTime: number = 0): void {
     const pacman = this.entities.find(e => e.type === EntityType.Pacman);
     if (!pacman) return;
+
+    // Check collisions
+    this.checkCollisions(pacman);
 
     // Update intended direction if input is provided
     if (direction.dx !== 0 || direction.dy !== 0) {
@@ -177,6 +190,39 @@ export class GameState implements IGameState {
     const consumeX = this.getWrappedCoordinate(Math.round(pacman.x), this.width);
     const consumeY = this.getWrappedCoordinate(Math.round(pacman.y), this.height);
     this.consumePellet(consumeX, consumeY);
+  }
+
+  private checkCollisions(pacman: Entity): void {
+    const ghosts = this.entities.filter(e => e.type === EntityType.Ghost);
+    for (const ghost of ghosts) {
+      const dist = Math.sqrt(
+        Math.pow(pacman.x - ghost.x, 2) + Math.pow(pacman.y - ghost.y, 2)
+      );
+
+      // Collision threshold: roughly overlapping (less than 1 tile usually, let's say 0.5)
+      if (dist < 0.5) {
+        this.handleCollision();
+        break;
+      }
+    }
+  }
+
+  private handleCollision(): void {
+    this.lives--;
+    this.resetPositions();
+  }
+
+  private resetPositions(): void {
+    for (const entity of this.entities) {
+      const initialPos = this.initialPositions.get(entity);
+      if (initialPos) {
+        entity.x = initialPos.x;
+        entity.y = initialPos.y;
+        entity.direction = { dx: 0, dy: 0 };
+        // Reset rotation if needed, but direction reset might be enough
+      }
+    }
+    this.nextDirection = null;
   }
 
   updateGhosts(deltaTime: number): void {

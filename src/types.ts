@@ -80,6 +80,8 @@ export interface IGameState {
   getEntities(): Entity[];
   /** Returns the current player score. */
   getScore(): number;
+  /** Returns the number of lives remaining. */
+  getLives(): number;
   /** Returns the high score. */
   getHighScore(): number;
   /** Returns the total number of pellets remaining in the grid. */
