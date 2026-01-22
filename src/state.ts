@@ -158,14 +158,14 @@ export class GameState implements IGameState {
       else {
         // We need to be aligned on the axis perpendicular to the NEW direction.
         // E.g. to turn Up (dy=-1), we must be aligned on X.
-        const alignedX = Math.abs(pacman.x - Math.round(pacman.x)) < ALIGNMENT_TOLERANCE;
-        const alignedY = Math.abs(pacman.y - Math.round(pacman.y)) < ALIGNMENT_TOLERANCE;
+        const alignedX = Math.abs(pacman.x - Math.floor(pacman.x + 0.5)) < ALIGNMENT_TOLERANCE;
+        const alignedY = Math.abs(pacman.y - Math.floor(pacman.y + 0.5)) < ALIGNMENT_TOLERANCE;
         
         const canTurn = (nextDir.dx !== 0 && alignedY) || (nextDir.dy !== 0 && alignedX);
 
         if (canTurn) {
-          let targetX = Math.round(pacman.x) + nextDir.dx;
-          let targetY = Math.round(pacman.y) + nextDir.dy;
+          let targetX = Math.floor(pacman.x + 0.5) + nextDir.dx;
+          let targetY = Math.floor(pacman.y + 0.5) + nextDir.dy;
 
           // Wrap target coordinates for walkability check
           targetX = this.getWrappedCoordinate(targetX, this.width);
@@ -173,8 +173,8 @@ export class GameState implements IGameState {
 
           if (this.grid.isWalkable(targetX, targetY)) {
             // Snap to center of the lane we are entering
-            if (nextDir.dx !== 0) pacman.y = Math.round(pacman.y);
-            if (nextDir.dy !== 0) pacman.x = Math.round(pacman.x);
+            if (nextDir.dx !== 0) pacman.y = Math.floor(pacman.y + 0.5);
+            if (nextDir.dy !== 0) pacman.x = Math.floor(pacman.x + 0.5);
 
             moveDir = nextDir;
             this.nextDirection = null; // Consumed
@@ -203,8 +203,8 @@ export class GameState implements IGameState {
     this.moveEntity(pacman, distance);
 
     // Consume pellet at the center
-    const consumeX = this.getWrappedCoordinate(Math.round(pacman.x), this.width);
-    const consumeY = this.getWrappedCoordinate(Math.round(pacman.y), this.height);
+    const consumeX = this.getWrappedCoordinate(Math.floor(pacman.x + 0.5), this.width);
+    const consumeY = this.getWrappedCoordinate(Math.floor(pacman.y + 0.5), this.height);
     this.consumePellet(consumeX, consumeY);
   }
 
@@ -260,12 +260,12 @@ export class GameState implements IGameState {
         this.chooseGhostDirection(ghost);
       } else {
         // 2. If at an intersection (aligned with grid), maybe change direction
-        const isAlignedX = Math.abs(ghost.x - Math.round(ghost.x)) < ALIGNMENT_TOLERANCE;
-        const isAlignedY = Math.abs(ghost.y - Math.round(ghost.y)) < ALIGNMENT_TOLERANCE;
+        const isAlignedX = Math.abs(ghost.x - Math.floor(ghost.x + 0.5)) < ALIGNMENT_TOLERANCE;
+        const isAlignedY = Math.abs(ghost.y - Math.floor(ghost.y + 0.5)) < ALIGNMENT_TOLERANCE;
 
         if (isAlignedX && isAlignedY) {
-          const x = Math.round(ghost.x);
-          const y = Math.round(ghost.y);
+          const x = Math.floor(ghost.x + 0.5);
+          const y = Math.floor(ghost.y + 0.5);
           
           // Check if continuing in the current direction is possible
           const canContinueStraight = this.grid.isWalkable(x + ghost.direction.dx, y + ghost.direction.dy);
@@ -311,8 +311,8 @@ export class GameState implements IGameState {
   private chooseGhostDirection(ghost: Entity): void {
     const pacman = this.entities.find(e => e.type === EntityType.Pacman);
     const target = pacman 
-      ? { x: Math.round(pacman.x), y: Math.round(pacman.y) }
-      : { x: Math.round(ghost.x), y: Math.round(ghost.y) };
+      ? { x: Math.floor(pacman.x + 0.5), y: Math.floor(pacman.y + 0.5) }
+      : { x: Math.floor(ghost.x + 0.5), y: Math.floor(ghost.y + 0.5) };
 
     const newDir = GhostAI.pickDirection(ghost, target, this.grid);
     ghost.direction = newDir;
@@ -326,11 +326,11 @@ export class GameState implements IGameState {
     let result = { pos: 0, stopped: false };
 
     if (dx !== 0) {
-      result = this.attemptMove(entity.x, dx, distance, Math.round(entity.y), true);
+      result = this.attemptMove(entity.x, dx, distance, Math.floor(entity.y + 0.5), true);
       entity.x = result.pos;
       entity.y = this.getWrappedCoordinate(entity.y, this.height);
     } else if (dy !== 0) {
-      result = this.attemptMove(entity.y, dy, distance, Math.round(entity.x), false);
+      result = this.attemptMove(entity.y, dy, distance, Math.floor(entity.x + 0.5), false);
       entity.y = result.pos;
       entity.x = this.getWrappedCoordinate(entity.x, this.width);
     }

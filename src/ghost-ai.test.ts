@@ -133,14 +133,12 @@ describe('Ghost AI', () => {
     // Down (1,2) - Walkable
     // Right (2,1) - Walkable
     
+    // Mock random to pick the first option (Down)
+    vi.spyOn(Math, 'random').mockReturnValue(0.1);
     state.updateGhosts(0); // Trigger direction picking
     
     // It should pick either Down or Right. 
-    // In our implementation, we pick the first one that has the minimum distance.
-    // Down (1,2) has distance 5.
-    // Right (2,1) has distance 5.
-    // Since Down comes before Right in the list, it should pick Down.
-    
     expect(ghost.direction).toEqual({ dx: 0, dy: 1 });
+    vi.restoreAllMocks();
   });
 });
