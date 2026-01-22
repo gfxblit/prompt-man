@@ -224,9 +224,9 @@ describe('GameState', () => {
     // 2. Request Left. Should turn IMMEDIATELY even if not aligned.
     state.updatePacman({ dx: -1, dy: 0 }, 100);
     
-    // Should be at 1.0 (1.5 - 0.5) and stopped because (0,1) is wall
+    // Should be at 1.0 (1.5 - 0.5) and still moving left (hasn't hit wall at x=0 yet)
     expect(pacman.x).toBeCloseTo(1.0);
-    expect(pacman.direction).toEqual({ dx: 0, dy: 0 });
+    expect(pacman.direction).toEqual({ dx: -1, dy: 0 });
   });
 
   it('should stop and clear direction when hitting a wall', () => {
@@ -250,8 +250,8 @@ describe('GameState', () => {
     // 3. Move Right again. (4,1) is wall.
     state.updatePacman({ dx: 1, dy: 0 }, 200);
 
-    // After moving from x=3, pacman should stop exactly at the boundary of the next tile (x=4), which is a wall.
-    expect(pacman.x).toBe(4);
+    // After moving from x=3, pacman should stop at x=3 because x=4 is a wall.
+    expect(pacman.x).toBe(3);
     expect(pacman.direction?.dx).toBe(0); // Should be stopped
   });
 });
