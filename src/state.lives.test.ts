@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { GameState } from './state.js';
 import { Grid } from './grid.js';
 import { EntityType } from './types.js';
@@ -17,27 +17,30 @@ describe('GameState Lives and Collision', () => {
   beforeEach(() => {
     // Mock localStorage
     const store: Record<string, string> = {};
-    Object.defineProperty(window, 'localStorage', {
-      value: {
-        getItem: (key: string) => store[key] || null,
-        setItem: (key: string, value: string) => {
-          store[key] = value.toString();
-        },
-        removeItem: (key: string) => {
-          delete store[key];
-        },
-        clear: () => {
-          for (const key in store) delete store[key];
-        },
-        length: 0,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        key: (_index: number) => null,
+    const localStorageMock = {
+      getItem: (key: string) => store[key] || null,
+      setItem: (key: string, value: string) => {
+        store[key] = value.toString();
       },
-      writable: true
-    });
+      removeItem: (key: string) => {
+        delete store[key];
+      },
+      clear: () => {
+        for (const key in store) delete store[key];
+      },
+      length: 0,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      key: (_index: number) => null,
+    };
+    
+    vi.stubGlobal('localStorage', localStorageMock);
 
     grid = Grid.fromString(TEST_LEVEL);
     state = new GameState(grid);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   it('should start with 2 lives', () => {
