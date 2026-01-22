@@ -93,69 +93,13 @@ export class Renderer implements IRenderer {
         }
         break;
 
-      case TileType.Pellet: {
-        const isVisible = Math.floor(time / PELLET_BLINK_RATE) % 2 === 0;
-        if (!isVisible) break;
-
-        if (this.spritesheet) {
-          const [row, col] = STATIC_SPRITE_MAP.PELLET;
-          this.ctx.drawImage(
-            this.spritesheet,
-            PALETTE_ORIGIN_X + (col * SOURCE_TILE_SIZE) + PALETTE_PADDING_X,
-            PALETTE_ORIGIN_Y + (row * SOURCE_TILE_SIZE) + PALETTE_PADDING_Y,
-            SOURCE_TILE_SIZE - PALETTE_PADDING_X,
-            SOURCE_TILE_SIZE - PALETTE_PADDING_Y,
-            screenX,
-            screenY,
-            TILE_SIZE,
-            TILE_SIZE
-          );
-        } else {
-          this.ctx.fillStyle = COLORS.PELLET;
-          this.ctx.beginPath();
-          this.ctx.arc(
-            screenX + TILE_SIZE / 2,
-            screenY + TILE_SIZE / 2,
-            1,
-            0,
-            Math.PI * 2
-          );
-          this.ctx.fill();
-        }
+      case TileType.Pellet:
+        this.renderPellet(x, y, false, time);
         break;
-      }
 
-      case TileType.PowerPellet: {
-        const isVisible = Math.floor(time / PELLET_BLINK_RATE) % 2 === 0;
-        if (!isVisible) break;
-
-        if (this.spritesheet) {
-          const [row, col] = STATIC_SPRITE_MAP.POWER_PELLET;
-          this.ctx.drawImage(
-            this.spritesheet,
-            PALETTE_ORIGIN_X + (col * SOURCE_TILE_SIZE) + PALETTE_PADDING_X,
-            PALETTE_ORIGIN_Y + (row * SOURCE_TILE_SIZE) + PALETTE_PADDING_Y,
-            SOURCE_TILE_SIZE - PALETTE_PADDING_X,
-            SOURCE_TILE_SIZE - PALETTE_PADDING_Y,
-            screenX,
-            screenY,
-            TILE_SIZE,
-            TILE_SIZE
-          );
-        } else {
-          this.ctx.fillStyle = COLORS.PELLET;
-          this.ctx.beginPath();
-          this.ctx.arc(
-            screenX + TILE_SIZE / 2,
-            screenY + TILE_SIZE / 2,
-            3,
-            0,
-            Math.PI * 2
-          );
-          this.ctx.fill();
-        }
+      case TileType.PowerPellet:
+        this.renderPellet(x, y, true, time);
         break;
-      }
 
       case TileType.Empty:
       case TileType.PacmanSpawn:
@@ -163,6 +107,41 @@ export class Renderer implements IRenderer {
       default:
         // Do nothing for these tiles
         break;
+    }
+  }
+
+  private renderPellet(x: number, y: number, isPower: boolean, time: number): void {
+    const isVisible = Math.floor(time / PELLET_BLINK_RATE) % 2 === 0;
+    if (!isVisible) return;
+
+    const screenX = x * TILE_SIZE;
+    const screenY = y * TILE_SIZE;
+
+    if (this.spritesheet) {
+      const sprite = isPower ? STATIC_SPRITE_MAP.POWER_PELLET : STATIC_SPRITE_MAP.PELLET;
+      const [row, col] = sprite;
+      this.ctx.drawImage(
+        this.spritesheet,
+        PALETTE_ORIGIN_X + (col * SOURCE_TILE_SIZE) + PALETTE_PADDING_X,
+        PALETTE_ORIGIN_Y + (row * SOURCE_TILE_SIZE) + PALETTE_PADDING_Y,
+        SOURCE_TILE_SIZE - PALETTE_PADDING_X,
+        SOURCE_TILE_SIZE - PALETTE_PADDING_Y,
+        screenX,
+        screenY,
+        TILE_SIZE,
+        TILE_SIZE
+      );
+    } else {
+      this.ctx.fillStyle = COLORS.PELLET;
+      this.ctx.beginPath();
+      this.ctx.arc(
+        screenX + TILE_SIZE / 2,
+        screenY + TILE_SIZE / 2,
+        isPower ? 3 : 1,
+        0,
+        Math.PI * 2
+      );
+      this.ctx.fill();
     }
   }
 
