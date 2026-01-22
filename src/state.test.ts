@@ -77,10 +77,10 @@ describe('GameState', () => {
     const state = new GameState(grid);
     const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
     
-    // Manually place Pacman on a pellet for this specific test
-    pacman.x = 2;
+    // Position Pacman just before a pellet and move onto it
+    pacman.x = 1;
     pacman.y = 1;
-    state.consumePellet(2, 1);
+    state.updatePacman({ dx: 1, dy: 0 }, 200); // Move right, speed is 0.005 tiles/ms, so 200ms moves 1 tile
 
     expect(pacman.x).toBe(2);
     expect(pacman.y).toBe(1);
@@ -109,7 +109,6 @@ describe('GameState', () => {
     const initialY = pacman.y;
 
     // Move right (dx=1, dy=0) with 100ms deltaTime.
-    // Speed is 5 tiles/sec. 100ms = 0.5 tiles.
     state.updatePacman({ dx: 1, dy: 0 }, 100);
     expect(pacman.x).toBeCloseTo(initialX + 0.5);
     expect(pacman.y).toBe(initialY);
@@ -175,18 +174,7 @@ describe('GameState', () => {
     expect(pacman.y).toBe(1);
     expect(pacman.direction).toEqual({ dx: 1, dy: 0 });
 
-    // 3. Now we are at 2.0.
-    // BUT (2,2) is a WALL (###.#). Row 2: #, #, #, ., #. So col 0,1,2 are walls.
-    // Wait, let's check grid:
-    // Row 0: #####
-    // Row 1: #P..# -> (1,1)P, (2,1)., (3,1).
-    // Row 2: ###.# -> (1,2)#, (2,2)#, (3,2).
-    // So at (2,1), Down is (2,2) which is Wall.
-    // Even if aligned, we can't turn.
     // Request Down again (simulating holding key or just buffering persisting).
-    // Note: Our GameState persists buffering!
-    // So even if I pass {0,0} here, it should remember Down?
-    // Let's pass {0,0} to prove buffering works!
     state.updatePacman({ dx: 0, dy: 0 }, 200);
 
     // Should continue Right to (3,1).
@@ -200,7 +188,6 @@ describe('GameState', () => {
     // Now at (3,1).
     state.updatePacman({ dx: 0, dy: 0 }, 200);
 
-    // Should turn Down and move to (3,2).
     expect(pacman.x).toBe(3);
     expect(pacman.y).toBe(2);
     expect(pacman.direction).toEqual({ dx: 0, dy: 1 });
