@@ -18,8 +18,8 @@ export class GhostAI {
     target: { x: number; y: number },
     grid: IGrid
   ): Direction {
-    const x = Math.round(ghost.x);
-    const y = Math.round(ghost.y);
+    const x = Math.floor(ghost.x + 0.5);
+    const y = Math.floor(ghost.y + 0.5);
     
     const possibleDirs: Direction[] = [
       { dx: 0, dy: -1 }, // Up
@@ -58,17 +58,25 @@ export class GhostAI {
     }
 
     // Otherwise, pick the move that minimizes Manhattan distance to target
-    let bestDir = validMoves[0]!;
     let minDistance = Infinity;
+    let bestMoves: Direction[] = [];
 
     for (const dir of validMoves) {
       const distance = this.getManhattanDistance(x + dir.dx, y + dir.dy, target.x, target.y);
       if (distance < minDistance) {
         minDistance = distance;
-        bestDir = dir;
+        bestMoves = [dir];
+      } else if (distance === minDistance) {
+        bestMoves.push(dir);
       }
     }
 
-    return bestDir;
+    if (bestMoves.length === 1) {
+      return bestMoves[0]!;
+    }
+
+    // Tie-break with randomness
+    const randomIndex = Math.floor(Math.random() * bestMoves.length);
+    return bestMoves[randomIndex]!;
   }
 }
