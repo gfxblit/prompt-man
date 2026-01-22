@@ -112,12 +112,15 @@ export class Renderer implements IRenderer {
           );
         } else {
           this.ctx.fillStyle = COLORS.PELLET;
-          this.ctx.fillRect(
-            screenX + TILE_SIZE / 2 - 1,
-            screenY + TILE_SIZE / 2 - 1,
-            2,
-            2
+          this.ctx.beginPath();
+          this.ctx.arc(
+            screenX + TILE_SIZE / 2,
+            screenY + TILE_SIZE / 2,
+            1,
+            0,
+            Math.PI * 2
           );
+          this.ctx.fill();
         }
         break;
       }
