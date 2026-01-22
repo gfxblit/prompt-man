@@ -1,6 +1,6 @@
 import { TileType, EntityType } from './types.js';
 import type { Entity, IGrid, IRenderer, IGameState, IUIRenderer, JoystickState } from './types.js';
-import { TILE_SIZE, COLORS, PALETTE_ORIGIN_X, PALETTE_ORIGIN_Y, PALETTE_PADDING_X, PALETTE_PADDING_Y, JOYSTICK, PELLET_BLINK_RATE } from './config.js';
+import { TILE_SIZE, COLORS, PALETTE_ORIGIN_X, PALETTE_ORIGIN_Y, PALETTE_PADDING_X, PALETTE_PADDING_Y, JOYSTICK, PELLET_BLINK_RATE, UI } from './config.js';
 import { getTileMask } from './autotile.js';
 import { TILE_MAP, SOURCE_QUADRANT_SIZE, STATIC_SPRITE_MAP, SOURCE_TILE_SIZE } from './sprites.js';
 
@@ -44,11 +44,11 @@ export class Renderer implements IRenderer {
     const width = grid.getWidth() * TILE_SIZE;
     const height = grid.getHeight() * TILE_SIZE;
 
-    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+    this.ctx.fillStyle = UI.GAME_OVER_OVERLAY;
     this.ctx.fillRect(0, 0, width, height);
 
-    this.ctx.fillStyle = '#ff0000';
-    this.ctx.font = 'bold 32px monospace';
+    this.ctx.fillStyle = UI.GAME_OVER_COLOR;
+    this.ctx.font = UI.GAME_OVER_FONT;
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
     this.ctx.fillText('GAME OVER', width / 2, height / 2);
@@ -58,7 +58,7 @@ export class Renderer implements IRenderer {
     const height = grid.getHeight();
     const startX = TILE_SIZE * 2; // Start a bit offset from the left edge
     const startY = (height - 1) * TILE_SIZE; // Bottom row
-    const gap = TILE_SIZE * 1.2;
+    const gap = TILE_SIZE * UI.LIVES_GAP_FACTOR;
 
     for (let i = 0; i < lives; i++) {
       const x = startX + i * gap + TILE_SIZE / 2;
@@ -69,8 +69,8 @@ export class Renderer implements IRenderer {
       this.ctx.beginPath();
       
       const radius = TILE_SIZE / 2 - 2;
-      const startAngle = 0.2 * Math.PI;
-      const endAngle = 1.8 * Math.PI;
+      const startAngle = UI.PACMAN_ARC_START;
+      const endAngle = UI.PACMAN_ARC_END;
       
       this.ctx.arc(x, y, radius, startAngle, endAngle);
       this.ctx.lineTo(x, y);
@@ -214,8 +214,8 @@ export class Renderer implements IRenderer {
         
         const rotation = entity.rotation ?? 0;
         
-        const startAngle = 0.2 * Math.PI + rotation;
-        const endAngle = 1.8 * Math.PI + rotation;
+        const startAngle = UI.PACMAN_ARC_START + rotation;
+        const endAngle = UI.PACMAN_ARC_END + rotation;
         
         this.ctx.arc(screenX, screenY, TILE_SIZE / 2 - 1, startAngle, endAngle);
         this.ctx.lineTo(screenX, screenY);

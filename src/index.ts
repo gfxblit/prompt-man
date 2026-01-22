@@ -59,8 +59,17 @@ export async function init(container: HTMLElement): Promise<void> {
   inputHandler.setTargetElement(canvas);
 
   const ctx = canvas.getContext('2d');
-  const renderer = ctx ? new Renderer(ctx, palette) : null;
-  const uiRenderer = ctx ? new UIRenderer(ctx) : null;
+  if (!ctx) {
+    const errorEl = document.createElement('div');
+    errorEl.classList.add('text-red-500', 'font-bold', 'p-4');
+    errorEl.innerText = 'Error: Could not get 2D rendering context for canvas. Your browser may not support HTML5 Canvas.';
+    container.appendChild(errorEl);
+    console.error('Could not get 2D rendering context for canvas.');
+    return;
+  }
+
+  const renderer = new Renderer(ctx, palette);
+  const uiRenderer = new UIRenderer(ctx);
 
   let lastTime = performance.now();
 
@@ -74,10 +83,8 @@ export async function init(container: HTMLElement): Promise<void> {
     // Update score display only if changed
     updateScoreDisplay();
 
-    if (renderer && uiRenderer) {
-      renderer.render(grid, state, time);
-      uiRenderer.render(inputHandler.getJoystickState());
-    }
+    renderer.render(grid, state, time);
+    uiRenderer.render(inputHandler.getJoystickState());
     requestAnimationFrame(loop);
   };
 

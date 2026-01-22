@@ -3,7 +3,7 @@ import { Renderer, UIRenderer } from './renderer.js';
 import { Grid } from './grid.js';
 import { TileType, EntityType } from './types.js';
 import type { IGameState } from './types.js';
-import { TILE_SIZE, COLORS, PELLET_BLINK_RATE } from './config.js';
+import { TILE_SIZE, COLORS, PELLET_BLINK_RATE, UI } from './config.js';
 
 describe('Renderer', () => {
   let mockContext: {
@@ -125,8 +125,8 @@ describe('Renderer', () => {
       TILE_SIZE / 2,
       TILE_SIZE / 2,
       TILE_SIZE / 2 - 1,
-      0.2 * Math.PI,
-      1.8 * Math.PI
+      UI.PACMAN_ARC_START,
+      UI.PACMAN_ARC_END
     );
     expect(mockContext.fill).toHaveBeenCalled();
   });
@@ -146,8 +146,8 @@ describe('Renderer', () => {
 
     renderer.render(grid, mockState, 0);
 
-    const startAngle = 0.2 * Math.PI + rotation;
-    const endAngle = 1.8 * Math.PI + rotation;
+    const startAngle = UI.PACMAN_ARC_START + rotation;
+    const endAngle = UI.PACMAN_ARC_END + rotation;
 
     const lastArcCall = vi.mocked(mockContext.arc).mock.calls.find(call => call[2] === TILE_SIZE / 2 - 1);
     expect(lastArcCall).toBeDefined();

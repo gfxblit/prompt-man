@@ -22,6 +22,18 @@ export const ALIGNMENT_TOLERANCE = 0.05;
 export const PELLET_BLINK_RATE = 250;
 
 /**
+ * UI configuration
+ */
+export const UI = {
+  GAME_OVER_OVERLAY: 'rgba(0, 0, 0, 0.75)',
+  GAME_OVER_COLOR: '#ff0000',
+  GAME_OVER_FONT: 'bold 32px monospace',
+  LIVES_GAP_FACTOR: 1.2,
+  PACMAN_ARC_START: 0.2 * Math.PI,
+  PACMAN_ARC_END: 1.8 * Math.PI,
+} as const;
+
+/**
  * Assets configuration
  */
 export const PALETTE_URL = 'art/palettes.png';

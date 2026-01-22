@@ -122,7 +122,7 @@ export class GameState implements IGameState {
 
   private getWrappedCoordinate(val: number, max: number): number {
     if (max <= 0) {
-      return val;
+      throw new Error(`getWrappedCoordinate: max must be positive, got ${max}`);
     }
     return (val % max + max) % max;
   }
