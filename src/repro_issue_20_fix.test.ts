@@ -15,7 +15,7 @@ describe('GameState getWrappedCoordinate', () => {
     vi.unstubAllGlobals();
   });
 
-  it('should handle max <= 0 gracefully', () => {
+  it('should throw error for max <= 0', () => {
     const grid = Grid.fromString('');
     const state = new GameState(grid);
     const privateState = state as unknown as {
@@ -23,10 +23,10 @@ describe('GameState getWrappedCoordinate', () => {
     };
     
     // Test with max = 0
-    expect(privateState.getWrappedCoordinate(10, 0)).toBe(10);
+    expect(() => privateState.getWrappedCoordinate(10, 0)).toThrow('getWrappedCoordinate: max must be positive');
     
     // Test with max = -1
-    expect(privateState.getWrappedCoordinate(10, -1)).toBe(10);
+    expect(() => privateState.getWrappedCoordinate(10, -1)).toThrow('getWrappedCoordinate: max must be positive');
     
     // Test with normal values to ensure it still works
     expect(privateState.getWrappedCoordinate(5, 3)).toBe(2);

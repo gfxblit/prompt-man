@@ -59,13 +59,13 @@ describe('index robustness', () => {
     vi.unstubAllGlobals();
   });
 
-  it('should start the game loop even if getContext(2d) returns null', async () => {
+  it('should not start the game loop if getContext(2d) returns null', async () => {
     setupMockImage();
 
     await init(container);
 
     expect(canvas.getContext).toHaveBeenCalledWith('2d');
-    // Even if context is null, the loop should have been started via requestAnimationFrame
-    expect(requestAnimationFrame).toHaveBeenCalled();
+    // If context is null, the loop should NOT have been started via requestAnimationFrame
+    expect(requestAnimationFrame).not.toHaveBeenCalled();
   });
 });
