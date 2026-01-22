@@ -1,6 +1,6 @@
 import { TileType, EntityType } from './types.js';
 import type { Entity, IGrid, IRenderer, IGameState, IUIRenderer, JoystickState } from './types.js';
-import { TILE_SIZE, COLORS, PALETTE_ORIGIN_X, PALETTE_ORIGIN_Y, PALETTE_PADDING_X, PALETTE_PADDING_Y, JOYSTICK } from './config.js';
+import { TILE_SIZE, COLORS, PALETTE_ORIGIN_X, PALETTE_ORIGIN_Y, PALETTE_PADDING_X, PALETTE_PADDING_Y, JOYSTICK, PELLET_BLINK_RATE } from './config.js';
 import { getTileMask } from './autotile.js';
 import { TILE_MAP, SOURCE_QUADRANT_SIZE, STATIC_SPRITE_MAP, SOURCE_TILE_SIZE } from './sprites.js';
 
@@ -10,7 +10,7 @@ export class Renderer implements IRenderer {
     private spritesheet?: HTMLImageElement
   ) { }
 
-  render(grid: IGrid, state: IGameState): void {
+  render(grid: IGrid, state: IGameState, time: number = 0): void {
     const width = grid.getWidth();
     const height = grid.getHeight();
 
@@ -28,7 +28,7 @@ export class Renderer implements IRenderer {
           continue;
         }
 
-        this.renderTile(grid, x, y, tile);
+        this.renderTile(grid, x, y, tile, time);
       }
     }
 
@@ -79,7 +79,7 @@ export class Renderer implements IRenderer {
     }
   }
 
-  private renderTile(grid: IGrid, x: number, y: number, tile: TileType): void {
+  private renderTile(grid: IGrid, x: number, y: number, tile: TileType, time: number): void {
     const screenX = x * TILE_SIZE;
     const screenY = y * TILE_SIZE;
 
@@ -93,7 +93,10 @@ export class Renderer implements IRenderer {
         }
         break;
 
-      case TileType.Pellet:
+      case TileType.Pellet: {
+        const isVisible = Math.floor(time / PELLET_BLINK_RATE) % 2 === 0;
+        if (!isVisible) break;
+
         if (this.spritesheet) {
           const [row, col] = STATIC_SPRITE_MAP.PELLET;
           this.ctx.drawImage(
@@ -117,8 +120,12 @@ export class Renderer implements IRenderer {
           );
         }
         break;
+      }
 
-      case TileType.PowerPellet:
+      case TileType.PowerPellet: {
+        const isVisible = Math.floor(time / PELLET_BLINK_RATE) % 2 === 0;
+        if (!isVisible) break;
+
         if (this.spritesheet) {
           const [row, col] = STATIC_SPRITE_MAP.POWER_PELLET;
           this.ctx.drawImage(
@@ -145,6 +152,7 @@ export class Renderer implements IRenderer {
           this.ctx.fill();
         }
         break;
+      }
 
       case TileType.Empty:
       case TileType.PacmanSpawn:

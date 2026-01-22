@@ -3,7 +3,7 @@ import { Renderer, UIRenderer } from './renderer.js';
 import { Grid } from './grid.js';
 import { TileType, EntityType } from './types.js';
 import type { IGameState } from './types.js';
-import { TILE_SIZE, COLORS } from './config.js';
+import { TILE_SIZE, COLORS, PELLET_BLINK_RATE } from './config.js';
 
 describe('Renderer', () => {
   let mockContext: {
@@ -64,7 +64,7 @@ describe('Renderer', () => {
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D, mockSpritesheet);
     
     const grid = Grid.fromString('#');
-    renderer.render(grid, mockState);
+    renderer.render(grid, mockState, 0);
 
     // Should call drawImage 4 times for the 4 quadrants of the wall
     expect(mockContext.drawImage).toHaveBeenCalledTimes(4);
@@ -75,7 +75,7 @@ describe('Renderer', () => {
     const grid = new Grid(1, 1);
     grid.setTile(0, 0, TileType.Wall);
 
-    renderer.render(grid, mockState);
+    renderer.render(grid, mockState, 0);
 
     expect(mockContext.fillStyle).toBe(COLORS.WALL);
     expect(mockContext.fillRect).toHaveBeenCalledWith(0, 0, TILE_SIZE, TILE_SIZE);
@@ -86,7 +86,7 @@ describe('Renderer', () => {
     const grid = new Grid(1, 1);
     grid.setTile(0, 0, TileType.Pellet);
 
-    renderer.render(grid, mockState);
+    renderer.render(grid, mockState, 0);
 
     expect(mockContext.fillStyle).toBe(COLORS.PELLET);
     expect(mockContext.fillRect).toHaveBeenCalledWith(
@@ -104,7 +104,7 @@ describe('Renderer', () => {
     const grid = new Grid(1, 1);
     grid.setTile(0, 0, TileType.Pellet);
 
-    renderer.render(grid, mockState);
+    renderer.render(grid, mockState, 0);
 
     expect(mockContext.fillRect).not.toHaveBeenCalledWith(
       TILE_SIZE / 2 - 1,
@@ -119,7 +119,7 @@ describe('Renderer', () => {
     const grid = new Grid(1, 1);
     grid.setTile(0, 0, TileType.PowerPellet);
 
-    renderer.render(grid, mockState);
+    renderer.render(grid, mockState, 0);
 
     expect(mockContext.fillStyle).toBe(COLORS.PELLET);
     expect(mockContext.beginPath).toHaveBeenCalled();
@@ -136,7 +136,7 @@ describe('Renderer', () => {
   it('should clear the canvas before rendering', () => {
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
     const grid = new Grid(2, 2);
-    renderer.render(grid, mockState);
+    renderer.render(grid, mockState, 0);
 
     expect(mockContext.clearRect).toHaveBeenCalledWith(
       0,
@@ -152,7 +152,7 @@ describe('Renderer', () => {
     vi.mocked(mockState.getEntities).mockReturnValue(entities);
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
 
-    renderer.render(grid, mockState);
+    renderer.render(grid, mockState, 0);
 
     expect(mockContext.fillStyle).toBe(COLORS.PACMAN);
     expect(mockContext.beginPath).toHaveBeenCalled();
@@ -179,7 +179,7 @@ describe('Renderer', () => {
     vi.mocked(mockState.getEntities).mockReturnValue(entities);
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
 
-    renderer.render(grid, mockState);
+    renderer.render(grid, mockState, 0);
 
     const startAngle = 0.2 * Math.PI + rotation;
     const endAngle = 1.8 * Math.PI + rotation;
@@ -196,7 +196,7 @@ describe('Renderer', () => {
     vi.mocked(mockState.getEntities).mockReturnValue(entities);
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
 
-    renderer.render(grid, mockState);
+    renderer.render(grid, mockState, 0);
 
     expect(mockContext.fillStyle).toBe('pink');
     expect(mockContext.beginPath).toHaveBeenCalled();
@@ -216,7 +216,7 @@ describe('Renderer', () => {
     vi.mocked(mockState.getEntities).mockReturnValue(entities);
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
 
-    renderer.render(grid, mockState);
+    renderer.render(grid, mockState, 0);
 
     expect(mockContext.fillStyle).toBe(COLORS.GHOST_DEFAULT);
   });
@@ -229,7 +229,7 @@ describe('Renderer', () => {
     // o at (0,1)
     //   at (1,1)
 
-    renderer.render(grid, mockState);
+    renderer.render(grid, mockState, 0);
 
     // Wall at (0,0)
     expect(mockContext.fillRect).toHaveBeenCalledWith(0, 0, TILE_SIZE, TILE_SIZE);
@@ -258,7 +258,7 @@ describe('Renderer', () => {
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
     const grid = new Grid(10, 10);
     
-    renderer.render(grid, mockState);
+    renderer.render(grid, mockState, 0);
 
     expect(mockContext.fillRect).toHaveBeenCalledWith(0, 0, 10 * TILE_SIZE, 10 * TILE_SIZE);
     expect(mockContext.fillStyle).toBe('#ff0000');
@@ -270,13 +270,51 @@ describe('Renderer', () => {
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
     const grid = new Grid(10, 10);
 
-    renderer.render(grid, mockState);
+    renderer.render(grid, mockState, 0);
 
     // 2 lives means 2 calls to beginPath, arc, fill (specifically for the lives)
     // Since getEntities returns [], no other entities are drawn
     expect(mockContext.beginPath).toHaveBeenCalledTimes(2);
     expect(mockContext.arc).toHaveBeenCalledTimes(2);
     expect(mockContext.fill).toHaveBeenCalledTimes(2);
+  });
+
+  it('should NOT render a PowerPellet when it is in the "off" phase of blinking', () => {
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
+    const grid = new Grid(1, 1);
+    grid.setTile(0, 0, TileType.PowerPellet);
+
+    // 250ms is "off" phase if PELLET_BLINK_RATE is 250
+    renderer.render(grid, mockState, 250);
+
+    expect(mockContext.fill).not.toHaveBeenCalled();
+  });
+
+  it('should render a PowerPellet when it is in the "on" phase of blinking', () => {
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
+    const grid = new Grid(1, 1);
+    grid.setTile(0, 0, TileType.PowerPellet);
+
+    // 0ms is "on" phase
+    renderer.render(grid, mockState, 0);
+
+    expect(mockContext.fill).toHaveBeenCalled();
+  });
+
+  it('should NOT render a regular Pellet when it is in the "off" phase of blinking', () => {
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
+    const grid = new Grid(1, 1);
+    grid.setTile(0, 0, TileType.Pellet);
+
+    // 250ms is "off" phase
+    renderer.render(grid, mockState, 250);
+
+    expect(mockContext.fillRect).not.toHaveBeenCalledWith(
+      TILE_SIZE / 2 - 1,
+      TILE_SIZE / 2 - 1,
+      2,
+      2
+    );
   });
 });
 
