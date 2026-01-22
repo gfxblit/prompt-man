@@ -144,8 +144,8 @@ export class GameState implements IGameState {
             this.nextDirection = null; // Consumed
 
             // Snap to center of the lane we are leaving
-            if (moveDir.dx !== 0) pacman.y = Math.round(pacman.y);
-            if (moveDir.dy !== 0) pacman.x = Math.round(pacman.x);
+            if (moveDir.dx !== 0) pacman.y = this.getWrappedCoordinate(Math.round(pacman.y), this.height);
+            if (moveDir.dy !== 0) pacman.x = this.getWrappedCoordinate(Math.round(pacman.x), this.width);
           }
         }
       }
@@ -178,9 +178,11 @@ export class GameState implements IGameState {
     if (dx !== 0) {
       result = this.attemptMove(entity.x, dx, distance, Math.round(entity.y), true);
       entity.x = result.pos;
+      entity.y = this.getWrappedCoordinate(entity.y, this.height);
     } else if (dy !== 0) {
       result = this.attemptMove(entity.y, dy, distance, Math.round(entity.x), false);
       entity.y = result.pos;
+      entity.x = this.getWrappedCoordinate(entity.x, this.width);
     }
 
     if (result.stopped) {
@@ -189,30 +191,34 @@ export class GameState implements IGameState {
   }
 
   private attemptMove(pos: number, dir: number, dist: number, crossPos: number, isHorizontal: boolean): { pos: number, stopped: boolean } {
-    const proposed = pos + dir * dist;
-    const currentCenter = Math.round(pos);
     const max = isHorizontal ? this.width : this.height;
+    if (max === 0) return { pos: 0, stopped: true };
+
+    const crossMax = isHorizontal ? this.height : this.width;
+    const wrappedCrossPos = this.getWrappedCoordinate(crossPos, crossMax);
+
+    const proposed = pos + dir * dist;
+    const currentTile = Math.floor(pos + 0.5);
+    const proposedTile = Math.floor(proposed + 0.5);
 
     if (dir > 0) {
-      if (proposed > currentCenter) {
-        const nextTile = currentCenter + 1;
-        const wrappedNextTile = this.getWrappedCoordinate(nextTile, max);
-        const tileX = isHorizontal ? wrappedNextTile : crossPos;
-        const tileY = isHorizontal ? crossPos : wrappedNextTile;
+      if (proposedTile > currentTile) {
+        const wrappedNextTile = this.getWrappedCoordinate(proposedTile, max);
+        const tileX = isHorizontal ? wrappedNextTile : wrappedCrossPos;
+        const tileY = isHorizontal ? wrappedCrossPos : wrappedNextTile;
         
         if (!this.grid.isWalkable(tileX, tileY)) {
-          return { pos: currentCenter, stopped: true };
+          return { pos: currentTile, stopped: true };
         }
       }
     } else {
-      if (proposed < currentCenter) {
-        const nextTile = currentCenter - 1;
-        const wrappedNextTile = this.getWrappedCoordinate(nextTile, max);
-        const tileX = isHorizontal ? wrappedNextTile : crossPos;
-        const tileY = isHorizontal ? crossPos : wrappedNextTile;
+      if (proposedTile < currentTile) {
+        const wrappedNextTile = this.getWrappedCoordinate(proposedTile, max);
+        const tileX = isHorizontal ? wrappedNextTile : wrappedCrossPos;
+        const tileY = isHorizontal ? wrappedCrossPos : wrappedNextTile;
         
         if (!this.grid.isWalkable(tileX, tileY)) {
-          return { pos: currentCenter, stopped: true };
+          return { pos: currentTile, stopped: true };
         }
       }
     }
