@@ -17,21 +17,24 @@ describe('GameState Lives and Collision', () => {
   beforeEach(() => {
     // Mock localStorage
     const store: Record<string, string> = {};
-    global.localStorage = {
-      getItem: (key: string) => store[key] || null,
-      setItem: (key: string, value: string) => {
-        store[key] = value.toString();
+    Object.defineProperty(window, 'localStorage', {
+      value: {
+        getItem: (key: string) => store[key] || null,
+        setItem: (key: string, value: string) => {
+          store[key] = value.toString();
+        },
+        removeItem: (key: string) => {
+          delete store[key];
+        },
+        clear: () => {
+          for (const key in store) delete store[key];
+        },
+        length: 0,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        key: (_index: number) => null,
       },
-      removeItem: (key: string) => {
-        delete store[key];
-      },
-      clear: () => {
-        for (const key in store) delete store[key];
-      },
-      length: 0,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      key: (_index: number) => null,
-    };
+      writable: true
+    });
 
     grid = Grid.fromString(TEST_LEVEL);
     state = new GameState(grid);
