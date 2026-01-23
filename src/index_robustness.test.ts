@@ -51,18 +51,12 @@ describe('index robustness', () => {
     } as unknown as HTMLCanvasElement;
 
     // Mock document
-    let divCreationCount = 0;
+    let scoreContainerUsed = false;
     vi.stubGlobal('document', {
       createElement: vi.fn((tagName: string) => {
         if (tagName === 'canvas') return canvas;
         if (tagName === 'div') {
-          divCreationCount++;
-          if (divCreationCount === 1) return scoreContainerMock;
-          if (divCreationCount === 2) return scoreElMock;
-          if (divCreationCount === 3) return highScoreElMock;
-          
-          // Default div mock for others if needed
-          return {
+          const div = {
             id: '',
             classList: { add: vi.fn() },
             appendChild: vi.fn(),
@@ -70,6 +64,32 @@ describe('index robustness', () => {
             get innerText() { return this._innerText; },
             set innerText(val: string) { this._innerText = val; },
           };
+
+          // Instead of relying on creation order, assign mocks based on how they're used.
+          // We assume the first div created is the score container.
+          if (!scoreContainerUsed) {
+            scoreContainerUsed = true;
+            // Simulate appendChild behavior to link score/highscore elements
+            div.appendChild = vi.fn((child: any) => {
+              if (child.id === 'score') {
+                Object.defineProperty(scoreElMock, 'innerText', {
+                  get: () => child.innerText,
+                  set: (v) => { child.innerText = v; },
+                  configurable: true
+                });
+              }
+              if (child.id === 'highscore') {
+                Object.defineProperty(highScoreElMock, 'innerText', {
+                  get: () => child.innerText,
+                  set: (v) => { child.innerText = v; },
+                  configurable: true
+                });
+              }
+            });
+            return div;
+          }
+          
+          return div;
         }
         throw new Error(`Unexpected tag name: ${tagName}`);
       }),

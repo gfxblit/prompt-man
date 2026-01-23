@@ -88,12 +88,13 @@ describe('Ghost AI', () => {
     const state = new GameState(customGrid);
     const ghost = state.getEntities().find(e => e.type === EntityType.Ghost)!;
     
-    ghost.x = 1;
+    ghost.x = 2;
     ghost.y = 1;
-    ghost.direction = { dx: 1, dy: 0 }; // Moving Right
+    ghost.direction = { dx: 1, dy: 0 }; // Moving Right, currently at (2,1)
 
     state.updateGhosts(0);
-    // It should not reverse (go Left) because there are other non-reverse paths (Up/Down/Right)
+    // From (2,1), valid non-reversing moves are Up, Down, and Right.
+    // The AI should not choose to go Left.
     const chosenDirection = ghost.direction;
     const isReverse = chosenDirection.dx === -({ dx: 1, dy: 0 }.dx) && chosenDirection.dy === -({ dx: 1, dy: 0 }.dy);
     expect(isReverse).toBe(false);
