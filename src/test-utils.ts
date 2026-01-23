@@ -33,3 +33,39 @@ export function setupMockImage() {
   vi.stubGlobal('Image', MockImage);
   return MockImage.instances;
 }
+
+export function mock2dContext(): CanvasRenderingContext2D {
+  return {
+    clearRect: vi.fn(),
+    fillRect: vi.fn(),
+    beginPath: vi.fn(),
+    arc: vi.fn(),
+    lineTo: vi.fn(),
+    closePath: vi.fn(),
+    fill: vi.fn(),
+    stroke: vi.fn(),
+    drawImage: vi.fn(),
+    measureText: vi.fn(() => ({ width: 10 })),
+    fillText: vi.fn(),
+    save: vi.fn(),
+    restore: vi.fn(),
+    translate: vi.fn(),
+    rotate: vi.fn(),
+    canvas: {
+      width: 800,
+      height: 600,
+    } as HTMLCanvasElement,
+    get fillStyle() { return 'black'; },
+    set fillStyle(value: string) { /* do nothing */ },
+    get font() { return '10px sans-serif'; },
+    set font(value: string) { /* do nothing */ },
+    get textAlign() { return 'start'; },
+    set textAlign(value: CanvasTextAlign) { /* do nothing */ },
+    get textBaseline() { return 'alphabetic'; },
+    set textBaseline(value: CanvasTextBaseline) { /* do nothing */ },
+    get strokeStyle() { return 'black'; },
+    set strokeStyle(value: string) { /* do nothing */ },
+    get lineWidth() { return 1; },
+    set lineWidth(value: number) { /* do nothing */ },
+  } as unknown as CanvasRenderingContext2D;
+}

@@ -5,6 +5,9 @@ import {
   POWER_PELLET_SCORE,
   PACMAN_SPEED,
   GHOST_SPEED,
+  POWER_UP_DURATION,
+  SCARED_GHOST_SPEED_MULTIPLIER,
+  GHOST_EATEN_SCORE,
   ALIGNMENT_TOLERANCE,
   COLORS,
   PACMAN_ANIMATION_SPEED
@@ -19,6 +22,7 @@ export class GameState implements IGameState {
   private gameOver: boolean = false;
   private remainingPellets: number = 0;
   private eatenPellets: Set<string> = new Set();
+  private powerUpTimer: number = 0; // New: Timer for power-up duration
   private readonly HIGH_SCORE_KEY = 'prompt-man-high-score';
   private nextDirection: Direction | null = null;
   private readonly width: number;
@@ -111,6 +115,13 @@ export class GameState implements IGameState {
       this.eatenPellets.add(`${x},${y}`);
       this.remainingPellets--;
       this.score += tile === TileType.Pellet ? PELLET_SCORE : POWER_PELLET_SCORE;
+
+      if (tile === TileType.PowerPellet) {
+        this.powerUpTimer = POWER_UP_DURATION;
+        this.entities.filter(e => e.type === EntityType.Ghost).forEach(ghost => {
+          ghost.isScared = true;
+        });
+      }
 
       if (this.score > this.highScore) {
         this.highScore = this.score;
@@ -224,7 +235,21 @@ export class GameState implements IGameState {
 
       // Collision threshold: roughly overlapping (less than 1 tile usually, let's say 0.5)
       if (dist < 0.5) {
-        this.handleCollision();
+        if (ghost.isScared) {
+          // Ghost is eaten
+          this.score += GHOST_EATEN_SCORE;
+          const initialPos = this.initialPositions.get(ghost);
+          if (initialPos) {
+            ghost.x = initialPos.x;
+            ghost.y = initialPos.y;
+            ghost.direction = { dx: 0, dy: 0 };
+          }
+          ghost.isScared = false; // Un-scare the ghost
+          // No life lost for Pacman
+        } else {
+          // Pacman hit a normal ghost, lose a life
+          this.handleCollision();
+        }
         break;
       }
     }
@@ -258,13 +283,25 @@ export class GameState implements IGameState {
   updateGhosts(deltaTime: number): void {
     if (this.gameOver) return;
 
-    const ghosts = this.entities.filter(e => e.type === EntityType.Ghost);
-    const distance = GHOST_SPEED * deltaTime;
+    if (this.powerUpTimer > 0) {
+      this.powerUpTimer -= deltaTime;
+      if (this.powerUpTimer <= 0) {
+        this.powerUpTimer = 0;
+        this.entities.filter(e => e.type === EntityType.Ghost).forEach(ghost => {
+          ghost.isScared = false;
+        });
+      }
+    }
 
+    const ghosts = this.entities.filter(e => e.type === EntityType.Ghost);
+    
     for (const ghost of ghosts) {
+      const speed = ghost.isScared ? GHOST_SPEED * SCARED_GHOST_SPEED_MULTIPLIER : GHOST_SPEED;
+      const distance = speed * deltaTime;
+
       // 1. If stopped or no direction, choose one
       if (!ghost.direction || (ghost.direction.dx === 0 && ghost.direction.dy === 0)) {
-        this.chooseGhostDirection(ghost);
+        this.chooseGhostDirection(ghost, ghost.isScared || false);
       } else {
         // 2. If at an intersection (aligned with grid), maybe change direction
         const isAlignedX = Math.abs(ghost.x - Math.round(ghost.x)) < ALIGNMENT_TOLERANCE;
@@ -286,7 +323,7 @@ export class GameState implements IGameState {
             // Only change if we are actually close to the center to avoid "jitter"
             ghost.x = x;
             ghost.y = y;
-            this.chooseGhostDirection(ghost);
+            this.chooseGhostDirection(ghost, ghost.isScared || false);
           }
         }
       }
@@ -315,13 +352,13 @@ export class GameState implements IGameState {
     });
   }
 
-  private chooseGhostDirection(ghost: Entity): void {
+  private chooseGhostDirection(ghost: Entity, isScared: boolean): void {
     const pacman = this.entities.find(e => e.type === EntityType.Pacman);
     const target = pacman
       ? { x: Math.round(pacman.x), y: Math.round(pacman.y) }
       : { x: Math.round(ghost.x), y: Math.round(ghost.y) };
 
-    const newDir = GhostAI.pickDirection(ghost, target, this.grid);
+    const newDir = GhostAI.pickDirection(ghost, target, this.grid, isScared);
     ghost.direction = newDir;
     ghost.rotation = Math.atan2(newDir.dy, newDir.dx);
   }

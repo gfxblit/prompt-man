@@ -305,6 +305,17 @@ describe('Renderer', () => {
     expect(mockContext.fillStyle).toBe(COLORS.GHOST_DEFAULT);
   });
 
+  it('should render a Scared Ghost as blue', () => {
+    const grid = new Grid(1, 1);
+    const entities = [{ type: EntityType.Ghost, x: 0, y: 0, isScared: true, color: 'pink' }];
+    vi.mocked(mockState.getEntities).mockReturnValue(entities);
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
+
+    renderer.render(grid, mockState);
+
+    expect(mockContext.fillStyle).toBe(COLORS.SCARED_GHOST);
+  });
+
   it('should render multiple tiles correctly', () => {
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
     const grid = Grid.fromString('#.\no ');

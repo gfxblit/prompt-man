@@ -46,6 +46,8 @@ export interface Entity {
   animationFrame?: number | undefined;
   /** Optional timer for tracking animation progress in milliseconds. */
   animationTimer?: number | undefined;
+  /** Optional flag indicating if the entity (e.g., ghost) is scared. */
+  isScared?: boolean;
 }
 
 /**
