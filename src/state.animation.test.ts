@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { GameState } from './state.js';
 import { Grid } from './grid.js';
 import { EntityType } from './types.js';
-import { PACMAN_ANIMATION_SPEED } from './config.js';
+import { PACMAN_ANIMATION_SPEED, GHOST_ANIMATION_SPEED } from './config.js';
 
 describe('GameState Animation', () => {
   let grid: Grid;
@@ -21,74 +21,143 @@ describe('GameState Animation', () => {
     });
   });
 
-  it('should initialize animation properties for Pacman', () => {
-    const state = new GameState(grid);
-    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+  describe('Pacman', () => {
+    it('should initialize animation properties for Pacman', () => {
+      const state = new GameState(grid);
+      const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
 
-    expect(pacman.animationFrame).toBe(0);
-    expect(pacman.animationTimer).toBe(0);
+      expect(pacman.animationFrame).toBe(0);
+      expect(pacman.animationTimer).toBe(0);
+    });
+
+    it('should update animation timer and frame when Pacman is moving', () => {
+      const state = new GameState(grid);
+      const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+
+      // Move Pacman Right
+      state.updatePacman({ dx: 1, dy: 0 }, PACMAN_ANIMATION_SPEED / 2);
+
+      expect(pacman.animationTimer).toBe(PACMAN_ANIMATION_SPEED / 2);
+      expect(pacman.animationFrame).toBe(0);
+
+      state.updatePacman({ dx: 1, dy: 0 }, PACMAN_ANIMATION_SPEED / 2 + 1);
+
+      expect(pacman.animationTimer).toBe(PACMAN_ANIMATION_SPEED + 1);
+      expect(pacman.animationFrame).toBe(1);
+    });
+
+    it('should cycle animation frame through 0, 1, 2, 1', () => {
+      const state = new GameState(grid);
+      const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+
+      // Move for 4 full frames
+      state.updatePacman({ dx: 1, dy: 0 }, PACMAN_ANIMATION_SPEED * 0); // Frame 0
+      expect(pacman.animationFrame).toBe(0);
+
+      state.updatePacman({ dx: 1, dy: 0 }, PACMAN_ANIMATION_SPEED); // Frame 1
+      expect(pacman.animationFrame).toBe(1);
+
+      state.updatePacman({ dx: 1, dy: 0 }, PACMAN_ANIMATION_SPEED); // Frame 2
+      expect(pacman.animationFrame).toBe(2);
+
+      state.updatePacman({ dx: 1, dy: 0 }, PACMAN_ANIMATION_SPEED); // Frame 1 again
+      expect(pacman.animationFrame).toBe(1);
+
+      state.updatePacman({ dx: 1, dy: 0 }, PACMAN_ANIMATION_SPEED); // Frame 0 again
+      expect(pacman.animationFrame).toBe(0);
+    });
+
+    it('should reset animation frame to 0 when Pacman stops', () => {
+      const state = new GameState(grid);
+      const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+
+      // Move to frame 1
+      state.updatePacman({ dx: 1, dy: 0 }, PACMAN_ANIMATION_SPEED);
+      expect(pacman.animationFrame).toBe(1);
+
+      // Stop Pacman manually (simulating hitting a wall or other stopping condition)
+      pacman.direction = { dx: 0, dy: 0 };
+
+      // Call updatePacman with no new direction to update animation
+      state.updatePacman({ dx: 0, dy: 0 }, 1000);
+
+      expect(pacman.animationFrame).toBe(0);
+      expect(pacman.animationTimer).toBe(PACMAN_ANIMATION_SPEED);
+    });
   });
 
-  it('should update animation timer and frame when Pacman is moving', () => {
-    const state = new GameState(grid);
-    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+  describe('Ghosts', () => {
+    it('should initialize animation properties for Ghosts', () => {
+      const ghostTemplate = `
+#####
+#G..#
+#####
+      `.trim();
+      const ghostGrid = Grid.fromString(ghostTemplate);
+      const state = new GameState(ghostGrid);
+      const ghost = state.getEntities().find(e => e.type === EntityType.Ghost)!;
 
-    // Move Pacman Right
-    state.updatePacman({ dx: 1, dy: 0 }, PACMAN_ANIMATION_SPEED / 2);
+      expect(ghost.animationFrame).toBe(0);
+      expect(ghost.animationTimer).toBe(0);
+    });
 
-    expect(pacman.animationTimer).toBe(PACMAN_ANIMATION_SPEED / 2);
-    expect(pacman.animationFrame).toBe(0);
+    it('should update animation timer and frame when Ghost is moving', () => {
+      const ghostTemplate = `
+#####
+#G..#
+#####
+      `.trim();
+      const ghostGrid = Grid.fromString(ghostTemplate);
+      const state = new GameState(ghostGrid);
+      const ghost = state.getEntities().find(e => e.type === EntityType.Ghost)!;
 
-    state.updatePacman({ dx: 1, dy: 0 }, PACMAN_ANIMATION_SPEED / 2 + 1);
+      // Force ghost to move right
+      ghost.direction = { dx: 1, dy: 0 };
 
-    expect(pacman.animationTimer).toBe(PACMAN_ANIMATION_SPEED + 1);
-    expect(pacman.animationFrame).toBe(1);
-  });
+      state.updateGhosts(GHOST_ANIMATION_SPEED / 2);
 
-  it('should cycle animation frame through 0, 1, 2, 1', () => {
-    const state = new GameState(grid);
-    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+      expect(ghost.animationTimer).toBe(GHOST_ANIMATION_SPEED / 2);
+      expect(ghost.animationFrame).toBe(0);
 
-    // Move for 4 full frames
-    state.updatePacman({ dx: 1, dy: 0 }, PACMAN_ANIMATION_SPEED * 0); // Frame 0
-    expect(pacman.animationFrame).toBe(0);
+      state.updateGhosts(GHOST_ANIMATION_SPEED / 2 + 1);
 
-    state.updatePacman({ dx: 1, dy: 0 }, PACMAN_ANIMATION_SPEED); // Frame 1
-    expect(pacman.animationFrame).toBe(1);
+      expect(ghost.animationTimer).toBe(GHOST_ANIMATION_SPEED + 1);
+      expect(ghost.animationFrame).toBe(1);
+    });
 
-    state.updatePacman({ dx: 1, dy: 0 }, PACMAN_ANIMATION_SPEED); // Frame 2
-    expect(pacman.animationFrame).toBe(2);
+    it('should cycle animation frame through 0-7', () => {
+      const ghostTemplate = `
+#####
+#G..#
+#####
+      `.trim();
+      const ghostGrid = Grid.fromString(ghostTemplate);
+      const state = new GameState(ghostGrid);
+      const ghost = state.getEntities().find(e => e.type === EntityType.Ghost)!;
 
-    state.updatePacman({ dx: 1, dy: 0 }, PACMAN_ANIMATION_SPEED); // Frame 1 again
-    expect(pacman.animationFrame).toBe(1);
+      // Force ghost to move right
+      ghost.direction = { dx: 1, dy: 0 };
 
-    state.updatePacman({ dx: 1, dy: 0 }, PACMAN_ANIMATION_SPEED); // Frame 0 again
-    expect(pacman.animationFrame).toBe(0);
-  });
+      for (let i = 0; i < 8; i++) {
+        expect(ghost.animationFrame).toBe(i);
+        state.updateGhosts(GHOST_ANIMATION_SPEED);
+      }
+      expect(ghost.animationFrame).toBe(0);
+    });
 
-  it('should reset animation frame to 0 when Pacman stops', () => {
-    const state = new GameState(grid);
-    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+    it('should NOT update animation frame when Ghost is NOT moving', () => {
+      const trappedGrid = Grid.fromString('###\n#G#\n###');
+      const state = new GameState(trappedGrid);
+      const ghost = state.getEntities().find(e => e.type === EntityType.Ghost)!;
 
-    // Move to frame 1
-    state.updatePacman({ dx: 1, dy: 0 }, PACMAN_ANIMATION_SPEED);
-    expect(pacman.animationFrame).toBe(1);
+      // Ensure it's not moving
+      ghost.direction = { dx: 0, dy: 0 };
+      const initialFrame = ghost.animationFrame;
 
-    // Stop Pacman manually (simulating hitting a wall or other stopping condition)
-    pacman.direction = { dx: 0, dy: 0 };
+      state.updateGhosts(GHOST_ANIMATION_SPEED * 10);
 
-    // Call updatePacman with no new direction to update animation
-    state.updatePacman({ dx: 0, dy: 0 }, 1000);
-
-    expect(pacman.animationFrame).toBe(0);
-    expect(pacman.animationTimer).toBe(PACMAN_ANIMATION_SPEED);
-  });
-
-  it('should reset animation timer and frame if Pacman is re-initialized (sanity check)', () => {
-    // This is more about checking that it's initialized in constructor
-    const state = new GameState(grid);
-    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
-    expect(pacman.animationFrame).toBe(0);
-    expect(pacman.animationTimer).toBe(0);
+      expect(ghost.direction).toEqual({ dx: 0, dy: 0 });
+      expect(ghost.animationFrame).toBe(initialFrame);
+    });
   });
 });
