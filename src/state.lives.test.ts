@@ -2,13 +2,13 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { GameState } from './state.js';
 import { Grid } from './grid.js';
-import { PACMAN_DEATH_ANIMATION } from './config.js';
+import { PACMAN_DEATH_ANIMATION_SPEED } from './config.js';
 import { EntityType, type IGrid } from './types.js';
 
 describe('GameState Lives', () => {
   let grid: IGrid;
   let state: GameState;
-  const DEATH_TIME = 12 * PACMAN_DEATH_ANIMATION.SPEED + 1;
+  const DEATH_TIME = 12 * PACMAN_DEATH_ANIMATION_SPEED + 1;
 
   const TEST_LEVEL = `
 #####
@@ -49,7 +49,7 @@ describe('GameState Lives', () => {
     expect(state.getLives()).toBe(2);
   });
 
-  it('should decrease lives on collision with ghost', () => {
+  it('should decrease lives after death animation completes', () => {
     const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
     const ghost = state.getEntities().find(e => e.type === EntityType.Ghost)!;
 
@@ -59,9 +59,14 @@ describe('GameState Lives', () => {
     ghost.x = 2;
     ghost.y = 1;
 
-    // Trigger update/collision check (we might need to call a method for this)
-    // Assuming updatePacman triggers collision check for now or we add a specific method
+    // Trigger update/collision check
     state.updatePacman({ dx: 0, dy: 0 }, 16);
+
+    // Should NOT be decremented yet
+    expect(state.getLives()).toBe(2);
+
+    // Wait for death animation
+    state.updatePacman({ dx: 0, dy: 0 }, DEATH_TIME);
 
     expect(state.getLives()).toBe(1);
   });
@@ -95,33 +100,42 @@ describe('GameState Lives', () => {
     expect(ghost.y).toBe(initialGhostY);
   });
 
-  it('should set gameOver to true when lives reach 0', () => {
+  it('should set gameOver to true when all lives are lost after animation', () => {
     const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
     const ghost = state.getEntities().find(e => e.type === EntityType.Ghost)!;
 
-    // First collision: 2 -> 1 life
+    // First collision
+    pacman.x = 2;
+    pacman.y = 1;
+    ghost.x = 2;
+    ghost.y = 1;
+    state.updatePacman({ dx: 0, dy: 0 }, 16);
+    expect(state.getLives()).toBe(2); // Still 2 during animation
+    state.updatePacman({ dx: 0, dy: 0 }, DEATH_TIME);
+    expect(state.getLives()).toBe(1);
+
+    // Second collision
     pacman.x = 2;
     pacman.y = 1;
     ghost.x = 2;
     ghost.y = 1;
     state.updatePacman({ dx: 0, dy: 0 }, 16);
     expect(state.getLives()).toBe(1);
-    expect(state.isGameOver()).toBe(false);
-
-    // Complete first death animation
     state.updatePacman({ dx: 0, dy: 0 }, DEATH_TIME);
+    expect(state.getLives()).toBe(0);
 
-    // Second collision: 1 -> 0 lives
+    // Third collision (last life)
     pacman.x = 2;
     pacman.y = 1;
     ghost.x = 2;
     ghost.y = 1;
     state.updatePacman({ dx: 0, dy: 0 }, 16);
     expect(state.getLives()).toBe(0);
-    expect(state.isGameOver()).toBe(false); // Still false during animation
+    expect(state.isGameOver()).toBe(false);
 
-    // Complete second death animation
+    // Finish last death animation
     state.updatePacman({ dx: 0, dy: 0 }, DEATH_TIME);
+    expect(state.getLives()).toBe(0);
     expect(state.isGameOver()).toBe(true);
   });
 
@@ -129,23 +143,15 @@ describe('GameState Lives', () => {
     const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
     const ghost = state.getEntities().find(e => e.type === EntityType.Ghost)!;
 
-    // Force game over
-    pacman.x = 2;
-    pacman.y = 1;
-    ghost.x = 2;
-    ghost.y = 1;
-    state.updatePacman({ dx: 0, dy: 0 }, 16); // 1 life left
-    state.updatePacman({ dx: 0, dy: 0 }, DEATH_TIME); // Finish first death
-    
-    // Move them together again after reset
-    pacman.x = 2;
-    pacman.y = 1;
-    ghost.x = 2;
-    ghost.y = 1;
-    state.updatePacman({ dx: 0, dy: 0 }, 16); // 0 lives left
-    state.updatePacman({ dx: 0, dy: 0 }, DEATH_TIME); // Finish second death
-
-    expect(state.isGameOver()).toBe(true);
+    // Force game over (3 deaths)
+    for (let i = 0; i < 3; i++) {
+      pacman.x = 2;
+      pacman.y = 1;
+      ghost.x = 2;
+      ghost.y = 1;
+      state.updatePacman({ dx: 0, dy: 0 }, 16);
+      state.updatePacman({ dx: 0, dy: 0 }, DEATH_TIME);
+    }
 
     const posAfterGameOver = { x: pacman.x, y: pacman.y };
     

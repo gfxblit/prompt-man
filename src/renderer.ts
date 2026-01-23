@@ -11,7 +11,8 @@ import {
   POWER_PELLET_BLINK_RATE,
   PACMAN_PALETTE_OFFSET_X,
   PACMAN_PALETTE_OFFSET_Y,
-  PACMAN_DEATH_ANIMATION
+  PACMAN_DEATH_PALETTE_OFFSET_X,
+  PACMAN_DEATH_PALETTE_OFFSET_Y
 } from './config.js';
 import { getTileMask } from './autotile.js';
 import { TILE_MAP, SOURCE_QUADRANT_SIZE, STATIC_SPRITE_MAP, SOURCE_TILE_SIZE, PACMAN_ANIMATION_MAP, SOURCE_PACMAN_SIZE, PACMAN_DEATH_ANIMATION_MAP } from './sprites.js';
@@ -205,8 +206,8 @@ export class Renderer implements IRenderer {
 
     if (this.spritesheet) {
       const [sRow, sCol] = PACMAN_DEATH_ANIMATION_MAP[frameIndex] || PACMAN_DEATH_ANIMATION_MAP[0]!;
-      const sourceX = PACMAN_DEATH_ANIMATION.PALETTE_OFFSET_X + (sCol * SOURCE_PACMAN_SIZE);
-      const sourceY = PACMAN_DEATH_ANIMATION.PALETTE_OFFSET_Y + (sRow * SOURCE_PACMAN_SIZE);
+      const sourceX = PACMAN_DEATH_PALETTE_OFFSET_X + (sCol * SOURCE_PACMAN_SIZE);
+      const sourceY = PACMAN_DEATH_PALETTE_OFFSET_Y + (sRow * SOURCE_PACMAN_SIZE);
 
       this.ctx.drawImage(
         this.spritesheet,

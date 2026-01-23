@@ -13,7 +13,7 @@ import {
   COLLISION_THRESHOLD,
   COLORS,
   PACMAN_ANIMATION_SPEED,
-  PACMAN_DEATH_ANIMATION
+  PACMAN_DEATH_ANIMATION_SPEED
 } from './config.js';
 import { GhostAI } from './ghost-ai.js';
 
@@ -157,7 +157,7 @@ export class GameState implements IGameState {
       const currentDeathTimer = (pacman.deathTimer || 0) + deltaTime;
       pacman.deathTimer = currentDeathTimer;
       
-      const frameIndex = Math.floor(currentDeathTimer / PACMAN_DEATH_ANIMATION.SPEED);
+      const frameIndex = Math.floor(currentDeathTimer / PACMAN_DEATH_ANIMATION_SPEED);
       if (frameIndex >= 12) {
         this.finishDying();
       } else {
@@ -289,7 +289,6 @@ export class GameState implements IGameState {
     if (this.gameOver || this.dying) return;
 
     this.dying = true;
-    this.lives--;
 
     const pacman = this.entities.find(e => e.type === EntityType.Pacman);
     if (pacman) {
@@ -301,12 +300,14 @@ export class GameState implements IGameState {
 
   private finishDying(): void {
     this.dying = false;
+    this.lives--;
+
     const pacman = this.entities.find(e => e.type === EntityType.Pacman);
     if (pacman) {
       pacman.deathTimer = undefined;
     }
 
-    if (this.lives <= 0) {
+    if (this.lives < 0) {
       this.lives = 0;
       this.gameOver = true;
     } else {

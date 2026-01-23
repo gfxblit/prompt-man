@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { GameState } from './state.js';
 import { Grid } from './grid.js';
 import { EntityType } from './types.js';
-import { PACMAN_DEATH_ANIMATION } from './config.js';
+import { PACMAN_DEATH_ANIMATION_SPEED } from './config.js';
 
 describe('GameState Death Logic', () => {
   let grid: Grid;
@@ -39,7 +39,8 @@ describe('GameState Death Logic', () => {
     state.updatePacman({ dx: 0, dy: 0 }, 0);
 
     expect(state.isDying()).toBe(true);
-    expect(state.getLives()).toBe(initialLives - 1);
+    // Lives should NOT be decremented yet
+    expect(state.getLives()).toBe(initialLives);
     // Positions should NOT be reset yet
     expect(pacman.x).toBe(ghost.x - 0.4);
   });
@@ -58,13 +59,13 @@ describe('GameState Death Logic', () => {
     expect(pacman.animationFrame).toBe(0);
 
     // Update with half animation speed
-    state.updatePacman({ dx: 0, dy: 0 }, PACMAN_DEATH_ANIMATION.SPEED / 2);
-    expect(pacman.deathTimer).toBe(PACMAN_DEATH_ANIMATION.SPEED / 2);
+    state.updatePacman({ dx: 0, dy: 0 }, PACMAN_DEATH_ANIMATION_SPEED / 2);
+    expect(pacman.deathTimer).toBe(PACMAN_DEATH_ANIMATION_SPEED / 2);
     expect(pacman.animationFrame).toBe(0);
 
     // Update to next frame
-    state.updatePacman({ dx: 0, dy: 0 }, PACMAN_DEATH_ANIMATION.SPEED / 2);
-    expect(pacman.deathTimer).toBe(PACMAN_DEATH_ANIMATION.SPEED);
+    state.updatePacman({ dx: 0, dy: 0 }, PACMAN_DEATH_ANIMATION_SPEED / 2);
+    expect(pacman.deathTimer).toBe(PACMAN_DEATH_ANIMATION_SPEED);
     expect(pacman.animationFrame).toBe(1);
   });
 
@@ -83,22 +84,24 @@ describe('GameState Death Logic', () => {
     expect(ghost.x).toBe(initialGhostX);
   });
 
-  it('should reset positions after death animation completes', () => {
+  it('should reset positions and decrement lives after death animation completes', () => {
     const state = new GameState(grid);
     const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
     const ghost = state.getEntities().find(e => e.type === EntityType.Ghost)!;
     const initialPacmanX = pacman.x;
+    const initialLives = state.getLives();
 
     pacman.x = ghost.x - 0.4;
     state.updatePacman({ dx: 0, dy: 0 }, 0);
     expect(state.isDying()).toBe(true);
 
     // Total animation time is 12 frames * speed
-    const totalTime = 12 * PACMAN_DEATH_ANIMATION.SPEED;
+    const totalTime = 12 * PACMAN_DEATH_ANIMATION_SPEED;
     state.updatePacman({ dx: 0, dy: 0 }, totalTime + 1);
 
     expect(state.isDying()).toBe(false);
     expect(pacman.x).toBe(initialPacmanX);
+    expect(state.getLives()).toBe(initialLives - 1);
     expect(pacman.deathTimer).toBeUndefined();
   });
 
@@ -107,24 +110,32 @@ describe('GameState Death Logic', () => {
     const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
     const ghost = state.getEntities().find(e => e.type === EntityType.Ghost)!;
 
-    // First collision to get to 1 life
+    // Start with 2 extra lives (total 3)
+    expect(state.getLives()).toBe(2);
+
+    // First collision
     pacman.x = ghost.x - 0.4;
     state.updatePacman({ dx: 0, dy: 0 }, 0);
-    expect(state.getLives()).toBe(1);
-    // Finish animation
-    state.updatePacman({ dx: 0, dy: 0 }, 12 * PACMAN_DEATH_ANIMATION.SPEED + 1);
+    state.updatePacman({ dx: 0, dy: 0 }, 12 * PACMAN_DEATH_ANIMATION_SPEED + 1);
     expect(state.getLives()).toBe(1);
 
-    // Second collision to get to 0 lives
+    // Second collision
+    pacman.x = ghost.x - 0.4;
+    state.updatePacman({ dx: 0, dy: 0 }, 0);
+    state.updatePacman({ dx: 0, dy: 0 }, 12 * PACMAN_DEATH_ANIMATION_SPEED + 1);
+    expect(state.getLives()).toBe(0);
+
+    // Third collision (last life)
     pacman.x = ghost.x - 0.4;
     state.updatePacman({ dx: 0, dy: 0 }, 0);
     expect(state.getLives()).toBe(0);
-    expect(state.isGameOver()).toBe(false); // Game over should only be true AFTER animation
+    expect(state.isGameOver()).toBe(false);
 
-    const totalTime = 12 * PACMAN_DEATH_ANIMATION.SPEED;
+    const totalTime = 12 * PACMAN_DEATH_ANIMATION_SPEED;
     state.updatePacman({ dx: 0, dy: 0 }, totalTime + 1);
 
     expect(state.isDying()).toBe(false);
+    expect(state.getLives()).toBe(0); // Lives clamped to 0
     expect(state.isGameOver()).toBe(true);
   });
 });
