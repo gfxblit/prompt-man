@@ -361,7 +361,7 @@ export class Renderer implements IRenderer {
           const colorKey = entity.isScared ? 'scared' : (entity.color || COLORS.GHOST_DEFAULT);
           const colorRow = GHOST_COLOR_ROWS[colorKey] ?? 0;
           const frameIndex = entity.animationFrame ?? 0;
-          const frame = GHOST_ANIMATION_FRAMES[frameIndex % GHOST_ANIMATION_FRAMES.length];
+          const frame = GHOST_ANIMATION_FRAMES[frameIndex % GHOST_ANIMATION_FRAMES.length] ?? GHOST_ANIMATION_FRAMES[0];
           const [, sCol, flipX, flipY] = frame;
 
           const sourceX = GHOST_PALETTE_OFFSET_X + (sCol * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X;
