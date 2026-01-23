@@ -34,12 +34,12 @@ export const PALETTE_ORIGIN_Y = 186;
 export const PACMAN_PALETTE_OFFSET_X = 502;
 /** Y offset (pixels) for Pacman sprites in the palette image. */
 export const PACMAN_PALETTE_OFFSET_Y = 319;
-/** Pixel size of the Ghost sprite in the source palette. */
-export const SOURCE_GHOST_SIZE = 17;
 /** X offset (pixels) for Ghost sprites in the palette image. */
 export const GHOST_PALETTE_OFFSET_X = 558;
 /** Y offset (pixels) for Ghost sprites in the palette image. */
 export const GHOST_PALETTE_OFFSET_Y = 277;
+/** Pixel size of the Ghost sprite in the source palette. */
+export const SOURCE_GHOST_SIZE = 17;
 /** Animation speed in milliseconds per frame. */
 export const PACMAN_ANIMATION_SPEED = 100;
 /** Pacman death animation configuration. */
@@ -73,6 +73,15 @@ export const COLORS = {
   GHOST_DEFAULT: 'red',
   SCARED_GHOST: 'blue',
 } as const;
+
+/** Mapping of ghost colors to their row index in the palette. */
+export const GHOST_COLOR_ROWS: Record<string, number> = {
+  'red': 0,
+  'pink': 1,
+  'cyan': 2,
+  'orange': 3,
+  'scared': 4
+};
 
 /**
  * Animation frames for Pacman in each direction.

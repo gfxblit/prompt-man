@@ -18,7 +18,8 @@ import {
   GHOST_PALETTE_OFFSET_Y,
   SOURCE_GHOST_SIZE,
   PACMAN_ANIMATION_MAP,
-  GHOST_ANIMATION_FRAMES
+  GHOST_ANIMATION_FRAMES,
+  GHOST_COLOR_ROWS
 } from './config.js';
 import { getTileMask } from './autotile.js';
 import {
@@ -358,19 +359,8 @@ export class Renderer implements IRenderer {
           this.ctx.arc(screenX + TILE_SIZE / 6, screenY - TILE_SIZE / 8, TILE_SIZE / 16, 0, Math.PI * 2);
           this.ctx.fill();
         } else if (this.spritesheet) {
-          const ghostColorRows: Record<string, number> = {
-            'red': 0,
-            'pink': 1,
-            'cyan': 2,
-            'orange': 3
-          };
-          let colorRow = 0;
-          if (entity.isScared) {
-            colorRow = 4;
-          } else {
-            const color = entity.color || COLORS.GHOST_DEFAULT;
-            colorRow = ghostColorRows[color] ?? 0;
-          }
+          const colorKey = entity.isScared ? 'scared' : (entity.color || COLORS.GHOST_DEFAULT);
+          const colorRow = GHOST_COLOR_ROWS[colorKey] ?? 0;
           const frameIndex = entity.animationFrame ?? 0;
           const [sRow, sCol, flipX, flipY] = GHOST_ANIMATION_FRAMES[frameIndex % 8]!;
 
