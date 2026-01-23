@@ -377,3 +377,36 @@ export const SOURCE_QUADRANT_SIZE = 9;
  * Pixel size of a full tile in the sprite sheet.
  */
 export const SOURCE_TILE_SIZE = 9;
+
+/**
+ * Pixel size of the Pacman sprite in the source palette.
+ */
+export const SOURCE_PACMAN_SIZE = 18;
+
+/**
+ * Animation frames for Pacman in each direction.
+ * Each direction has 3 frames: [row, col, flipX, flipY]
+ * row and col are in 18px units relative to PACMAN_PALETTE_OFFSET.
+ */
+export const PACMAN_ANIMATION_MAP = {
+  NORTH: [
+    [0, 0, false, true],
+    [0, 1, false, true],
+    [0, 2, false, true],
+  ],
+  SOUTH: [
+    [0, 0, false, false],
+    [0, 1, false, false],
+    [0, 2, false, false],
+  ],
+  EAST: [
+    [1, 0, true, false],
+    [1, 1, true, false],
+    [1, 2, true, false],
+  ],
+  WEST: [
+    [1, 0, false, false],
+    [1, 1, false, false],
+    [1, 2, false, false],
+  ],
+} as const;

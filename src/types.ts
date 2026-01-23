@@ -42,6 +42,10 @@ export interface Entity {
   rotation?: number | undefined;
   /** Optional CSS color string for rendering. */
   color?: string | undefined;
+  /** Optional animation frame index (0-2 for Pacman). */
+  animationFrame?: number | undefined;
+  /** Optional timer for tracking animation progress in milliseconds. */
+  animationTimer?: number | undefined;
 }
 
 /**

@@ -8,10 +8,12 @@ import {
   PALETTE_PADDING_X,
   PALETTE_PADDING_Y,
   JOYSTICK,
-  POWER_PELLET_BLINK_RATE
+  POWER_PELLET_BLINK_RATE,
+  PACMAN_PALETTE_OFFSET_X,
+  PACMAN_PALETTE_OFFSET_Y
 } from './config.js';
 import { getTileMask } from './autotile.js';
-import { TILE_MAP, SOURCE_QUADRANT_SIZE, STATIC_SPRITE_MAP, SOURCE_TILE_SIZE } from './sprites.js';
+import { TILE_MAP, SOURCE_QUADRANT_SIZE, STATIC_SPRITE_MAP, SOURCE_TILE_SIZE, PACMAN_ANIMATION_MAP, SOURCE_PACMAN_SIZE } from './sprites.js';
 
 export class Renderer implements IRenderer {
   constructor(
@@ -32,8 +34,8 @@ export class Renderer implements IRenderer {
         if (!tile) continue;
 
         // Skip eaten pellets
-        if ((tile === TileType.Pellet || tile === TileType.PowerPellet) && 
-            state.isPelletEaten(x, y)) {
+        if ((tile === TileType.Pellet || tile === TileType.PowerPellet) &&
+          state.isPelletEaten(x, y)) {
           continue;
         }
 
@@ -76,11 +78,11 @@ export class Renderer implements IRenderer {
       // Draw Pacman icon (facing right)
       this.ctx.fillStyle = COLORS.PACMAN;
       this.ctx.beginPath();
-      
+
       const radius = TILE_SIZE / 2 - 2;
       const startAngle = 0.2 * Math.PI;
       const endAngle = 1.8 * Math.PI;
-      
+
       this.ctx.arc(x, y, radius, startAngle, endAngle);
       this.ctx.lineTo(x, y);
       this.ctx.closePath();
@@ -209,18 +211,69 @@ export class Renderer implements IRenderer {
 
     switch (entity.type) {
       case EntityType.Pacman: {
-        this.ctx.fillStyle = COLORS.PACMAN;
-        this.ctx.beginPath();
-        
-        const rotation = entity.rotation ?? 0;
-        
-        const startAngle = 0.2 * Math.PI + rotation;
-        const endAngle = 1.8 * Math.PI + rotation;
-        
-        this.ctx.arc(screenX, screenY, TILE_SIZE / 2 - 1, startAngle, endAngle);
-        this.ctx.lineTo(screenX, screenY);
-        this.ctx.closePath();
-        this.ctx.fill();
+        if (this.spritesheet) {
+          const rotation = entity.rotation ?? 0;
+          let dirKey: keyof typeof PACMAN_ANIMATION_MAP = 'EAST';
+
+          const angle = (rotation * (180 / Math.PI) + 360) % 360;
+          if (angle >= 45 && angle < 135) dirKey = 'SOUTH';
+          else if (angle >= 135 && angle < 225) dirKey = 'WEST';
+          else if (angle >= 225 && angle < 315) dirKey = 'NORTH';
+          else dirKey = 'EAST';
+
+          const frameIndex = entity.animationFrame ?? 0;
+          const [sRow, sCol, flipX, flipY] = PACMAN_ANIMATION_MAP[dirKey][frameIndex as 0 | 1 | 2];
+
+          const sourceX = PALETTE_ORIGIN_X + PACMAN_PALETTE_OFFSET_X + (sCol * SOURCE_PACMAN_SIZE);
+          const sourceY = PALETTE_ORIGIN_Y + PACMAN_PALETTE_OFFSET_Y + (sRow * SOURCE_PACMAN_SIZE);
+
+          this.ctx.save();
+          this.ctx.translate(screenX, screenY);
+
+          const scaleX = flipX ? -1 : 1;
+          const scaleY = flipY ? -1 : 1;
+          this.ctx.scale(scaleX, scaleY);
+
+          this.ctx.drawImage(
+            this.spritesheet,
+            sourceX + PALETTE_PADDING_X,
+            sourceY + PALETTE_PADDING_Y,
+            SOURCE_PACMAN_SIZE - PALETTE_PADDING_X,
+            SOURCE_PACMAN_SIZE - PALETTE_PADDING_Y,
+            -TILE_SIZE / 2,
+            -TILE_SIZE / 2,
+            TILE_SIZE,
+            TILE_SIZE
+          );
+
+          this.ctx.restore();
+        } else {
+          this.ctx.fillStyle = COLORS.PACMAN;
+          this.ctx.beginPath();
+
+          const rotation = entity.rotation ?? 0;
+          const frameIndex = entity.animationFrame ?? 0;
+
+          // Frame 0: closed (full circle)
+          // Frame 1: half-open
+          // Frame 2: wide open
+          let mouthSize = 0;
+          if (frameIndex === 1) mouthSize = 0.1;
+          else if (frameIndex === 2) mouthSize = 0.2;
+
+          const startAngle = mouthSize * Math.PI + rotation;
+          const endAngle = (2 - mouthSize) * Math.PI + rotation;
+
+          if (mouthSize > 0) {
+            this.ctx.arc(screenX, screenY, TILE_SIZE / 2 - 1, startAngle, endAngle);
+            this.ctx.lineTo(screenX, screenY);
+          } else {
+            this.ctx.arc(screenX, screenY, TILE_SIZE / 2 - 1, 0, Math.PI * 2);
+          }
+
+          this.ctx.closePath();
+          this.ctx.fill();
+        }
         break;
       }
 
@@ -238,13 +291,13 @@ export class Renderer implements IRenderer {
 }
 
 export class UIRenderer implements IUIRenderer {
-  constructor(private ctx: CanvasRenderingContext2D) {}
+  constructor(private ctx: CanvasRenderingContext2D) { }
 
   render(joystick: JoystickState): void {
     if (!joystick.active) return;
 
     this.ctx.save();
-    
+
     // Draw outer circle (base)
     this.ctx.beginPath();
     this.ctx.arc(joystick.originX, joystick.originY, JOYSTICK.BASE_RADIUS, 0, Math.PI * 2);
@@ -259,7 +312,7 @@ export class UIRenderer implements IUIRenderer {
     this.ctx.arc(joystick.currentX, joystick.currentY, JOYSTICK.STICK_RADIUS, 0, Math.PI * 2);
     this.ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
     this.ctx.fill();
-    
+
     this.ctx.restore();
   }
 }

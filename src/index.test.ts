@@ -21,6 +21,8 @@ describe('index', () => {
       drawImage: vi.fn(),
       save: vi.fn(),
       restore: vi.fn(),
+      translate: vi.fn(),
+      scale: vi.fn(),
       stroke: vi.fn(),
       strokeStyle: '',
       lineWidth: 0,
