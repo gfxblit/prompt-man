@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { GameState } from './state.js';
 import { Grid } from './grid.js';
-import { EntityType, TileType } from './types.js';
+import { EntityType } from './types.js';
 import { POWER_UP_DURATION, GHOST_EATEN_SCORE, GHOST_SPEED, SCARED_GHOST_SPEED_MULTIPLIER } from './config.js';
 
 describe('GameState Power Up Mechanics', () => {

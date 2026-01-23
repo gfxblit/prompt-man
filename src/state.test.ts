@@ -265,10 +265,6 @@ describe('GameState', () => {
     let powerGrid: Grid;
     const powerPelletX = 1;
     const powerPelletY = 2; // 'o' in the powerPelletTemplate
-    const pacmanInitialX = 1;
-    const pacmanInitialY = 1;
-    const ghostInitialX = 5;
-    const ghostInitialY = 1;
 
     beforeEach(() => {
       powerGrid = Grid.fromString(powerPelletTemplate);
@@ -329,7 +325,6 @@ describe('GameState', () => {
       const initialGhostX = ghost.x;
       const initialGhostY = ghost.y;
       const initialLives = state.getLives();
-      const initialScore = state.getScore();
 
       // 1. Move Pacman to consume power pellet (making ghost scared)
       state.updatePacman({ dx: 0, dy: 1 }, deltaTimeForOneTile);

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach, afterEach, type HTMLElement } from 'vitest';
 import { init } from './index.js';
 import { setupMockImage, mock2dContext, MockImage } from './test-utils.js';

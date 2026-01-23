@@ -1,11 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { GameState } from './state.js';
 import { GhostAI } from './ghost-ai.js';
 import { Grid } from './grid.js';
-import { EntityType, TileType } from './types.js';
+import { EntityType, Entity } from './types.js';
 
 describe('Power Pellet Mechanics', () => {
-  let grid: Grid;
   
   beforeEach(() => {
     vi.stubGlobal('localStorage', {
@@ -41,12 +39,12 @@ describe('Power Pellet Mechanics', () => {
     
     const customGrid = Grid.fromString(layout);
     
-    const ghost = {
+    const ghost: Entity = {
         type: EntityType.Ghost,
         x: 2,
         y: 1,
         direction: { dx: 0, dy: 0 }
-    } as any;
+    };
     
     const target = { x: 3, y: 3 };
     
