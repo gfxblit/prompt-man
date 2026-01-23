@@ -76,10 +76,7 @@ export const COLORS = {
 
 /** Mapping of ghost colors to their row index in the palette. */
 export const GHOST_COLOR_ROWS: Record<string, number> = {
-  'red': 0,
-  'pink': 1,
-  'cyan': 2,
-  'orange': 3,
+  ...Object.fromEntries(COLORS.GHOST_COLORS.map((color, index) => [color, index])),
   'scared': 4
 };
 

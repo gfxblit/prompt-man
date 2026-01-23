@@ -311,6 +311,32 @@ describe('Renderer', () => {
     expect(mockContext.restore).toHaveBeenCalled();
   });
 
+  it('should render different Ghost colors and animation frames using spritesheet', () => {
+    const mockSpritesheet = {} as HTMLImageElement;
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D, mockSpritesheet);
+    const grid = new Grid(1, 1);
+
+    // Frame 1, pink ghost
+    const entities = [{ type: EntityType.Ghost, x: 0, y: 0, color: 'pink', animationFrame: 1 }];
+    vi.mocked(mockState.getEntities).mockReturnValue(entities);
+
+    renderer.render(grid, mockState);
+
+    // pink colorRow is 1
+    // frame 1 sCol is 1
+    expect(mockContext.drawImage).toHaveBeenCalledWith(
+      mockSpritesheet,
+      GHOST_PALETTE_OFFSET_X + (1 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X, // sourceX (sCol=1)
+      GHOST_PALETTE_OFFSET_Y + (1 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_Y, // sourceY (colorRow=1)
+      SOURCE_GHOST_SIZE - PALETTE_PADDING_X,
+      SOURCE_GHOST_SIZE - PALETTE_PADDING_Y,
+      -TILE_SIZE / 2,     // destX
+      -TILE_SIZE / 2,     // destY
+      TILE_SIZE,
+      TILE_SIZE
+    );
+  });
+
   it('should render a Ghost correctly', () => {
     const grid = new Grid(1, 1);
     const entities = [{ type: EntityType.Ghost, x: 0, y: 0, color: 'pink' }];

@@ -362,11 +362,11 @@ export class Renderer implements IRenderer {
           const colorKey = entity.isScared ? 'scared' : (entity.color || COLORS.GHOST_DEFAULT);
           const colorRow = GHOST_COLOR_ROWS[colorKey] ?? 0;
           const frameIndex = entity.animationFrame ?? 0;
-          const [sRow, sCol, flipX, flipY] = GHOST_ANIMATION_FRAMES[frameIndex % 8]!;
+          const frame = GHOST_ANIMATION_FRAMES[frameIndex % GHOST_ANIMATION_FRAMES.length];
+          const [_sRow, sCol, flipX, flipY] = frame;
 
-          // Add colorRow to sRow to select the correct color
           const sourceX = GHOST_PALETTE_OFFSET_X + (sCol * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X;
-          const sourceY = GHOST_PALETTE_OFFSET_Y + ((sRow + colorRow) * SOURCE_GHOST_SIZE) + PALETTE_PADDING_Y;
+          const sourceY = GHOST_PALETTE_OFFSET_Y + (colorRow * SOURCE_GHOST_SIZE) + PALETTE_PADDING_Y;
 
           this.ctx.save();
           this.ctx.translate(screenX, screenY);

@@ -15,7 +15,8 @@ import {
   PACMAN_ANIMATION_SPEED,
   PACMAN_DEATH_ANIMATION_SPEED,
   PACMAN_DEATH_ANIMATION_FRAMES,
-  GHOST_ANIMATION_SPEED
+  GHOST_ANIMATION_SPEED,
+  GHOST_ANIMATION_FRAMES
 } from './config.js';
 
 import { GhostAI } from './ghost-ai.js';
@@ -265,7 +266,7 @@ export class GameState implements IGameState {
       const frames = [0, 1, 2, 1] as const;
       const frameIndex = Math.floor(currentTimer / PACMAN_ANIMATION_SPEED) % 4;
       pacman.animationFrame = frames[frameIndex as 0 | 1 | 2 | 3];
-      pacman.animationTimer = currentTimer % (PACMAN_ANIMATION_SPEED * 4);
+      pacman.animationTimer = currentTimer % (PACMAN_ANIMATION_SPEED * frames.length);
     } else {
       // When static, show the first frame (closed mouth) of the last direction
       pacman.animationFrame = 0;
@@ -443,8 +444,8 @@ export class GameState implements IGameState {
         // Update animation only if still moving (didn't hit a wall)
         if (ghost.direction && (ghost.direction.dx !== 0 || ghost.direction.dy !== 0)) {
           const currentTimer = (ghost.animationTimer ?? 0) + deltaTime;
-          ghost.animationFrame = Math.floor(currentTimer / GHOST_ANIMATION_SPEED) % 8;
-          ghost.animationTimer = currentTimer % (GHOST_ANIMATION_SPEED * 8);
+          ghost.animationFrame = Math.floor(currentTimer / GHOST_ANIMATION_SPEED) % GHOST_ANIMATION_FRAMES.length;
+          ghost.animationTimer = currentTimer % (GHOST_ANIMATION_SPEED * GHOST_ANIMATION_FRAMES.length);
         }
       }
     }
