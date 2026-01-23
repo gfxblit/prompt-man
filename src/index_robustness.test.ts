@@ -11,7 +11,6 @@ describe('index robustness', () => {
   // These will hold references to our mocked DOM elements
   let scoreElMock: any;
   let highScoreElMock: any;
-  let scoreContainerMock: any;
 
   beforeEach(() => {
     mockContext = mock2dContext();
@@ -31,12 +30,6 @@ describe('index robustness', () => {
       get innerText() { return this._innerText; },
       set innerText(val: string) { this._innerText = val; },
       classList: { add: vi.fn() },
-    };
-    scoreContainerMock = {
-      id: '',
-      classList: { add: vi.fn() },
-      appendChild: vi.fn(),
-      children: [scoreElMock, highScoreElMock], // Pre-fill with our mocked score/highscore elements
     };
 
 
