@@ -51,6 +51,7 @@ export function mock2dContext(): CanvasRenderingContext2D {
     restore: vi.fn(),
     translate: vi.fn(),
     rotate: vi.fn(),
+    scale: vi.fn(),
     canvas: {
       width: 800,
       height: 600,
