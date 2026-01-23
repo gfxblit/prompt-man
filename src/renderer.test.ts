@@ -60,6 +60,7 @@ describe('Renderer', () => {
       updatePacman: vi.fn(),
       updateGhosts: vi.fn(),
       isGameOver: vi.fn().mockReturnValue(false),
+      isDying: vi.fn().mockReturnValue(false),
     };
   });
 
@@ -339,6 +340,52 @@ describe('Renderer', () => {
     expect(arcCalls.length).toBeGreaterThanOrEqual(4);
     
     fillStyleSetter.mockRestore();
+  });
+
+  it('should render Pacman death animation (fallback)', () => {
+    const grid = new Grid(1, 1);
+    const entities = [{ type: EntityType.Pacman, x: 0, y: 0, animationFrame: 6 }];
+    vi.mocked(mockState.getEntities).mockReturnValue(entities);
+    vi.mocked(mockState.isDying).mockReturnValue(true);
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
+
+    renderer.render(grid, mockState);
+
+    expect(mockContext.fillStyle).toBe(COLORS.PACMAN);
+    expect(mockContext.beginPath).toHaveBeenCalled();
+    // At frame 6 of 12, radius should be roughly half of maxRadius
+    const maxRadius = TILE_SIZE / 2 - 1;
+    const expectedRadius = maxRadius * (1 - 6/12);
+    expect(mockContext.arc).toHaveBeenCalledWith(
+      TILE_SIZE / 2,
+      TILE_SIZE / 2,
+      expectedRadius,
+      0,
+      Math.PI * 2
+    );
+  });
+
+  it('should render Pacman death animation (spritesheet)', () => {
+    const mockSpritesheet = {} as HTMLImageElement;
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D, mockSpritesheet);
+    const grid = new Grid(1, 1);
+    const entities = [{ type: EntityType.Pacman, x: 0, y: 0, animationFrame: 6 }];
+    vi.mocked(mockState.getEntities).mockReturnValue(entities);
+    vi.mocked(mockState.isDying).mockReturnValue(true);
+
+    renderer.render(grid, mockState);
+
+    expect(mockContext.drawImage).toHaveBeenCalledWith(
+      mockSpritesheet,
+      expect.any(Number), // sourceX
+      expect.any(Number), // sourceY
+      expect.any(Number), // sourceWidth
+      expect.any(Number), // sourceHeight
+      0,                  // destX (entity.x * TILE_SIZE)
+      0,                  // destY (entity.y * TILE_SIZE)
+      TILE_SIZE,
+      TILE_SIZE
+    );
   });
 
   it('should render multiple tiles correctly', () => {

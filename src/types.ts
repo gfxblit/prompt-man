@@ -44,12 +44,14 @@ export interface Entity {
   color?: string | undefined;
   /** Optional animation frame index (0-2 for Pacman). */
   animationFrame?: number | undefined;
-  /** Optional timer for tracking animation progress in milliseconds. */
+  /** Optional animationTimer for tracking animation progress in milliseconds. */
   animationTimer?: number | undefined;
   /** Optional flag indicating if the entity (e.g., ghost) is scared. */
   isScared?: boolean;
   /** Optional flag indicating if the entity (e.g., ghost) is dead and returning to jail. */
   isDead?: boolean;
+  /** Optional timer for tracking death animation progress in milliseconds. */
+  deathTimer?: number | undefined;
 }
 
 /**
@@ -106,6 +108,8 @@ export interface IGameState {
   updateGhosts(deltaTime: number): void;
   /** Returns true if the game is over. */
   isGameOver(): boolean;
+  /** Returns true if Pacman is currently in the death animation. */
+  isDying(): boolean;
 }
 
 /**

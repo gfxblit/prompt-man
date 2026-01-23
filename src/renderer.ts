@@ -10,10 +10,12 @@ import {
   JOYSTICK,
   POWER_PELLET_BLINK_RATE,
   PACMAN_PALETTE_OFFSET_X,
-  PACMAN_PALETTE_OFFSET_Y
+  PACMAN_PALETTE_OFFSET_Y,
+  PACMAN_DEATH_PALETTE_OFFSET_X,
+  PACMAN_DEATH_PALETTE_OFFSET_Y
 } from './config.js';
 import { getTileMask } from './autotile.js';
-import { TILE_MAP, SOURCE_QUADRANT_SIZE, STATIC_SPRITE_MAP, SOURCE_TILE_SIZE, PACMAN_ANIMATION_MAP, SOURCE_PACMAN_SIZE } from './sprites.js';
+import { TILE_MAP, SOURCE_QUADRANT_SIZE, STATIC_SPRITE_MAP, SOURCE_TILE_SIZE, PACMAN_ANIMATION_MAP, SOURCE_PACMAN_SIZE, PACMAN_DEATH_ANIMATION_MAP } from './sprites.js';
 
 export class Renderer implements IRenderer {
   constructor(
@@ -43,7 +45,7 @@ export class Renderer implements IRenderer {
       }
     }
 
-    this.renderEntities(state.getEntities());
+    this.renderEntities(state);
     this.renderLives(grid, state.getLives());
 
     if (state.isGameOver()) {
@@ -199,18 +201,57 @@ export class Renderer implements IRenderer {
     }
   }
 
-  private renderEntities(entities: Entity[]): void {
-    for (const entity of entities) {
-      this.renderEntity(entity);
+  private renderPacmanDeath(entity: Entity, screenX: number, screenY: number): void {
+    const frameIndex = entity.animationFrame ?? 0;
+
+    if (this.spritesheet) {
+      const [sRow, sCol] = PACMAN_DEATH_ANIMATION_MAP[frameIndex] || PACMAN_DEATH_ANIMATION_MAP[0]!;
+      const sourceX = PACMAN_DEATH_PALETTE_OFFSET_X + (sCol * SOURCE_PACMAN_SIZE);
+      const sourceY = PACMAN_DEATH_PALETTE_OFFSET_Y + (sRow * SOURCE_PACMAN_SIZE);
+
+      this.ctx.drawImage(
+        this.spritesheet,
+        sourceX + PALETTE_PADDING_X,
+        sourceY + PALETTE_PADDING_Y,
+        SOURCE_PACMAN_SIZE - PALETTE_PADDING_X,
+        SOURCE_PACMAN_SIZE - PALETTE_PADDING_Y,
+        screenX - TILE_SIZE / 2,
+        screenY - TILE_SIZE / 2,
+        TILE_SIZE,
+        TILE_SIZE
+      );
+    } else {
+      // Fallback: shrinking circle
+      const maxRadius = TILE_SIZE / 2 - 1;
+      const progress = frameIndex / 12;
+      const radius = Math.max(0, maxRadius * (1 - progress));
+
+      if (radius > 0) {
+        this.ctx.fillStyle = COLORS.PACMAN;
+        this.ctx.beginPath();
+        this.ctx.arc(screenX, screenY, radius, 0, Math.PI * 2);
+        this.ctx.fill();
+      }
     }
   }
 
-  private renderEntity(entity: Entity): void {
+  private renderEntities(state: IGameState): void {
+    for (const entity of state.getEntities()) {
+      this.renderEntity(entity, state);
+    }
+  }
+
+  private renderEntity(entity: Entity, state: IGameState): void {
     const screenX = entity.x * TILE_SIZE + TILE_SIZE / 2;
     const screenY = entity.y * TILE_SIZE + TILE_SIZE / 2;
 
     switch (entity.type) {
       case EntityType.Pacman: {
+        if (state.isDying()) {
+          this.renderPacmanDeath(entity, screenX, screenY);
+          return;
+        }
+
         if (this.spritesheet) {
           const rotation = entity.rotation ?? 0;
           let dirKey: keyof typeof PACMAN_ANIMATION_MAP = 'EAST';

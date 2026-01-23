@@ -36,6 +36,12 @@ export const PACMAN_PALETTE_OFFSET_X = 502;
 export const PACMAN_PALETTE_OFFSET_Y = 319;
 /** Animation speed in milliseconds per frame. */
 export const PACMAN_ANIMATION_SPEED = 100;
+/** Pacman death animation speed in milliseconds per frame. */
+export const PACMAN_DEATH_ANIMATION_SPEED = 100;
+/** Palette offset X for Pacman death animation sprites. */
+export const PACMAN_DEATH_PALETTE_OFFSET_X = 502;
+/** Palette offset Y for Pacman death animation sprites. */
+export const PACMAN_DEATH_PALETTE_OFFSET_Y = 319;
 /** Padding (pixels) on the left of each sprite in the palette (e.g., pink boundary). */
 export const PALETTE_PADDING_X = 1;
 /** Padding (pixels) on the top of each sprite in the palette (e.g., pink boundary). */

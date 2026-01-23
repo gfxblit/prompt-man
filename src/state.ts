@@ -12,7 +12,8 @@ import {
   ALIGNMENT_TOLERANCE,
   COLLISION_THRESHOLD,
   COLORS,
-  PACMAN_ANIMATION_SPEED
+  PACMAN_ANIMATION_SPEED,
+  PACMAN_DEATH_ANIMATION_SPEED
 } from './config.js';
 import { GhostAI } from './ghost-ai.js';
 
@@ -22,6 +23,7 @@ export class GameState implements IGameState {
   private highScore: number = 0;
   private lives: number = 2;
   private gameOver: boolean = false;
+  private dying: boolean = false;
   private remainingPellets: number = 0;
   private eatenPellets: Set<string> = new Set();
   private powerUpTimer: number = 0; // New: Timer for power-up duration
@@ -107,6 +109,10 @@ export class GameState implements IGameState {
     return this.gameOver;
   }
 
+  isDying(): boolean {
+    return this.dying;
+  }
+
   isPelletEaten(x: number, y: number): boolean {
     return this.eatenPellets.has(`${x},${y}`);
   }
@@ -147,8 +153,22 @@ export class GameState implements IGameState {
     const pacman = this.entities.find(e => e.type === EntityType.Pacman);
     if (!pacman || this.gameOver) return;
 
+    if (this.dying) {
+      const currentDeathTimer = (pacman.deathTimer || 0) + deltaTime;
+      pacman.deathTimer = currentDeathTimer;
+      
+      const frameIndex = Math.floor(currentDeathTimer / PACMAN_DEATH_ANIMATION_SPEED);
+      if (frameIndex >= 12) {
+        this.finishDying();
+      } else {
+        pacman.animationFrame = frameIndex;
+      }
+      return;
+    }
+
     // Check collisions
     this.checkCollisions(pacman);
+    if (this.dying) return; // Re-check after collision might have set it
 
     // Update intended direction if input is provided
     if (direction.dx !== 0 || direction.dy !== 0) {
@@ -262,9 +282,26 @@ export class GameState implements IGameState {
   }
 
   private handleCollision(): void {
-    if (this.gameOver) return;
+    if (this.gameOver || this.dying) return;
 
+    this.dying = true;
     this.lives--;
+
+    const pacman = this.entities.find(e => e.type === EntityType.Pacman);
+    if (pacman) {
+      pacman.deathTimer = 0;
+      pacman.animationFrame = 0;
+      pacman.direction = { dx: 0, dy: 0 };
+    }
+  }
+
+  private finishDying(): void {
+    this.dying = false;
+    const pacman = this.entities.find(e => e.type === EntityType.Pacman);
+    if (pacman) {
+      pacman.deathTimer = undefined;
+    }
+
     if (this.lives <= 0) {
       this.lives = 0;
       this.gameOver = true;
@@ -298,7 +335,7 @@ export class GameState implements IGameState {
   }
 
   updateGhosts(deltaTime: number): void {
-    if (this.gameOver) return;
+    if (this.gameOver || this.dying) return;
 
     if (this.powerUpTimer > 0) {
       this.powerUpTimer -= deltaTime;
