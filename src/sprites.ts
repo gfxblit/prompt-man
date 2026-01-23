@@ -386,7 +386,7 @@ export const SOURCE_PACMAN_SIZE = 17;
 /**
  * Animation frames for Pacman in each direction.
  * Each direction has 3 frames: [row, col, flipX, flipY]
- * row and col are in 18px units relative to the absolute PACMAN_PALETTE_OFFSET position in the image.
+ * row and col are in 17px units relative to the absolute PACMAN_PALETTE_OFFSET position in the image.
  */
 export const PACMAN_ANIMATION_MAP = {
   NORTH: [
