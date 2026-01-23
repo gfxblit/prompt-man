@@ -293,7 +293,7 @@ export class Renderer implements IRenderer {
 export class UIRenderer implements IUIRenderer {
   constructor(private ctx: CanvasRenderingContext2D) { }
 
-  render(joystick: JoystickState, time: number = 0): void {
+  render(joystick: JoystickState): void {
     if (!joystick.active) return;
 
     this.ctx.save();
