@@ -18,7 +18,6 @@ import {
   GHOST_PALETTE_OFFSET_Y,
   SOURCE_GHOST_SIZE,
   PACMAN_ANIMATION_MAP,
-  GHOST_ANIMATION_FRAMES,
   GHOST_COLOR_ROWS
 } from './config.js';
 import { getTileMask } from './autotile.js';

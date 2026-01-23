@@ -109,22 +109,6 @@ export const PACMAN_ANIMATION_MAP = {
 } as const;
 
 /**
- * Animation frames for Ghosts.
- * 8-frame cycle [row, col, flipX, flipY]
- * row and col are in 17px units relative to the GHOST_PALETTE_OFFSET position.
- */
-export const GHOST_ANIMATION_FRAMES = [
-  [0, 0, false, false],
-  [0, 1, false, false],
-  [0, 2, false, false],
-  [0, 3, false, false],
-  [0, 4, false, false],
-  [0, 5, false, false],
-  [0, 6, false, false],
-  [0, 7, false, false],
-] as const;
-
-/**
  * Joystick configuration
  */
 export const JOYSTICK = {
