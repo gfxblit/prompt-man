@@ -200,17 +200,7 @@ export class GameState implements IGameState {
     pacman.direction = moveDir;
 
     // Update animation based on movement
-    const isMoving = moveDir.dx !== 0 || moveDir.dy !== 0;
-    if (isMoving) {
-      const currentTimer = (pacman.animationTimer || 0) + deltaTime;
-      pacman.animationTimer = currentTimer;
-      const frames = [0, 1, 2, 1] as const;
-      const frameIndex = Math.floor(currentTimer / PACMAN_ANIMATION_SPEED) % 4;
-      pacman.animationFrame = frames[frameIndex as 0 | 1 | 2 | 3];
-    } else {
-      // When static, show the first frame (closed mouth) of the last direction
-      pacman.animationFrame = 0;
-    }
+    this.updatePacmanAnimation(pacman, moveDir, deltaTime);
 
     // Stop if no direction
     if (moveDir.dx === 0 && moveDir.dy === 0) return;
@@ -225,6 +215,20 @@ export class GameState implements IGameState {
     const consumeX = this.getWrappedCoordinate(Math.round(pacman.x), this.width);
     const consumeY = this.getWrappedCoordinate(Math.round(pacman.y), this.height);
     this.consumePellet(consumeX, consumeY);
+  }
+
+  private updatePacmanAnimation(pacman: Entity, moveDir: Direction, deltaTime: number): void {
+    const isMoving = moveDir.dx !== 0 || moveDir.dy !== 0;
+    if (isMoving) {
+      const currentTimer = (pacman.animationTimer || 0) + deltaTime;
+      pacman.animationTimer = currentTimer;
+      const frames = [0, 1, 2, 1] as const;
+      const frameIndex = Math.floor(currentTimer / PACMAN_ANIMATION_SPEED) % 4;
+      pacman.animationFrame = frames[frameIndex as 0 | 1 | 2 | 3];
+    } else {
+      // When static, show the first frame (closed mouth) of the last direction
+      pacman.animationFrame = 0;
+    }
   }
 
   private checkCollisions(pacman: Entity): void {
@@ -302,7 +306,7 @@ export class GameState implements IGameState {
 
       // 1. If stopped or no direction, choose one
       if (!ghost.direction || (ghost.direction.dx === 0 && ghost.direction.dy === 0)) {
-        this.chooseGhostDirection(ghost, ghost.isScared || false);
+        this.chooseGhostDirection(ghost);
       } else {
         // 2. If at an intersection (aligned with grid), maybe change direction
         const isAlignedX = Math.abs(ghost.x - Math.round(ghost.x)) < ALIGNMENT_TOLERANCE;
@@ -324,7 +328,7 @@ export class GameState implements IGameState {
             // Only change if we are actually close to the center to avoid "jitter"
             ghost.x = x;
             ghost.y = y;
-            this.chooseGhostDirection(ghost, ghost.isScared || false);
+            this.chooseGhostDirection(ghost);
           }
         }
       }
@@ -353,7 +357,8 @@ export class GameState implements IGameState {
     });
   }
 
-  private chooseGhostDirection(ghost: Entity, isScared: boolean): void {
+  private chooseGhostDirection(ghost: Entity): void {
+    const isScared = !!ghost.isScared;
     const pacman = this.entities.find(e => e.type === EntityType.Pacman);
     const target = pacman
       ? { x: Math.round(pacman.x), y: Math.round(pacman.y) }

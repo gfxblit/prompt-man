@@ -140,6 +140,7 @@ export interface IUIRenderer {
   /**
    * Renders UI elements over the game world.
    * @param joystick The current state of the joystick.
+   * @param time Optional current game time in milliseconds.
    */
-  render(joystick: JoystickState): void;
+  render(joystick: JoystickState, time?: number): void;
 }

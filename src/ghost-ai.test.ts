@@ -98,8 +98,6 @@ describe('Ghost AI', () => {
     const chosenDirection = ghost.direction;
     const isReverse = chosenDirection.dx === -({ dx: 1, dy: 0 }.dx) && chosenDirection.dy === -({ dx: 1, dy: 0 }.dy);
     expect(isReverse).toBe(false);
-
-    vi.restoreAllMocks();
   });
 
   it('should move ghosts towards Pacman using Manhattan distance', () => {
