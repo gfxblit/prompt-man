@@ -119,7 +119,7 @@ describe('Renderer', () => {
     const grid = new Grid(1, 1);
     grid.setTile(0, 0, TileType.PowerPellet);
 
-    renderer.render(grid, mockState);
+    renderer.render(grid, mockState, 0);
 
     expect(mockContext.fillStyle).toBe(COLORS.PELLET);
     expect(mockContext.beginPath).toHaveBeenCalled();
@@ -131,6 +131,34 @@ describe('Renderer', () => {
       Math.PI * 2
     );
     expect(mockContext.fill).toHaveBeenCalled();
+  });
+
+  it('should NOT render a PowerPellet when blinking (time-based)', () => {
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
+    const grid = new Grid(1, 1);
+    grid.setTile(0, 0, TileType.PowerPellet);
+
+    // If we assume a 500ms cycle, 250ms should be "off"
+    renderer.render(grid, mockState, 250);
+
+    expect(mockContext.arc).not.toHaveBeenCalled();
+    expect(mockContext.fill).not.toHaveBeenCalled();
+  });
+
+  it('should ALWAYS render a regular Pellet regardless of time', () => {
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
+    const grid = new Grid(1, 1);
+    grid.setTile(0, 0, TileType.Pellet);
+
+    // Even at 250ms, regular pellet should be visible
+    renderer.render(grid, mockState, 250);
+
+    expect(mockContext.fillRect).toHaveBeenCalledWith(
+      TILE_SIZE / 2 - 1,
+      TILE_SIZE / 2 - 1,
+      2,
+      2
+    );
   });
 
   it('should clear the canvas before rendering', () => {

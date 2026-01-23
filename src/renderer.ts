@@ -1,6 +1,15 @@
 import { TileType, EntityType } from './types.js';
 import type { Entity, IGrid, IRenderer, IGameState, IUIRenderer, JoystickState } from './types.js';
-import { TILE_SIZE, COLORS, PALETTE_ORIGIN_X, PALETTE_ORIGIN_Y, PALETTE_PADDING_X, PALETTE_PADDING_Y, JOYSTICK } from './config.js';
+import {
+  TILE_SIZE,
+  COLORS,
+  PALETTE_ORIGIN_X,
+  PALETTE_ORIGIN_Y,
+  PALETTE_PADDING_X,
+  PALETTE_PADDING_Y,
+  JOYSTICK,
+  POWER_PELLET_BLINK_RATE
+} from './config.js';
 import { getTileMask } from './autotile.js';
 import { TILE_MAP, SOURCE_QUADRANT_SIZE, STATIC_SPRITE_MAP, SOURCE_TILE_SIZE } from './sprites.js';
 
@@ -10,7 +19,7 @@ export class Renderer implements IRenderer {
     private spritesheet?: HTMLImageElement
   ) { }
 
-  render(grid: IGrid, state: IGameState): void {
+  render(grid: IGrid, state: IGameState, time: number = 0): void {
     const width = grid.getWidth();
     const height = grid.getHeight();
 
@@ -28,7 +37,7 @@ export class Renderer implements IRenderer {
           continue;
         }
 
-        this.renderTile(grid, x, y, tile);
+        this.renderTile(grid, x, y, tile, time);
       }
     }
 
@@ -79,7 +88,7 @@ export class Renderer implements IRenderer {
     }
   }
 
-  private renderTile(grid: IGrid, x: number, y: number, tile: TileType): void {
+  private renderTile(grid: IGrid, x: number, y: number, tile: TileType, time: number = 0): void {
     const screenX = x * TILE_SIZE;
     const screenY = y * TILE_SIZE;
 
@@ -119,30 +128,33 @@ export class Renderer implements IRenderer {
         break;
 
       case TileType.PowerPellet:
-        if (this.spritesheet) {
-          const [row, col] = STATIC_SPRITE_MAP.POWER_PELLET;
-          this.ctx.drawImage(
-            this.spritesheet,
-            PALETTE_ORIGIN_X + (col * SOURCE_TILE_SIZE) + PALETTE_PADDING_X,
-            PALETTE_ORIGIN_Y + (row * SOURCE_TILE_SIZE) + PALETTE_PADDING_Y,
-            SOURCE_TILE_SIZE - PALETTE_PADDING_X,
-            SOURCE_TILE_SIZE - PALETTE_PADDING_Y,
-            screenX,
-            screenY,
-            TILE_SIZE,
-            TILE_SIZE
-          );
-        } else {
-          this.ctx.fillStyle = COLORS.PELLET;
-          this.ctx.beginPath();
-          this.ctx.arc(
-            screenX + TILE_SIZE / 2,
-            screenY + TILE_SIZE / 2,
-            3,
-            0,
-            Math.PI * 2
-          );
-          this.ctx.fill();
+        // Blink power pellets
+        if (Math.floor(time / POWER_PELLET_BLINK_RATE) % 2 === 0) {
+          if (this.spritesheet) {
+            const [row, col] = STATIC_SPRITE_MAP.POWER_PELLET;
+            this.ctx.drawImage(
+              this.spritesheet,
+              PALETTE_ORIGIN_X + (col * SOURCE_TILE_SIZE) + PALETTE_PADDING_X,
+              PALETTE_ORIGIN_Y + (row * SOURCE_TILE_SIZE) + PALETTE_PADDING_Y,
+              SOURCE_TILE_SIZE - PALETTE_PADDING_X,
+              SOURCE_TILE_SIZE - PALETTE_PADDING_Y,
+              screenX,
+              screenY,
+              TILE_SIZE,
+              TILE_SIZE
+            );
+          } else {
+            this.ctx.fillStyle = COLORS.PELLET;
+            this.ctx.beginPath();
+            this.ctx.arc(
+              screenX + TILE_SIZE / 2,
+              screenY + TILE_SIZE / 2,
+              3,
+              0,
+              Math.PI * 2
+            );
+            this.ctx.fill();
+          }
         }
         break;
 
