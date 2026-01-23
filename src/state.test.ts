@@ -2,7 +2,15 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { GameState } from './state.js';
 import { Grid } from './grid.js';
 import { EntityType } from './types.js';
-import { PACMAN_SPEED } from './config.js';
+import { PACMAN_SPEED, POWER_UP_DURATION, GHOST_EATEN_SCORE, POWER_PELLET_SCORE } from './config.js';
+
+  // New template for power pellet tests
+  const powerPelletTemplate = `
+#######
+#P   G#
+#o    #
+#######
+  `.trim();
 
 describe('GameState', () => {
   let grid: Grid;
@@ -251,5 +259,96 @@ describe('GameState', () => {
     // After attempting to move right from x=3, Pacman should remain at x=3 because x=4 is a wall.
     expect(pacman.x).toBe(3);
     expect(pacman.direction?.dx).toBe(0); // Should be stopped
+  });
+
+  describe('Power-up mechanics', () => {
+    let powerGrid: Grid;
+    const powerPelletX = 1;
+    const powerPelletY = 2; // 'o' in the powerPelletTemplate
+
+    beforeEach(() => {
+      powerGrid = Grid.fromString(powerPelletTemplate);
+      vi.stubGlobal('localStorage', {
+        getItem: vi.fn(),
+        setItem: vi.fn(),
+        clear: vi.fn(),
+      });
+    });
+
+    it('should make ghosts scared when Pacman consumes a power pellet', () => {
+      const state = new GameState(powerGrid);
+      const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
+      const ghost = state.getEntities().find(e => e.type === EntityType.Ghost);
+
+      expect(pacman).toBeDefined();
+      expect(ghost).toBeDefined();
+      expect(ghost?.isScared).toBeFalsy(); // Ghost should not be scared initially
+
+      // Move Pacman to consume the power pellet
+      // Pacman starts at (1,1). Power pellet is at (1,2)
+      // We need to move Pacman down to (1,2)
+      state.updatePacman({ dx: 0, dy: 1 }, deltaTimeForOneTile);
+
+      expect(pacman?.x).toBe(powerPelletX);
+      expect(pacman?.y).toBe(powerPelletY);
+      expect(state.isPelletEaten(powerPelletX, powerPelletY)).toBe(true);
+      expect(state.getScore()).toBe(50); // Power pellet score
+
+      // Expect ghost to be scared
+      expect(ghost?.isScared).toBe(true);
+    });
+
+    it('should have a power-up timer that decrements and eventually unscares ghosts', () => {
+      const state = new GameState(powerGrid);
+      const ghost = state.getEntities().find(e => e.type === EntityType.Ghost);
+
+      // Consume power pellet to activate scared state
+      state.updatePacman({ dx: 0, dy: 1 }, deltaTimeForOneTile);
+      expect(ghost?.isScared).toBe(true);
+
+      // Advance time by less than POWER_UP_DURATION
+      state.updateGhosts(POWER_UP_DURATION / 2);
+      expect(ghost?.isScared).toBe(true);
+
+      // Advance time by remaining duration to exceed POWER_UP_DURATION
+      state.updateGhosts(POWER_UP_DURATION / 2 + 1); // +1 to ensure it goes past
+      expect(ghost?.isScared).toBeFalsy(); // Ghost should no longer be scared
+    });
+
+    it('should reset eaten ghost to its initial position and award points, without losing a life', () => {
+      const state = new GameState(powerGrid);
+      const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
+      const ghost = state.getEntities().find(e => e.type === EntityType.Ghost);
+
+      if (!pacman || !ghost) throw new Error('Entities not found');
+
+      const initialGhostX = ghost.x;
+      const initialGhostY = ghost.y;
+      const initialLives = state.getLives();
+
+      // 1. Move Pacman to consume power pellet (making ghost scared)
+      state.updatePacman({ dx: 0, dy: 1 }, deltaTimeForOneTile);
+      expect(ghost.isScared).toBe(true);
+
+      // 2. Position Pacman and ghost for collision
+      // Manually set positions for collision for test clarity
+      pacman.x = 2;
+      pacman.y = 1;
+      ghost.x = 2;
+      ghost.y = 1;
+      
+      // Update Pacman to trigger collision check. Use a minimal delta time.
+      state.updatePacman({ dx: 0, dy: 0 }, 1); 
+ 
+       // Expect ghost to be reset to initial position
+      expect(ghost.x).toBe(initialGhostX);
+      expect(ghost.y).toBe(initialGhostY);
+      // Expect ghost to no longer be scared
+      expect(ghost.isScared).toBeFalsy();
+      // Expect score to increase by GHOST_EATEN_SCORE (plus power pellet score)
+      expect(state.getScore()).toBe(POWER_PELLET_SCORE + GHOST_EATEN_SCORE);
+      // Expect lives to remain unchanged
+      expect(state.getLives()).toBe(initialLives);
+    });
   });
 });

@@ -16,7 +16,8 @@ export class GhostAI {
   public static pickDirection(
     ghost: Entity,
     target: { x: number; y: number },
-    grid: IGrid
+    grid: IGrid,
+    isScared: boolean = false
   ): Direction {
     const x = Math.round(ghost.x);
     const y = Math.round(ghost.y);
@@ -57,15 +58,27 @@ export class GhostAI {
       return validMoves[0]!;
     }
 
-    // Otherwise, pick the move that minimizes Manhattan distance to target
+    // Otherwise, pick the move that optimizes Manhattan distance to target
     let bestDir = validMoves[0]!;
-    let minDistance = Infinity;
+    // If scared, we want to maximize distance (start with -Infinity).
+    // If not scared, we want to minimize distance (start with Infinity).
+    let bestDist = isScared ? -Infinity : Infinity;
 
     for (const dir of validMoves) {
       const distance = this.getManhattanDistance(x + dir.dx, y + dir.dy, target.x, target.y);
-      if (distance < minDistance) {
-        minDistance = distance;
-        bestDir = dir;
+      
+      if (isScared) {
+        // Flee: Maximize distance
+        if (distance > bestDist) {
+          bestDist = distance;
+          bestDir = dir;
+        }
+      } else {
+        // Chase: Minimize distance
+        if (distance < bestDist) {
+          bestDist = distance;
+          bestDir = dir;
+        }
       }
     }
 

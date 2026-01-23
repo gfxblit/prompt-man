@@ -278,7 +278,7 @@ export class Renderer implements IRenderer {
       }
 
       case EntityType.Ghost:
-        this.ctx.fillStyle = entity.color || COLORS.GHOST_DEFAULT;
+        this.ctx.fillStyle = entity.isScared ? COLORS.SCARED_GHOST : (entity.color || COLORS.GHOST_DEFAULT);
         this.ctx.beginPath();
         this.ctx.arc(screenX, screenY, TILE_SIZE / 2 - 1, Math.PI, 0);
         this.ctx.lineTo(screenX + TILE_SIZE / 2 - 1, screenY + TILE_SIZE / 2 - 1);

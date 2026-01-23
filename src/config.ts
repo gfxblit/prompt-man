@@ -9,8 +9,16 @@ export const POWER_PELLET_SCORE = 50;
 export const PACMAN_SPEED = 5 / 1000;
 /** Ghost speed in tiles per millisecond. */
 export const GHOST_SPEED = 4 / 1000;
+/** Duration in milliseconds for how long power-up lasts. */
+export const POWER_UP_DURATION = 10000; // 10 seconds
+/** Speed of scared ghosts, as a fraction of their normal speed. */
+export const SCARED_GHOST_SPEED_MULTIPLIER = 0.5;
+/** Score awarded for eating a scared ghost. */
+export const GHOST_EATEN_SCORE = 200;
 /** A small tolerance to check for grid alignment. */
 export const ALIGNMENT_TOLERANCE = 0.05;
+/** Collision threshold: roughly overlapping (less than 1 tile usually). */
+export const COLLISION_THRESHOLD = 0.5;
 
 /**
  * Assets configuration
@@ -47,6 +55,7 @@ export const COLORS = {
   PACMAN: 'yellow',
   GHOST_COLORS: ['red', 'pink', 'cyan', 'orange'],
   GHOST_DEFAULT: 'red',
+  SCARED_GHOST: 'blue',
 } as const;
 
 /**
