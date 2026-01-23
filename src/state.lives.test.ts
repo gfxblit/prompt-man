@@ -2,13 +2,13 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { GameState } from './state.js';
 import { Grid } from './grid.js';
-import { EntityType } from './types.js';
-import { PACMAN_DEATH_ANIMATION_SPEED } from './config.js';
+import { PACMAN_DEATH_ANIMATION } from './config.js';
+import { EntityType, IGrid } from './types.js';
 
-describe('GameState Lives and Collision', () => {
-  let grid: Grid;
+describe('GameState Lives', () => {
+  let grid: IGrid;
   let state: GameState;
-  const DEATH_TIME = 12 * PACMAN_DEATH_ANIMATION_SPEED + 1;
+  const DEATH_TIME = 12 * PACMAN_DEATH_ANIMATION.SPEED + 1;
 
   const TEST_LEVEL = `
 #####

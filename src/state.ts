@@ -13,7 +13,7 @@ import {
   COLLISION_THRESHOLD,
   COLORS,
   PACMAN_ANIMATION_SPEED,
-  PACMAN_DEATH_ANIMATION_SPEED
+  PACMAN_DEATH_ANIMATION
 } from './config.js';
 import { GhostAI } from './ghost-ai.js';
 
@@ -157,7 +157,7 @@ export class GameState implements IGameState {
       const currentDeathTimer = (pacman.deathTimer || 0) + deltaTime;
       pacman.deathTimer = currentDeathTimer;
       
-      const frameIndex = Math.floor(currentDeathTimer / PACMAN_DEATH_ANIMATION_SPEED);
+      const frameIndex = Math.floor(currentDeathTimer / PACMAN_DEATH_ANIMATION.SPEED);
       if (frameIndex >= 12) {
         this.finishDying();
       } else {
@@ -168,7 +168,11 @@ export class GameState implements IGameState {
 
     // Check collisions
     this.checkCollisions(pacman);
-    if (this.dying) return; // Re-check after collision might have set it
+    if (this.dying) {
+      // If dying, reset velocity immediately to prevent further movement during animation
+      pacman.direction = { dx: 0, dy: 0 };
+      return;
+    }
 
     // Update intended direction if input is provided
     if (direction.dx !== 0 || direction.dy !== 0) {
