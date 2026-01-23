@@ -362,6 +362,7 @@ export class Renderer implements IRenderer {
           const colorRow = GHOST_COLOR_ROWS[colorKey] ?? 0;
           const frameIndex = entity.animationFrame ?? 0;
           const frame = GHOST_ANIMATION_FRAMES[frameIndex % GHOST_ANIMATION_FRAMES.length];
+          if (!frame) return;
           const [, sCol, flipX, flipY] = frame;
 
           const sourceX = GHOST_PALETTE_OFFSET_X + (sCol * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X;
