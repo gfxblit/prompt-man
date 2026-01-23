@@ -37,9 +37,9 @@ export const PACMAN_PALETTE_OFFSET_Y = 319;
 /** Pixel size of the Ghost sprite in the source palette. */
 export const SOURCE_GHOST_SIZE = 17;
 /** X offset (pixels) for Ghost sprites in the palette image. */
-export const GHOST_PALETTE_OFFSET_X = 0; // Placeholder
+export const GHOST_PALETTE_OFFSET_X = 558;
 /** Y offset (pixels) for Ghost sprites in the palette image. */
-export const GHOST_PALETTE_OFFSET_Y = 0; // Placeholder
+export const GHOST_PALETTE_OFFSET_Y = 277;
 /** Animation speed in milliseconds per frame. */
 export const PACMAN_ANIMATION_SPEED = 100;
 /** Pacman death animation configuration. */
