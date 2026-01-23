@@ -20,10 +20,10 @@ export const PALETTE_URL = 'art/palettes.png';
 export const PALETTE_ORIGIN_X = 600;
 /** Global Y offset (pixels) for the start of the tilemap in the palette sheet. */
 export const PALETTE_ORIGIN_Y = 186;
-/** X offset (pixels) for Pacman sprites relative to PALETTE_ORIGIN. */
-export const PACMAN_PALETTE_OFFSET_X = -146;
-/** Y offset (pixels) for Pacman sprites relative to PALETTE_ORIGIN. */
-export const PACMAN_PALETTE_OFFSET_Y = -186;
+/** X offset (pixels) for Pacman sprites in the palette image. */
+export const PACMAN_PALETTE_OFFSET_X = 502;
+/** Y offset (pixels) for Pacman sprites in the palette image. */
+export const PACMAN_PALETTE_OFFSET_Y = 319;
 /** Animation speed in milliseconds per frame. */
 export const PACMAN_ANIMATION_SPEED = 100;
 /** Padding (pixels) on the left of each sprite in the palette (e.g., pink boundary). */

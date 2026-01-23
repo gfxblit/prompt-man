@@ -224,8 +224,8 @@ export class Renderer implements IRenderer {
           const frameIndex = entity.animationFrame ?? 0;
           const [sRow, sCol, flipX, flipY] = PACMAN_ANIMATION_MAP[dirKey][frameIndex as 0 | 1 | 2];
 
-          const sourceX = PALETTE_ORIGIN_X + PACMAN_PALETTE_OFFSET_X + (sCol * SOURCE_PACMAN_SIZE);
-          const sourceY = PALETTE_ORIGIN_Y + PACMAN_PALETTE_OFFSET_Y + (sRow * SOURCE_PACMAN_SIZE);
+          const sourceX = PACMAN_PALETTE_OFFSET_X + (sCol * SOURCE_PACMAN_SIZE);
+          const sourceY = PACMAN_PALETTE_OFFSET_Y + (sRow * SOURCE_PACMAN_SIZE);
 
           this.ctx.save();
           this.ctx.translate(screenX, screenY);

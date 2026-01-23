@@ -201,6 +201,9 @@ export class GameState implements IGameState {
       const frames = [0, 1, 2, 1] as const;
       const frameIndex = Math.floor(currentTimer / PACMAN_ANIMATION_SPEED) % 4;
       pacman.animationFrame = frames[frameIndex as 0 | 1 | 2 | 3];
+    } else {
+      // When static, show the first frame (closed mouth) of the last direction
+      pacman.animationFrame = 0;
     }
 
     // Consume pellet at the center

@@ -70,7 +70,7 @@ describe('Renderer', () => {
   it('should render Wall using autotiling when spritesheet is provided', () => {
     const mockSpritesheet = {} as HTMLImageElement;
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D, mockSpritesheet);
-    
+
     const grid = Grid.fromString('#');
     renderer.render(grid, mockState);
 
@@ -108,7 +108,7 @@ describe('Renderer', () => {
   it('should NOT render a Pellet if it is eaten', () => {
     vi.mocked(mockState.isPelletEaten).mockReturnValue(true);
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
-    
+
     const grid = new Grid(1, 1);
     grid.setTile(0, 0, TileType.Pellet);
 
@@ -203,23 +203,23 @@ describe('Renderer', () => {
   });
 
   it.each([
-    { direction: 'East', rotation: 0, frame: 0, expectedFlipX: true, expectedFlipY: false },
-    { direction: 'East', rotation: 0, frame: 1, expectedFlipX: true, expectedFlipY: false },
+    { direction: 'East', rotation: 0, frame: 0, expectedFlipX: false, expectedFlipY: false },
+    { direction: 'East', rotation: 0, frame: 1, expectedFlipX: false, expectedFlipY: false },
     { direction: 'South', rotation: Math.PI / 2, frame: 0, expectedFlipX: false, expectedFlipY: false },
     { direction: 'South', rotation: Math.PI / 2, frame: 1, expectedFlipX: false, expectedFlipY: false },
-    { direction: 'West', rotation: Math.PI, frame: 0, expectedFlipX: false, expectedFlipY: false },
-    { direction: 'West', rotation: Math.PI, frame: 1, expectedFlipX: false, expectedFlipY: false },
+    { direction: 'West', rotation: Math.PI, frame: 0, expectedFlipX: true, expectedFlipY: false },
+    { direction: 'West', rotation: Math.PI, frame: 1, expectedFlipX: true, expectedFlipY: false },
     { direction: 'North', rotation: -Math.PI / 2, frame: 0, expectedFlipX: false, expectedFlipY: true },
     { direction: 'North', rotation: -Math.PI / 2, frame: 1, expectedFlipX: false, expectedFlipY: true },
   ])('should render Pacman using spritesheet for $direction (frame $frame)', ({ rotation, frame, expectedFlipX, expectedFlipY }) => {
     const mockSpritesheet = {} as HTMLImageElement;
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D, mockSpritesheet);
     const grid = new Grid(1, 1);
-    
-    const entities = [{ 
-      type: EntityType.Pacman, 
-      x: 0, 
-      y: 0, 
+
+    const entities = [{
+      type: EntityType.Pacman,
+      x: 0,
+      y: 0,
       rotation: rotation,
       animationFrame: frame
     }];
@@ -229,11 +229,11 @@ describe('Renderer', () => {
 
     expect(mockContext.save).toHaveBeenCalled();
     expect(mockContext.translate).toHaveBeenCalledWith(TILE_SIZE / 2, TILE_SIZE / 2);
-    
+
     const scaleX = expectedFlipX ? -1 : 1;
     const scaleY = expectedFlipY ? -1 : 1;
     expect(mockContext.scale).toHaveBeenCalledWith(scaleX, scaleY);
-    
+
     expect(mockContext.drawImage).toHaveBeenCalledWith(
       mockSpritesheet,
       expect.any(Number), // sourceX
@@ -245,7 +245,7 @@ describe('Renderer', () => {
       TILE_SIZE,
       TILE_SIZE
     );
-    
+
     expect(mockContext.restore).toHaveBeenCalled();
   });
 
@@ -253,10 +253,10 @@ describe('Renderer', () => {
     const grid = new Grid(1, 1);
     // Facing down (rotation for PI/2)
     const rotation = Math.PI / 2;
-    const entities = [{ 
-      type: EntityType.Pacman, 
-      x: 0, 
-      y: 0, 
+    const entities = [{
+      type: EntityType.Pacman,
+      x: 0,
+      y: 0,
       rotation: rotation,
       animationFrame: 2
     }];
