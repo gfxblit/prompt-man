@@ -74,7 +74,10 @@ describe('GameState Animation', () => {
     state.updatePacman({ dx: 1, dy: 0 }, PACMAN_ANIMATION_SPEED);
     expect(pacman.animationFrame).toBe(1);
 
-    // Stop Pacman - should reset to frame 0 (closed mouth)
+    // Stop Pacman manually (simulating hitting a wall or other stopping condition)
+    pacman.direction = { dx: 0, dy: 0 };
+
+    // Call updatePacman with no new direction to update animation
     state.updatePacman({ dx: 0, dy: 0 }, 1000);
 
     expect(pacman.animationFrame).toBe(0);

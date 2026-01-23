@@ -141,6 +141,8 @@ export class GameState implements IGameState {
     // Default to current direction or stopped
     let moveDir = pacman.direction || { dx: 0, dy: 0 };
 
+
+
     const distance = PACMAN_SPEED * deltaTime;
 
     // Try to apply nextDirection
@@ -185,16 +187,8 @@ export class GameState implements IGameState {
     // Set the direction on entity
     pacman.direction = moveDir;
 
-    // Stop if no direction
-    if (moveDir.dx === 0 && moveDir.dy === 0) return;
-
-    // Update rotation
-    pacman.rotation = Math.atan2(moveDir.dy, moveDir.dx);
-
-    // Perform movement
-    this.moveEntity(pacman, distance);
-
-    const isMoving = pacman.direction.dx !== 0 || pacman.direction.dy !== 0;
+    // Update animation based on movement
+    const isMoving = moveDir.dx !== 0 || moveDir.dy !== 0;
     if (isMoving) {
       const currentTimer = (pacman.animationTimer || 0) + deltaTime;
       pacman.animationTimer = currentTimer;
@@ -205,6 +199,15 @@ export class GameState implements IGameState {
       // When static, show the first frame (closed mouth) of the last direction
       pacman.animationFrame = 0;
     }
+
+    // Stop if no direction
+    if (moveDir.dx === 0 && moveDir.dy === 0) return;
+
+    // Update rotation
+    pacman.rotation = Math.atan2(moveDir.dy, moveDir.dx);
+
+    // Perform movement
+    this.moveEntity(pacman, distance);
 
     // Consume pellet at the center
     const consumeX = this.getWrappedCoordinate(Math.round(pacman.x), this.width);
