@@ -29,6 +29,8 @@ export const PALETTE_PADDING_Y = 1;
  * Rendering configuration
  */
 export const TILE_SIZE = 18;
+/** Time in milliseconds for each blink state (on/off). */
+export const POWER_PELLET_BLINK_RATE = 250;
 
 /**
  * Game color palette
