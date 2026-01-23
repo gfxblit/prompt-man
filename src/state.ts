@@ -9,6 +9,7 @@ import {
   SCARED_GHOST_SPEED_MULTIPLIER,
   GHOST_EATEN_SCORE,
   ALIGNMENT_TOLERANCE,
+  COLLISION_THRESHOLD,
   COLORS,
   PACMAN_ANIMATION_SPEED
 } from './config.js';
@@ -233,8 +234,8 @@ export class GameState implements IGameState {
         Math.pow(pacman.x - ghost.x, 2) + Math.pow(pacman.y - ghost.y, 2)
       );
 
-      // Collision threshold: roughly overlapping (less than 1 tile usually, let's say 0.5)
-      if (dist < 0.5) {
+      // Collision threshold: roughly overlapping (less than 1 tile usually)
+      if (dist < COLLISION_THRESHOLD) {
         if (ghost.isScared) {
           // Ghost is eaten
           this.score += GHOST_EATEN_SCORE;

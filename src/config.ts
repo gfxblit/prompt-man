@@ -17,6 +17,8 @@ export const SCARED_GHOST_SPEED_MULTIPLIER = 0.5;
 export const GHOST_EATEN_SCORE = 200;
 /** A small tolerance to check for grid alignment. */
 export const ALIGNMENT_TOLERANCE = 0.05;
+/** Collision threshold: roughly overlapping (less than 1 tile usually). */
+export const COLLISION_THRESHOLD = 0.5;
 
 /**
  * Assets configuration
