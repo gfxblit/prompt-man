@@ -38,6 +38,7 @@ export const PACMAN_PALETTE_OFFSET_Y = 319;
 export const PACMAN_ANIMATION_SPEED = 100;
 /** Pacman death animation configuration. */
 export const PACMAN_DEATH_ANIMATION_SPEED = 100;
+export const PACMAN_DEATH_ANIMATION_FRAMES = 12;
 export const PACMAN_DEATH_PALETTE_OFFSET_X = 502;
 export const PACMAN_DEATH_PALETTE_OFFSET_Y = 319;
 /** Padding (pixels) on the left of each sprite in the palette (e.g., pink boundary). */

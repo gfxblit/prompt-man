@@ -12,7 +12,8 @@ import {
   PACMAN_PALETTE_OFFSET_X,
   PACMAN_PALETTE_OFFSET_Y,
   PACMAN_DEATH_PALETTE_OFFSET_X,
-  PACMAN_DEATH_PALETTE_OFFSET_Y
+  PACMAN_DEATH_PALETTE_OFFSET_Y,
+  PACMAN_DEATH_ANIMATION_FRAMES
 } from './config.js';
 import { getTileMask } from './autotile.js';
 import { TILE_MAP, SOURCE_QUADRANT_SIZE, STATIC_SPRITE_MAP, SOURCE_TILE_SIZE, PACMAN_ANIMATION_MAP, SOURCE_PACMAN_SIZE, PACMAN_DEATH_ANIMATION_MAP } from './sprites.js';
@@ -223,7 +224,7 @@ export class Renderer implements IRenderer {
     } else {
       // Fallback: shrinking circle
       const maxRadius = TILE_SIZE / 2 - 1;
-      const progress = frameIndex / 12;
+      const progress = frameIndex / PACMAN_DEATH_ANIMATION_FRAMES;
       const radius = Math.max(0, maxRadius * (1 - progress));
 
       if (radius > 0) {
