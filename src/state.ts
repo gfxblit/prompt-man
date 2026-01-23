@@ -14,7 +14,8 @@ import {
   COLORS,
   PACMAN_ANIMATION_SPEED,
   PACMAN_DEATH_ANIMATION_SPEED,
-  PACMAN_DEATH_ANIMATION_FRAMES
+  PACMAN_DEATH_ANIMATION_FRAMES,
+  GHOST_ANIMATION_SPEED
 } from './config.js';
 
 import { GhostAI } from './ghost-ai.js';
@@ -72,6 +73,8 @@ export class GameState implements IGameState {
         x: spawn.x,
         y: spawn.y,
         color: ghostColors[i % ghostColors.length]!,
+        animationFrame: 0,
+        animationTimer: 0,
       };
       this.entities.push(ghost);
       this.initialPositions.set(ghost, { x: spawn.x, y: spawn.y });
@@ -433,8 +436,14 @@ export class GameState implements IGameState {
       }
 
       // 3. Move the ghost
-      if (ghost.direction && (ghost.direction.dx !== 0 || ghost.direction.dy !== 0)) {
+      const isMoving = ghost.direction && (ghost.direction.dx !== 0 || ghost.direction.dy !== 0);
+      if (isMoving) {
         this.moveEntity(ghost, distance);
+
+        // Update animation
+        const currentTimer = (ghost.animationTimer || 0) + deltaTime;
+        ghost.animationTimer = currentTimer;
+        ghost.animationFrame = Math.floor(currentTimer / GHOST_ANIMATION_SPEED) % 8;
       }
     }
   }

@@ -419,3 +419,19 @@ export const PACMAN_DEATH_ANIMATION_MAP: [number, number][] = [
   [0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5],
   [1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5],
 ];
+
+/**
+ * Animation frames for Ghosts.
+ * 8-frame cycle [row, col, flipX, flipY]
+ * row and col are in 17px units relative to the GHOST_PALETTE_OFFSET position.
+ */
+export const GHOST_ANIMATION_FRAMES = [
+  [0, 0, false, false],
+  [0, 1, false, false],
+  [0, 2, false, false],
+  [0, 3, false, false],
+  [0, 4, false, false],
+  [0, 5, false, false],
+  [0, 6, false, false],
+  [0, 7, false, false],
+] as const;

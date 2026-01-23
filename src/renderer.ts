@@ -13,10 +13,22 @@ import {
   PACMAN_PALETTE_OFFSET_Y,
   PACMAN_DEATH_PALETTE_OFFSET_X,
   PACMAN_DEATH_PALETTE_OFFSET_Y,
-  PACMAN_DEATH_ANIMATION_FRAMES
+  PACMAN_DEATH_ANIMATION_FRAMES,
+  GHOST_PALETTE_OFFSET_X,
+  GHOST_PALETTE_OFFSET_Y,
+  SOURCE_GHOST_SIZE
 } from './config.js';
 import { getTileMask } from './autotile.js';
-import { TILE_MAP, SOURCE_QUADRANT_SIZE, STATIC_SPRITE_MAP, SOURCE_TILE_SIZE, PACMAN_ANIMATION_MAP, SOURCE_PACMAN_SIZE, PACMAN_DEATH_ANIMATION_MAP } from './sprites.js';
+import {
+  TILE_MAP,
+  SOURCE_QUADRANT_SIZE,
+  STATIC_SPRITE_MAP,
+  SOURCE_TILE_SIZE,
+  PACMAN_ANIMATION_MAP,
+  SOURCE_PACMAN_SIZE,
+  PACMAN_DEATH_ANIMATION_MAP,
+  GHOST_ANIMATION_FRAMES
+} from './sprites.js';
 
 export class Renderer implements IRenderer {
   constructor(
@@ -345,6 +357,47 @@ export class Renderer implements IRenderer {
           // Right pupil
           this.ctx.arc(screenX + TILE_SIZE / 6, screenY - TILE_SIZE / 8, TILE_SIZE / 16, 0, Math.PI * 2);
           this.ctx.fill();
+        } else if (this.spritesheet) {
+          const ghostColorRows: Record<string, number> = {
+            'red': 0,
+            'pink': 1,
+            'cyan': 2,
+            'orange': 3
+          };
+          let colorRow = 0;
+          if (entity.isScared) {
+            colorRow = 4;
+          } else {
+            const color = entity.color || COLORS.GHOST_DEFAULT;
+            colorRow = ghostColorRows[color] ?? 0;
+          }
+          const frameIndex = entity.animationFrame ?? 0;
+          const [sRow, sCol, flipX, flipY] = GHOST_ANIMATION_FRAMES[frameIndex % 8]!;
+
+          // Add colorRow to sRow to select the correct color
+          const sourceX = GHOST_PALETTE_OFFSET_X + (sCol * SOURCE_GHOST_SIZE);
+          const sourceY = GHOST_PALETTE_OFFSET_Y + ((sRow + colorRow) * SOURCE_GHOST_SIZE);
+
+          this.ctx.save();
+          this.ctx.translate(screenX, screenY);
+
+          const scaleX = flipX ? -1 : 1;
+          const scaleY = flipY ? -1 : 1;
+          this.ctx.scale(scaleX, scaleY);
+
+          this.ctx.drawImage(
+            this.spritesheet,
+            sourceX + PALETTE_PADDING_X,
+            sourceY + PALETTE_PADDING_Y,
+            SOURCE_GHOST_SIZE - PALETTE_PADDING_X,
+            SOURCE_GHOST_SIZE - PALETTE_PADDING_Y,
+            -TILE_SIZE / 2,
+            -TILE_SIZE / 2,
+            TILE_SIZE,
+            TILE_SIZE
+          );
+
+          this.ctx.restore();
         } else {
           this.ctx.fillStyle = entity.isScared ? COLORS.SCARED_GHOST : (entity.color || COLORS.GHOST_DEFAULT);
           this.ctx.beginPath();

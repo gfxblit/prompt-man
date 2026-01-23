@@ -276,6 +276,31 @@ describe('Renderer', () => {
     expect(lastArcCall![4]).toBeCloseTo(endAngle);
   });
 
+  it('should render a Ghost using spritesheet when provided', () => {
+    const mockSpritesheet = {} as HTMLImageElement;
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D, mockSpritesheet);
+    const grid = new Grid(1, 1);
+
+    const entities = [{ type: EntityType.Ghost, x: 0, y: 0, color: 'pink', animationFrame: 2 }];
+    vi.mocked(mockState.getEntities).mockReturnValue(entities);
+
+    renderer.render(grid, mockState);
+
+    expect(mockContext.save).toHaveBeenCalled();
+    expect(mockContext.drawImage).toHaveBeenCalledWith(
+      mockSpritesheet,
+      expect.any(Number), // sourceX
+      expect.any(Number), // sourceY
+      expect.any(Number), // sourceWidth
+      expect.any(Number), // sourceHeight
+      -TILE_SIZE / 2,     // destX
+      -TILE_SIZE / 2,     // destY
+      TILE_SIZE,
+      TILE_SIZE
+    );
+    expect(mockContext.restore).toHaveBeenCalled();
+  });
+
   it('should render a Ghost correctly', () => {
     const grid = new Grid(1, 1);
     const entities = [{ type: EntityType.Ghost, x: 0, y: 0, color: 'pink' }];
