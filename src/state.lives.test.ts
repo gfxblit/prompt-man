@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { GameState } from './state.js';
 import { Grid } from './grid.js';
 import { PACMAN_DEATH_ANIMATION } from './config.js';
-import { EntityType, IGrid } from './types.js';
+import { EntityType, type IGrid } from './types.js';
 
 describe('GameState Lives', () => {
   let grid: IGrid;
