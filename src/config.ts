@@ -75,6 +75,50 @@ export const COLORS = {
 } as const;
 
 /**
+ * Animation frames for Pacman in each direction.
+ * Each direction has 3 frames: [row, col, flipX, flipY]
+ * row and col are in 17px units relative to the absolute PACMAN_PALETTE_OFFSET position in the image.
+ */
+export const PACMAN_ANIMATION_MAP = {
+  NORTH: [
+    [0, 1, false, true],
+    [1, 1, false, true],
+    [2, 0, false, true],
+  ],
+  SOUTH: [
+    [0, 1, false, false],
+    [1, 1, false, false],
+    [2, 0, false, false],
+  ],
+  WEST: [
+    [0, 0, true, false],
+    [1, 0, true, false],
+    [2, 0, true, false],
+  ],
+  EAST: [
+    [0, 0, false, false],
+    [1, 0, false, false],
+    [2, 0, false, false],
+  ],
+} as const;
+
+/**
+ * Animation frames for Ghosts.
+ * 8-frame cycle [row, col, flipX, flipY]
+ * row and col are in 17px units relative to the GHOST_PALETTE_OFFSET position.
+ */
+export const GHOST_ANIMATION_FRAMES = [
+  [0, 0, false, false],
+  [0, 1, false, false],
+  [0, 2, false, false],
+  [0, 3, false, false],
+  [0, 4, false, false],
+  [0, 5, false, false],
+  [0, 6, false, false],
+  [0, 7, false, false],
+] as const;
+
+/**
  * Joystick configuration
  */
 export const JOYSTICK = {

@@ -261,11 +261,11 @@ export class GameState implements IGameState {
   private updatePacmanAnimation(pacman: Entity, moveDir: Direction, deltaTime: number): void {
     const isMoving = moveDir.dx !== 0 || moveDir.dy !== 0;
     if (isMoving) {
-      const currentTimer = (pacman.animationTimer || 0) + deltaTime;
-      pacman.animationTimer = currentTimer;
+      const currentTimer = (pacman.animationTimer ?? 0) + deltaTime;
       const frames = [0, 1, 2, 1] as const;
       const frameIndex = Math.floor(currentTimer / PACMAN_ANIMATION_SPEED) % 4;
       pacman.animationFrame = frames[frameIndex as 0 | 1 | 2 | 3];
+      pacman.animationTimer = currentTimer % (PACMAN_ANIMATION_SPEED * 4);
     } else {
       // When static, show the first frame (closed mouth) of the last direction
       pacman.animationFrame = 0;
@@ -440,10 +440,12 @@ export class GameState implements IGameState {
       if (isMoving) {
         this.moveEntity(ghost, distance);
 
-        // Update animation
-        const currentTimer = (ghost.animationTimer || 0) + deltaTime;
-        ghost.animationTimer = currentTimer;
-        ghost.animationFrame = Math.floor(currentTimer / GHOST_ANIMATION_SPEED) % 8;
+        // Update animation only if still moving (didn't hit a wall)
+        if (ghost.direction && (ghost.direction.dx !== 0 || ghost.direction.dy !== 0)) {
+          const currentTimer = (ghost.animationTimer ?? 0) + deltaTime;
+          ghost.animationFrame = Math.floor(currentTimer / GHOST_ANIMATION_SPEED) % 8;
+          ghost.animationTimer = currentTimer % (GHOST_ANIMATION_SPEED * 8);
+        }
       }
     }
   }

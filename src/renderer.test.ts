@@ -3,7 +3,16 @@ import { Renderer, UIRenderer } from './renderer.js';
 import { Grid } from './grid.js';
 import { TileType, EntityType } from './types.js';
 import type { IGameState } from './types.js';
-import { TILE_SIZE, COLORS, PACMAN_DEATH_ANIMATION_FRAMES } from './config.js';
+import {
+  TILE_SIZE,
+  COLORS,
+  PACMAN_DEATH_ANIMATION_FRAMES,
+  GHOST_PALETTE_OFFSET_X,
+  GHOST_PALETTE_OFFSET_Y,
+  SOURCE_GHOST_SIZE,
+  PALETTE_PADDING_X,
+  PALETTE_PADDING_Y
+} from './config.js';
 
 describe('Renderer', () => {
   let mockContext: {
@@ -281,7 +290,8 @@ describe('Renderer', () => {
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D, mockSpritesheet);
     const grid = new Grid(1, 1);
 
-    const entities = [{ type: EntityType.Ghost, x: 0, y: 0, color: 'pink', animationFrame: 2 }];
+    // Frame 0, red ghost
+    const entities = [{ type: EntityType.Ghost, x: 0, y: 0, color: 'red', animationFrame: 0 }];
     vi.mocked(mockState.getEntities).mockReturnValue(entities);
 
     renderer.render(grid, mockState);
@@ -289,10 +299,10 @@ describe('Renderer', () => {
     expect(mockContext.save).toHaveBeenCalled();
     expect(mockContext.drawImage).toHaveBeenCalledWith(
       mockSpritesheet,
-      expect.any(Number), // sourceX
-      expect.any(Number), // sourceY
-      expect.any(Number), // sourceWidth
-      expect.any(Number), // sourceHeight
+      GHOST_PALETTE_OFFSET_X + (0 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X, // sourceX
+      GHOST_PALETTE_OFFSET_Y + (0 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_Y, // sourceY
+      SOURCE_GHOST_SIZE - PALETTE_PADDING_X,
+      SOURCE_GHOST_SIZE - PALETTE_PADDING_Y,
       -TILE_SIZE / 2,     // destX
       -TILE_SIZE / 2,     // destY
       TILE_SIZE,

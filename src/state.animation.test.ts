@@ -3,6 +3,7 @@ import { GameState } from './state.js';
 import { Grid } from './grid.js';
 import { EntityType } from './types.js';
 import { PACMAN_ANIMATION_SPEED, GHOST_ANIMATION_SPEED } from './config.js';
+import { GhostAI } from './ghost-ai.js';
 
 describe('GameState Animation', () => {
   let grid: Grid;
@@ -19,6 +20,8 @@ describe('GameState Animation', () => {
       setItem: vi.fn(),
       clear: vi.fn(),
     });
+    // Mock GhostAI to always move right by default in tests to avoid flakiness
+    vi.spyOn(GhostAI, 'pickDirection').mockReturnValue({ dx: 1, dy: 0 });
   });
 
   describe('Pacman', () => {
@@ -65,6 +68,17 @@ describe('GameState Animation', () => {
 
       state.updatePacman({ dx: 1, dy: 0 }, PACMAN_ANIMATION_SPEED); // Frame 0 again
       expect(pacman.animationFrame).toBe(0);
+    });
+
+    it('should reset animation timer when animation frame cycles', () => {
+      const state = new GameState(grid);
+      const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+
+      state.updatePacman({ dx: 1, dy: 0 }, PACMAN_ANIMATION_SPEED); // 100
+      state.updatePacman({ dx: 1, dy: 0 }, PACMAN_ANIMATION_SPEED); // 200
+      state.updatePacman({ dx: 1, dy: 0 }, PACMAN_ANIMATION_SPEED); // 300
+      state.updatePacman({ dx: 1, dy: 0 }, PACMAN_ANIMATION_SPEED); // 400 -> 0 (Full cycle)
+      expect(pacman.animationTimer).toBe(0);
     });
 
     it('should reset animation frame to 0 when Pacman stops', () => {
@@ -127,9 +141,9 @@ describe('GameState Animation', () => {
 
     it('should cycle animation frame through 0-7', () => {
       const ghostTemplate = `
-#####
-#G..#
-#####
+###########
+#G........#
+###########
       `.trim();
       const ghostGrid = Grid.fromString(ghostTemplate);
       const state = new GameState(ghostGrid);

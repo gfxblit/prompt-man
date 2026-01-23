@@ -16,7 +16,9 @@ import {
   PACMAN_DEATH_ANIMATION_FRAMES,
   GHOST_PALETTE_OFFSET_X,
   GHOST_PALETTE_OFFSET_Y,
-  SOURCE_GHOST_SIZE
+  SOURCE_GHOST_SIZE,
+  PACMAN_ANIMATION_MAP,
+  GHOST_ANIMATION_FRAMES
 } from './config.js';
 import { getTileMask } from './autotile.js';
 import {
@@ -24,10 +26,8 @@ import {
   SOURCE_QUADRANT_SIZE,
   STATIC_SPRITE_MAP,
   SOURCE_TILE_SIZE,
-  PACMAN_ANIMATION_MAP,
   SOURCE_PACMAN_SIZE,
-  PACMAN_DEATH_ANIMATION_MAP,
-  GHOST_ANIMATION_FRAMES
+  PACMAN_DEATH_ANIMATION_MAP
 } from './sprites.js';
 
 export class Renderer implements IRenderer {
@@ -375,8 +375,8 @@ export class Renderer implements IRenderer {
           const [sRow, sCol, flipX, flipY] = GHOST_ANIMATION_FRAMES[frameIndex % 8]!;
 
           // Add colorRow to sRow to select the correct color
-          const sourceX = GHOST_PALETTE_OFFSET_X + (sCol * SOURCE_GHOST_SIZE);
-          const sourceY = GHOST_PALETTE_OFFSET_Y + ((sRow + colorRow) * SOURCE_GHOST_SIZE);
+          const sourceX = GHOST_PALETTE_OFFSET_X + (sCol * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X;
+          const sourceY = GHOST_PALETTE_OFFSET_Y + ((sRow + colorRow) * SOURCE_GHOST_SIZE) + PALETTE_PADDING_Y;
 
           this.ctx.save();
           this.ctx.translate(screenX, screenY);
@@ -387,8 +387,8 @@ export class Renderer implements IRenderer {
 
           this.ctx.drawImage(
             this.spritesheet,
-            sourceX + PALETTE_PADDING_X,
-            sourceY + PALETTE_PADDING_Y,
+            sourceX,
+            sourceY,
             SOURCE_GHOST_SIZE - PALETTE_PADDING_X,
             SOURCE_GHOST_SIZE - PALETTE_PADDING_Y,
             -TILE_SIZE / 2,
