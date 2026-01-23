@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { GhostAI } from './ghost-ai.js';
 import { Grid } from './grid.js';
-import { EntityType, Entity } from './types.js';
+import { EntityType, type Entity } from './types.js';
 
 describe('Power Pellet Mechanics', () => {
   

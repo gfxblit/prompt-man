@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, it, expect, vi, beforeEach, afterEach, type HTMLElement } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from 'vitest';
 import { init } from './index.js';
 import { setupMockImage, mock2dContext, MockImage } from './test-utils.js';
 
@@ -138,7 +138,7 @@ describe('index robustness', () => {
     expect(highScoreElMock.innerText).toBe('High Score: 100');
 
     // Manually trigger a frame update
-    (performance.now as vi.Mock).mockReturnValue(100); 
+    (performance.now as Mock).mockReturnValue(100); 
     
     expect(highScoreElMock.innerText).toContain('High Score:');
   });

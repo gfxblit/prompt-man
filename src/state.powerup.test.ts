@@ -36,33 +36,33 @@ describe('GameState Power Up Mechanics', () => {
   it('eating a power pellet puts ghosts in scared state', () => {
     const ghosts = gameState.getEntities().filter(e => e.type === EntityType.Ghost);
     expect(ghosts.length).toBeGreaterThan(0);
-    expect(ghosts[0].isScared).toBeFalsy();
+    expect(ghosts[0]!.isScared).toBeFalsy();
 
     // Consume power pellet at (5, 1)
     gameState.consumePellet(5, 1);
 
-    expect(ghosts[0].isScared).toBe(true);
+    expect(ghosts[0]!.isScared).toBe(true);
   });
 
   it('scared ghosts revert to normal after timer expires', () => {
     gameState.consumePellet(5, 1);
     const ghosts = gameState.getEntities().filter(e => e.type === EntityType.Ghost);
-    expect(ghosts[0].isScared).toBe(true);
+    expect(ghosts[0]!.isScared).toBe(true);
 
     // Update with time less than duration
     gameState.updateGhosts(POWER_UP_DURATION - 100);
-    expect(ghosts[0].isScared).toBe(true);
+    expect(ghosts[0]!.isScared).toBe(true);
 
     // Update with remaining time
     gameState.updateGhosts(200);
-    expect(ghosts[0].isScared).toBe(false);
+    expect(ghosts[0]!.isScared).toBe(false);
   });
 
   it('eating a scared ghost awards points and resets ghost', () => {
     gameState.consumePellet(5, 1);
     const ghosts = gameState.getEntities().filter(e => e.type === EntityType.Ghost);
     const pacman = gameState.getEntities().find(e => e.type === EntityType.Pacman)!;
-    const ghost = ghosts[0];
+    const ghost = ghosts[0]!;
     
     // Check initial score
     const initialScore = gameState.getScore();
