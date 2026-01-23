@@ -337,10 +337,10 @@ describe('GameState', () => {
       ghost.x = 2;
       ghost.y = 1;
       
-      // Update Pacman to trigger collision check
-      state.updatePacman({ dx: 0, dy: 0 }, 0); // Trigger collision check without moving
-
-      // Expect ghost to be reset to initial position
+      // Update Pacman to trigger collision check. Use a minimal delta time.
+      state.updatePacman({ dx: 0, dy: 0 }, 1); 
+ 
+       // Expect ghost to be reset to initial position
       expect(ghost.x).toBe(initialGhostX);
       expect(ghost.y).toBe(initialGhostY);
       // Expect ghost to no longer be scared

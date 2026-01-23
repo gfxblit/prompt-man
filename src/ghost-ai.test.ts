@@ -95,9 +95,16 @@ describe('Ghost AI', () => {
     state.updateGhosts(0);
     // From (2,1), valid non-reversing moves are Up, Down, and Right.
     // The AI should not choose to go Left.
-    const chosenDirection = ghost.direction;
+    const chosenDirection = ghost.direction!;
     const isReverse = chosenDirection.dx === -({ dx: 1, dy: 0 }.dx) && chosenDirection.dy === -({ dx: 1, dy: 0 }.dy);
     expect(isReverse).toBe(false);
+
+    const validNonReverseDirections = [
+      { dx: 1, dy: 0 }, // Right
+      { dx: 0, dy: -1 }, // Up
+      { dx: 0, dy: 1 }, // Down
+    ];
+    expect(validNonReverseDirections).toContainEqual(chosenDirection);
   });
 
   it('should move ghosts towards Pacman using Manhattan distance', () => {
