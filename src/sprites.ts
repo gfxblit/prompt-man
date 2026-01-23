@@ -109,7 +109,7 @@ export const TILE_MAP: Record<number, QuadrantSet> = {
     [[1, 16], [4, 18]],
     [[2, 16], [2, 17]],
   ],
-  
+
   // .#. 
   // .#.
   // ##.
@@ -135,7 +135,7 @@ export const TILE_MAP: Record<number, QuadrantSet> = {
     [[1, 17], [1, 18]],
   ],
 
-  
+
   // ### 
   // ###
   // ##.
@@ -204,7 +204,7 @@ export const TILE_MAP: Record<number, QuadrantSet> = {
   // ... 
   // ###
   // #..
-  [MASK.W| MASK.SW | MASK.E]: [
+  [MASK.W | MASK.SW | MASK.E]: [
     [[0, 17], [0, 17]],
     [[2, 17], [2, 17]],
   ],
@@ -213,7 +213,7 @@ export const TILE_MAP: Record<number, QuadrantSet> = {
   // .## 
   // .#.
   // .#.
-  [MASK.N| MASK.NE | MASK.S]: [
+  [MASK.N | MASK.NE | MASK.S]: [
     [[1, 16], [1, 18]],
     [[1, 16], [1, 18]],
   ],
@@ -221,7 +221,7 @@ export const TILE_MAP: Record<number, QuadrantSet> = {
   // ### 
   // ###
   // ..#
-  [MASK.W| MASK.NW | MASK.N | MASK.NE | MASK.E | MASK.SE]: [
+  [MASK.W | MASK.NW | MASK.N | MASK.NE | MASK.E | MASK.SE]: [
     [[1, 17], [1, 17]],
     [[2, 17], [2, 17]],
   ],
@@ -229,7 +229,7 @@ export const TILE_MAP: Record<number, QuadrantSet> = {
   // ### 
   // ###
   // .##
-  [MASK.W| MASK.NW | MASK.N | MASK.NE | MASK.E | MASK.SE | MASK.S]: [
+  [MASK.W | MASK.NW | MASK.N | MASK.NE | MASK.E | MASK.SE | MASK.S]: [
     [[1, 17], [1, 17]],
     [[5, 17], [1, 17]],
   ],
@@ -322,7 +322,7 @@ export const TILE_MAP: Record<number, QuadrantSet> = {
   // ##. 
   // ##.
   // .#.
-  [MASK.N | MASK.NW | MASK.W| MASK.S]: [
+  [MASK.N | MASK.NW | MASK.W | MASK.S]: [
     [[1, 17], [1, 18]],
     [[5, 17], [1, 18]],
   ],
@@ -377,3 +377,36 @@ export const SOURCE_QUADRANT_SIZE = 9;
  * Pixel size of a full tile in the sprite sheet.
  */
 export const SOURCE_TILE_SIZE = 9;
+
+/**
+ * Pixel size of the Pacman sprite in the source palette.
+ */
+export const SOURCE_PACMAN_SIZE = 17;
+
+/**
+ * Animation frames for Pacman in each direction.
+ * Each direction has 3 frames: [row, col, flipX, flipY]
+ * row and col are in 17px units relative to the absolute PACMAN_PALETTE_OFFSET position in the image.
+ */
+export const PACMAN_ANIMATION_MAP = {
+  NORTH: [
+    [0, 1, false, true],
+    [1, 1, false, true],
+    [2, 0, false, true],
+  ],
+  SOUTH: [
+    [0, 1, false, false],
+    [1, 1, false, false],
+    [2, 0, false, false],
+  ],
+  WEST: [
+    [0, 0, true, false],
+    [1, 0, true, false],
+    [2, 0, true, false],
+  ],
+  EAST: [
+    [0, 0, false, false],
+    [1, 0, false, false],
+    [2, 0, false, false],
+  ],
+} as const;

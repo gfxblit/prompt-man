@@ -7,6 +7,7 @@ import {
   GHOST_SPEED,
   ALIGNMENT_TOLERANCE,
   COLORS,
+  PACMAN_ANIMATION_SPEED
 } from './config.js';
 import { GhostAI } from './ghost-ai.js';
 
@@ -44,6 +45,8 @@ export class GameState implements IGameState {
         type: EntityType.Pacman,
         x: spawn.x,
         y: spawn.y,
+        animationFrame: 0,
+        animationTimer: 0,
       };
       this.entities.push(pacman);
       this.initialPositions.set(pacman, { x: spawn.x, y: spawn.y });
@@ -138,6 +141,8 @@ export class GameState implements IGameState {
     // Default to current direction or stopped
     let moveDir = pacman.direction || { dx: 0, dy: 0 };
 
+
+
     const distance = PACMAN_SPEED * deltaTime;
 
     // Try to apply nextDirection
@@ -149,14 +154,14 @@ export class GameState implements IGameState {
       if (moveDir.dx === -nextDir.dx && moveDir.dy === -nextDir.dy) {
         moveDir = nextDir;
         this.nextDirection = null; // Consumed
-      } 
+      }
       // 2. Check for Turn (Requires alignment and walkability)
       else {
         // We need to be aligned on the axis perpendicular to the NEW direction.
         // E.g. to turn Up (dy=-1), we must be aligned on X.
         const alignedX = Math.abs(pacman.x - Math.round(pacman.x)) < ALIGNMENT_TOLERANCE;
         const alignedY = Math.abs(pacman.y - Math.round(pacman.y)) < ALIGNMENT_TOLERANCE;
-        
+
         const canTurn = (nextDir.dx !== 0 && alignedY) || (nextDir.dy !== 0 && alignedX);
 
         if (canTurn) {
@@ -181,6 +186,19 @@ export class GameState implements IGameState {
 
     // Set the direction on entity
     pacman.direction = moveDir;
+
+    // Update animation based on movement
+    const isMoving = moveDir.dx !== 0 || moveDir.dy !== 0;
+    if (isMoving) {
+      const currentTimer = (pacman.animationTimer || 0) + deltaTime;
+      pacman.animationTimer = currentTimer;
+      const frames = [0, 1, 2, 1] as const;
+      const frameIndex = Math.floor(currentTimer / PACMAN_ANIMATION_SPEED) % 4;
+      pacman.animationFrame = frames[frameIndex as 0 | 1 | 2 | 3];
+    } else {
+      // When static, show the first frame (closed mouth) of the last direction
+      pacman.animationFrame = 0;
+    }
 
     // Stop if no direction
     if (moveDir.dx === 0 && moveDir.dy === 0) return;
@@ -255,7 +273,7 @@ export class GameState implements IGameState {
         if (isAlignedX && isAlignedY) {
           const x = Math.round(ghost.x);
           const y = Math.round(ghost.y);
-          
+
           // Check if continuing in the current direction is possible
           const canContinueStraight = this.grid.isWalkable(x + ghost.direction.dx, y + ghost.direction.dy);
           const allPossibleDirs = this.getPossibleDirections(x, y); // Get all directions, including reverse for dead-end check
@@ -299,7 +317,7 @@ export class GameState implements IGameState {
 
   private chooseGhostDirection(ghost: Entity): void {
     const pacman = this.entities.find(e => e.type === EntityType.Pacman);
-    const target = pacman 
+    const target = pacman
       ? { x: Math.round(pacman.x), y: Math.round(pacman.y) }
       : { x: Math.round(ghost.x), y: Math.round(ghost.y) };
 
@@ -345,7 +363,7 @@ export class GameState implements IGameState {
         const wrappedNextTile = this.getWrappedCoordinate(proposedTile, max);
         const tileX = isHorizontal ? wrappedNextTile : wrappedCrossPos;
         const tileY = isHorizontal ? wrappedCrossPos : wrappedNextTile;
-        
+
         if (!this.grid.isWalkable(tileX, tileY)) {
           return { pos: currentTile, stopped: true };
         }
@@ -355,7 +373,7 @@ export class GameState implements IGameState {
         const wrappedNextTile = this.getWrappedCoordinate(proposedTile, max);
         const tileX = isHorizontal ? wrappedNextTile : wrappedCrossPos;
         const tileY = isHorizontal ? wrappedCrossPos : wrappedNextTile;
-        
+
         if (!this.grid.isWalkable(tileX, tileY)) {
           return { pos: currentTile, stopped: true };
         }
