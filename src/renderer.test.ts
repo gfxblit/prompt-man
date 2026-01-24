@@ -344,48 +344,61 @@ describe('Renderer', () => {
 
   it('should render Pacman death animation (fallback)', () => {
     const grid = new Grid(1, 1);
-    const entities = [{ type: EntityType.Pacman, x: 0, y: 0, animationFrame: 6 }];
+    const entities = [{ type: EntityType.Pacman, x: 0, y: 0, animationFrame: 0 }];
     vi.mocked(mockState.getEntities).mockReturnValue(entities);
     vi.mocked(mockState.isDying).mockReturnValue(true);
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
 
-    renderer.render(grid, mockState);
-
-    expect(mockContext.fillStyle).toBe(COLORS.PACMAN);
-    expect(mockContext.beginPath).toHaveBeenCalled();
-    // At frame 6 of 12, radius should be roughly half of maxRadius
     const maxRadius = TILE_SIZE / 2 - 1;
-    const expectedRadius = maxRadius * (1 - 6 / (PACMAN_DEATH_ANIMATION_FRAMES - 1));
-    expect(mockContext.arc).toHaveBeenCalledWith(
-      TILE_SIZE / 2,
-      TILE_SIZE / 2,
-      expectedRadius,
-      0,
-      Math.PI * 2
-    );
+    for (let i = 0; i < PACMAN_DEATH_ANIMATION_FRAMES; i++) {
+      vi.mocked(mockContext.arc).mockClear();
+      entities[0].animationFrame = i;
+      renderer.render(grid, mockState);
+
+      expect(mockContext.fillStyle).toBe(COLORS.PACMAN);
+      const expectedRadius = maxRadius * (1 - i / (PACMAN_DEATH_ANIMATION_FRAMES - 1));
+      
+      if (expectedRadius > 0) {
+        expect(mockContext.beginPath).toHaveBeenCalled();
+        expect(mockContext.arc).toHaveBeenCalledWith(
+          TILE_SIZE / 2,
+          TILE_SIZE / 2,
+          expectedRadius,
+          0,
+          Math.PI * 2
+        );
+      } else {
+        // Last frame might have radius 0, so arc is not called in current implementation
+        expect(mockContext.arc).not.toHaveBeenCalled();
+      }
+    }
   });
 
   it('should render Pacman death animation (spritesheet)', () => {
     const mockSpritesheet = {} as HTMLImageElement;
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D, mockSpritesheet);
     const grid = new Grid(1, 1);
-    const entities = [{ type: EntityType.Pacman, x: 0, y: 0, animationFrame: 6 }];
+    const entities = [{ type: EntityType.Pacman, x: 0, y: 0, animationFrame: 0 }];
     vi.mocked(mockState.getEntities).mockReturnValue(entities);
     vi.mocked(mockState.isDying).mockReturnValue(true);
 
-    renderer.render(grid, mockState);
+    for (let i = 0; i < PACMAN_DEATH_ANIMATION_FRAMES; i++) {
+      vi.mocked(mockContext.drawImage).mockClear();
+      entities[0].animationFrame = i;
+      renderer.render(grid, mockState);
 
-    expect(mockContext.drawImage).toHaveBeenCalledWith(
-      mockSpritesheet,
-      expect.any(Number), // sourceX
-      expect.any(Number), // sourceY
-      expect.any(Number), // sourceWidth
-      expect.any(Number), // sourceHeight
-      0,                  // destX (entity.x * TILE_SIZE)
-      0,                  // destY (entity.y * TILE_SIZE)
-      TILE_SIZE,
-      TILE_SIZE
-    );
+      expect(mockContext.drawImage).toHaveBeenCalledWith(
+        mockSpritesheet,
+        expect.any(Number), // sourceX
+        expect.any(Number), // sourceY
+        expect.any(Number), // sourceWidth
+        expect.any(Number), // sourceHeight
+        0,                  // destX (entity.x * TILE_SIZE)
+        0,                  // destY (entity.y * TILE_SIZE)
+        TILE_SIZE,
+        TILE_SIZE
+      );
+    }
   });
 
   it('should render multiple tiles correctly', () => {
