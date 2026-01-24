@@ -401,7 +401,8 @@ describe('GameState', () => {
       // G is at (5, 1). P is at (1, 1). o is at (1, 2).
       
       // Dynamically retrieve initial position to avoid brittleness with map changes
-      const actualInitialPos = (state as any).initialPositions.get(ghost);
+      const actualInitialPos = (state as unknown as { initialPositions: Map<Entity, { x: number, y: number }> }).initialPositions.get(ghost);
+      if (!actualInitialPos) throw new Error('Initial position not found');
       expect(initialGhostX).toBe(actualInitialPos.x);
       expect(initialGhostY).toBe(actualInitialPos.y);
 
