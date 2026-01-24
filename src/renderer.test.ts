@@ -54,6 +54,7 @@ describe('Renderer', () => {
       getHighScore: vi.fn().mockReturnValue(0),
       getLives: vi.fn().mockReturnValue(0),
       getRemainingPellets: vi.fn().mockReturnValue(0),
+      getSpawnPosition: vi.fn(),
       consumePellet: vi.fn(),
       isPelletEaten: vi.fn().mockReturnValue(false),
       updatePacman: vi.fn(),
@@ -314,6 +315,30 @@ describe('Renderer', () => {
     renderer.render(grid, mockState);
 
     expect(mockContext.fillStyle).toBe(COLORS.SCARED_GHOST);
+  });
+
+  it('should render a Dead Ghost as eyes', () => {
+    const grid = new Grid(1, 1);
+    const entities = [{ type: EntityType.Ghost, x: 0, y: 0, isDead: true, color: 'pink' }];
+    vi.mocked(mockState.getEntities).mockReturnValue(entities);
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
+
+    const fillStyleSetter = vi.spyOn(mockContext, 'fillStyle', 'set');
+    
+    renderer.render(grid, mockState);
+    
+    // Ensure ghost body color is NOT used
+    expect(fillStyleSetter).not.toHaveBeenCalledWith('pink');
+    
+    // Check for eye white and pupil colors
+    expect(fillStyleSetter).toHaveBeenCalledWith('white');
+    expect(fillStyleSetter).toHaveBeenCalledWith('blue');
+
+    const arcCalls = vi.mocked(mockContext.arc).mock.calls;
+    // 2 eyes + 2 pupils = 4 arcs
+    expect(arcCalls.length).toBeGreaterThanOrEqual(4);
+    
+    fillStyleSetter.mockRestore();
   });
 
   it('should render multiple tiles correctly', () => {

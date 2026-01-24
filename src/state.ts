@@ -7,6 +7,7 @@ import {
   GHOST_SPEED,
   POWER_UP_DURATION,
   SCARED_GHOST_SPEED_MULTIPLIER,
+  DEAD_GHOST_SPEED_MULTIPLIER,
   GHOST_EATEN_SCORE,
   ALIGNMENT_TOLERANCE,
   COLLISION_THRESHOLD,
@@ -96,6 +97,10 @@ export class GameState implements IGameState {
 
   getRemainingPellets(): number {
     return this.remainingPellets;
+  }
+
+  getSpawnPosition(entity: Entity): { x: number, y: number } | undefined {
+    return this.initialPositions.get(entity);
   }
 
   isGameOver(): boolean {
@@ -232,7 +237,7 @@ export class GameState implements IGameState {
   }
 
   private checkCollisions(pacman: Entity): void {
-    const ghosts = this.entities.filter(e => e.type === EntityType.Ghost);
+    const ghosts = this.entities.filter(e => e.type === EntityType.Ghost && !e.isDead);
     for (const ghost of ghosts) {
       const dist = Math.sqrt(
         Math.pow(pacman.x - ghost.x, 2) + Math.pow(pacman.y - ghost.y, 2)
@@ -243,13 +248,9 @@ export class GameState implements IGameState {
         if (ghost.isScared) {
           // Ghost is eaten
           this.score += GHOST_EATEN_SCORE;
-          const initialPos = this.initialPositions.get(ghost);
-          if (initialPos) {
-            ghost.x = initialPos.x;
-            ghost.y = initialPos.y;
-            ghost.direction = { dx: 0, dy: 0 };
-          }
+          ghost.isDead = true;
           ghost.isScared = false; // Un-scare the ghost
+          this.chooseGhostDirection(ghost);
           // No life lost for Pacman
         } else {
           // Pacman hit a normal ghost, lose a life
@@ -269,6 +270,17 @@ export class GameState implements IGameState {
       this.gameOver = true;
     } else {
       this.resetPositions();
+    }
+  }
+
+  private respawnGhost(ghost: Entity): void {
+    const initialPos = this.initialPositions.get(ghost);
+    if (initialPos) {
+      ghost.isDead = false;
+      ghost.isScared = false;
+      ghost.x = initialPos.x;
+      ghost.y = initialPos.y;
+      ghost.direction = { dx: 0, dy: 0 };
     }
   }
 
@@ -301,7 +313,21 @@ export class GameState implements IGameState {
     const ghosts = this.entities.filter(e => e.type === EntityType.Ghost);
     
     for (const ghost of ghosts) {
-      const speed = ghost.isScared ? GHOST_SPEED * SCARED_GHOST_SPEED_MULTIPLIER : GHOST_SPEED;
+      if (ghost.isDead) {
+        const initialPos = this.initialPositions.get(ghost);
+        if (initialPos) {
+          const distToSpawn = Math.sqrt(Math.pow(ghost.x - initialPos.x, 2) + Math.pow(ghost.y - initialPos.y, 2));
+          if (distToSpawn < COLLISION_THRESHOLD) {
+            this.respawnGhost(ghost);
+            continue;
+          }
+        }
+      }
+
+      let speed = ghost.isScared ? GHOST_SPEED * SCARED_GHOST_SPEED_MULTIPLIER : GHOST_SPEED;
+      if (ghost.isDead) {
+        speed = GHOST_SPEED * DEAD_GHOST_SPEED_MULTIPLIER;
+      }
       const distance = speed * deltaTime;
 
       // 1. If stopped or no direction, choose one
@@ -359,12 +385,23 @@ export class GameState implements IGameState {
 
   private chooseGhostDirection(ghost: Entity): void {
     const isScared = !!ghost.isScared;
+    const isDead = !!ghost.isDead;
     const pacman = this.entities.find(e => e.type === EntityType.Pacman);
-    const target = pacman
+    
+    let target = pacman
       ? { x: Math.round(pacman.x), y: Math.round(pacman.y) }
       : { x: Math.round(ghost.x), y: Math.round(ghost.y) };
 
-    const newDir = GhostAI.pickDirection(ghost, target, this.grid, isScared);
+    if (isDead) {
+      const initialPos = this.initialPositions.get(ghost);
+      if (initialPos) {
+        target = { x: Math.round(initialPos.x), y: Math.round(initialPos.y) };
+      }
+    }
+
+    // If ghost is dead, it moves to spawn, ignoring scared state for pathfinding.
+    // If not dead, its scared state is passed directly.
+    const newDir = GhostAI.pickDirection(ghost, target, this.grid, isDead ? false : isScared);
     ghost.direction = newDir;
     ghost.rotation = Math.atan2(newDir.dy, newDir.dx);
   }

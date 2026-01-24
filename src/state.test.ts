@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { GameState } from './state.js';
 import { Grid } from './grid.js';
 import { EntityType } from './types.js';
-import { PACMAN_SPEED, POWER_UP_DURATION, GHOST_EATEN_SCORE, POWER_PELLET_SCORE } from './config.js';
+import { PACMAN_SPEED, POWER_UP_DURATION, GHOST_EATEN_SCORE, POWER_PELLET_SCORE, COLLISION_THRESHOLD } from './config.js';
 
 // New template for power pellet tests
 const powerPelletTemplate = `
@@ -346,15 +346,13 @@ describe('GameState', () => {
       expect(ghost?.isScared).toBeFalsy(); // Ghost should no longer be scared
     });
 
-    it('should reset eaten ghost to its initial position and award points, without losing a life', () => {
+    it('should set ghost to dead state and award points without resetting its position immediately, when eaten', () => {
       const state = new GameState(powerGrid);
       const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
       const ghost = state.getEntities().find(e => e.type === EntityType.Ghost);
 
       if (!pacman || !ghost) throw new Error('Entities not found');
 
-      const initialGhostX = ghost.x;
-      const initialGhostY = ghost.y;
       const initialLives = state.getLives();
 
       // 1. Move Pacman to consume power pellet (making ghost scared)
@@ -365,15 +363,16 @@ describe('GameState', () => {
       // Manually set positions for collision for test clarity
       pacman.x = 2;
       pacman.y = 1;
-      ghost.x = 2;
+      ghost.x = 2.1;
       ghost.y = 1;
 
       // Update Pacman to trigger collision check. Use a minimal delta time.
-      state.updatePacman({ dx: 0, dy: 0 }, 1);
-
-      // Expect ghost to be reset to initial position
-      expect(ghost.x).toBe(initialGhostX);
-      expect(ghost.y).toBe(initialGhostY);
+      state.updatePacman({ dx: 0, dy: 0 }, 1); 
+ 
+      // Expect ghost to NOT be reset to initial position immediately
+      expect(ghost.x).toBeCloseTo(2.1);
+      // Expect ghost to be dead
+      expect(ghost.isDead).toBe(true);
       // Expect ghost to no longer be scared
       expect(ghost.isScared).toBeFalsy();
       // Expect score to increase by GHOST_EATEN_SCORE (plus power pellet score)
@@ -381,5 +380,77 @@ describe('GameState', () => {
       // Expect lives to remain unchanged
       expect(state.getLives()).toBe(initialLives);
     });
-  });
-});
+      
+    it('should move dead ghost towards its spawn and respawn when it reaches it', () => {
+      const state = new GameState(powerGrid);
+      const ghost = state.getEntities().find(e => e.type === EntityType.Ghost);
+      if (!ghost) throw new Error('Ghost not found');
+
+      const spawnPos = state.getSpawnPosition(ghost);
+      if (!spawnPos) throw new Error('Spawn position not found');
+
+      // 1. Kill the ghost and make it scared initially to verify it clears scared state on respawn
+      ghost.isDead = true;
+      ghost.isScared = true;
+      // Put it somewhere else
+      ghost.x = 2;
+      ghost.y = 1;
+
+      // 2. Update ghosts. It should move towards spawnPos
+      // Since it's dead, it should move faster (GHOST_SPEED * 1.5)
+      // G is at (5, 1). P is at (1, 1). o is at (1, 2).
+      
+      // Move from (2, 1) towards spawnPos. dx should be positive if spawn is to the right.
+      state.updateGhosts(100); // delta time in ms
+      
+      const expectedDx = Math.sign(spawnPos.x - 2);
+      const expectedDy = Math.sign(spawnPos.y - 1);
+
+      if (expectedDx !== 0) expect(ghost.direction?.dx).toBe(expectedDx);
+      if (expectedDy !== 0) expect(ghost.direction?.dy).toBe(expectedDy);
+      
+      expect(ghost.isDead).toBe(true);
+
+      // 3. Teleport ghost near spawn and move it to spawn
+      // Using COLLISION_THRESHOLD / 2 to be within range
+      ghost.x = spawnPos.x - COLLISION_THRESHOLD / 2;
+      ghost.y = spawnPos.y;
+      ghost.direction = { dx: 1, dy: 0 };
+      
+      // Update with enough time to reach/pass the spawn position
+      state.updateGhosts(100);
+
+      // It should be at the spawn position and NOT dead and NOT scared anymore
+      expect(ghost.x).toBeCloseTo(spawnPos.x);
+      expect(ghost.y).toBeCloseTo(spawnPos.y);
+      expect(ghost.isDead).toBeFalsy();
+      expect(ghost.isScared).toBeFalsy();
+    });
+
+    it('should not kill Pacman when colliding with a dead ghost', () => {
+      const state = new GameState(powerGrid);
+      const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
+      const ghost = state.getEntities().find(e => e.type === EntityType.Ghost);
+      if (!pacman || !ghost) throw new Error('Entities not found');
+
+      const initialLives = state.getLives();
+
+      // 1. Kill the ghost
+      ghost.isDead = true;
+      
+      // 2. Position them together
+      pacman.x = 2;
+      pacman.y = 1;
+      ghost.x = 2;
+      ghost.y = 1;
+
+      // 3. Update state
+      state.updatePacman({ dx: 0, dy: 0 }, 1);
+
+      // 4. Verify no life lost
+      expect(state.getLives()).toBe(initialLives);
+      expect(state.isGameOver()).toBe(false);
+    });
+        });
+      });
+      
