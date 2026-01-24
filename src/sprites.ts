@@ -403,12 +403,12 @@ export const PACMAN_DEATH_ANIMATION_MAP: [number, number][] = [
  * Mapping of ghost colors to their palette offset.
  */
 export const GHOST_PALETTE_OFFSETS: Record<string, SpriteOffset> = {
-  red: GHOST_OFFSETS.RED,
-  pink: GHOST_OFFSETS.PINK,
-  cyan: GHOST_OFFSETS.CYAN,
-  orange: GHOST_OFFSETS.ORANGE,
-  scared: GHOST_OFFSETS.SCARED,
-  eyes: GHOST_OFFSETS.EYES,
+  red: GHOST_OFFSETS.RED!,
+  pink: GHOST_OFFSETS.PINK!,
+  cyan: GHOST_OFFSETS.CYAN!,
+  orange: GHOST_OFFSETS.ORANGE!,
+  scared: GHOST_OFFSETS.SCARED!,
+  eyes: GHOST_OFFSETS.EYES!,
 };
 
 /**
@@ -439,7 +439,7 @@ export function getGhostSpriteSource(color: string, direction: string, isScared:
     resolvedColor = COLORS.GHOST_DEFAULT;
   }
 
-  const offset = GHOST_PALETTE_OFFSETS[resolvedColor] || GHOST_OFFSETS.RED;
+  const offset = GHOST_PALETTE_OFFSETS[resolvedColor] || GHOST_OFFSETS.RED!;
 
   let dirKey = direction as keyof typeof GHOST_ANIMATION_MAP;
   if (!(dirKey in GHOST_ANIMATION_MAP)) {
@@ -455,8 +455,8 @@ export function getGhostSpriteSource(color: string, direction: string, isScared:
   // Standard sprite sheets have eyes facing East, West, North, South.
   const col = isDead ? (frames[0] ?? 0) : (frames[frameIndex % frames.length] ?? 0);
 
-  const sourceX = offset.x + (col * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X;
-  const sourceY = offset.y + PALETTE_PADDING_Y;
+  const sourceX = offset!.x + (col * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X;
+  const sourceY = offset!.y + PALETTE_PADDING_Y;
 
   return {
     x: sourceX,
