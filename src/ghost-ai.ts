@@ -21,7 +21,7 @@ export class GhostAI {
   ): Direction {
     const x = Math.round(ghost.x);
     const y = Math.round(ghost.y);
-    
+
     const possibleDirs: Direction[] = [
       { dx: 0, dy: -1 }, // Up
       { dx: -1, dy: 0 }, // Left
@@ -30,15 +30,23 @@ export class GhostAI {
     ];
 
     const currentDir = ghost.direction;
+    const width = grid.getWidth();
+    const height = grid.getHeight();
+
     const validMoves = possibleDirs.filter(dir => {
-      // 1. Check if the tile is walkable
-      if (!grid.isWalkable(x + dir.dx, y + dir.dy)) {
+      // 1. Check if the tile is walkable (with grid wrapping for tunnel support)
+      const targetX = ((x + dir.dx) % width + width) % width;
+      const targetY = ((y + dir.dy) % height + height) % height;
+      if (!grid.isWalkable(targetX, targetY)) {
         return false;
       }
 
       // 2. Prevent reversal unless it's the only option
-      if (currentDir && dir.dx === -currentDir.dx && dir.dy === -currentDir.dy) {
-        return false;
+      // Only filter reversals if ghost is actually moving (non-zero direction)
+      if (currentDir && (currentDir.dx !== 0 || currentDir.dy !== 0)) {
+        if (dir.dx === -currentDir.dx && dir.dy === -currentDir.dy) {
+          return false;
+        }
       }
 
       return true;
@@ -58,6 +66,11 @@ export class GhostAI {
       return validMoves[0]!;
     }
 
+    // Scared ghosts pick a random valid direction (classic Pac-Man behavior)
+    if (isScared) {
+      return validMoves[Math.floor(Math.random() * validMoves.length)]!;
+    }
+
     // Otherwise, pick the move that optimizes Manhattan distance to target
     let bestDir = validMoves[0]!;
     // If scared, we want to maximize distance (start with -Infinity).
@@ -66,7 +79,7 @@ export class GhostAI {
 
     for (const dir of validMoves) {
       const distance = this.getManhattanDistance(x + dir.dx, y + dir.dy, target.x, target.y);
-      
+
       if (isScared) {
         // Flee: Maximize distance
         if (distance > bestDist) {
