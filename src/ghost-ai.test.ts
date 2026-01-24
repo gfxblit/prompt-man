@@ -88,23 +88,29 @@ describe('Ghost AI', () => {
     const state = new GameState(customGrid);
     const ghost = state.getEntities().find(e => e.type === EntityType.Ghost)!;
     
+    // Position ghost at (2,1) moving Right
     ghost.x = 2;
     ghost.y = 1;
-    ghost.direction = { dx: 1, dy: 0 }; // Moving Right, currently at (2,1)
+    ghost.direction = { dx: 1, dy: 0 }; 
+
+    // Mock Math.random to potentially favor any index, 
+    // but the AI should have already filtered out the reverse direction.
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.99);
 
     state.updateGhosts(0);
-    // From (2,1), valid non-reversing moves are Up, Down, and Right.
-    // The AI should not choose to go Left.
-    const chosenDirection = ghost.direction!;
-    const isReverse = chosenDirection.dx === -({ dx: 1, dy: 0 }.dx) && chosenDirection.dy === -({ dx: 1, dy: 0 }.dy);
-    expect(isReverse).toBe(false);
-
+    
+    // From (2,1), moving Right, the reverse is Left ({dx: -1, dy: 0}).
+    // Even with Math.random mocked, it should NOT be Left.
+    expect(ghost.direction).not.toEqual({ dx: -1, dy: 0 });
+    
+    // Valid moves are Right and Down (Up is a wall).
     const validNonReverseDirections = [
       { dx: 1, dy: 0 }, // Right
-      { dx: 0, dy: -1 }, // Up
-      { dx: 0, dy: 1 }, // Down
+      { dx: 0, dy: 1 },  // Down
     ];
-    expect(validNonReverseDirections).toContainEqual(chosenDirection);
+    expect(validNonReverseDirections).toContainEqual(ghost.direction);
+    
+    randomSpy.mockRestore();
   });
 
   it('should move ghosts towards Pacman using Manhattan distance', () => {
@@ -131,14 +137,16 @@ describe('Ghost AI', () => {
     // Down (1,2) - Walkable
     // Right (2,1) - Walkable
     
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0);
     state.updateGhosts(0); // Trigger direction picking
     
     // It should pick either Down or Right. 
-    // In our implementation, we pick the first one that has the minimum distance.
+    // In our implementation, we pick the first one that has the minimum distance if random is 0.
     // Down (1,2) has distance 5.
     // Right (2,1) has distance 5.
-    // Since Down comes before Right in the list, it should pick Down.
+    // Since Down comes before Right in the list, it should pick Down with random 0.
     
     expect(ghost.direction).toEqual({ dx: 0, dy: 1 });
+    randomSpy.mockRestore();
   });
 });
