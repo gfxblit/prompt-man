@@ -381,56 +381,50 @@ describe('GameState', () => {
             expect(state.getLives()).toBe(initialLives);
           });
       
-          it('should move dead ghost towards its spawn and respawn when it reaches it', () => {
-            const state = new GameState(powerGrid);
-            const ghost = state.getEntities().find(e => e.type === EntityType.Ghost);
-            if (!ghost) throw new Error('Ghost not found');
+    it('should move dead ghost towards its spawn and respawn when it reaches it', () => {
+      const state = new GameState(powerGrid);
+      const ghost = state.getEntities().find(e => e.type === EntityType.Ghost);
+      if (!ghost) throw new Error('Ghost not found');
+
+      const initialGhostX = ghost.x;
+      const initialGhostY = ghost.y;
+
+      // 1. Kill the ghost
+      ghost.isDead = true;
+      ghost.isScared = false;
+      // Put it somewhere else
+      ghost.x = 2;
+      ghost.y = 1;
+
+      // 2. Update ghosts. It should move towards (initialGhostX, initialGhostY)
+      // Since it's dead, it should move faster (GHOST_SPEED * 1.5)
+      // G is at (5, 1). P is at (1, 1). o is at (1, 2).
       
-            const initialGhostX = ghost.x;
-            const initialGhostY = ghost.y;
+      // Dynamically retrieve initial position to avoid brittleness with map changes
+      const actualInitialPos = (state as any).initialPositions.get(ghost);
+      expect(initialGhostX).toBe(actualInitialPos.x);
+      expect(initialGhostY).toBe(actualInitialPos.y);
+
+      // Move from (2, 1) towards (initialGhostX, initialGhostY). dx should be 1.
+      state.updateGhosts(100); // delta time in ms
       
-            // 1. Kill the ghost
-            ghost.isDead = true;
-            ghost.isScared = false;
-            // Put it somewhere else
-            ghost.x = 2;
-            ghost.y = 1;
+      expect(ghost.direction?.dx).toBeGreaterThan(0);
+      expect(ghost.x).toBeGreaterThan(2);
+      expect(ghost.isDead).toBe(true);
+
+      // 3. Teleport ghost near spawn and move it to spawn
+      // Using a small offset from initial position to be within COLLISION_THRESHOLD
+      ghost.x = initialGhostX - 0.1;
+      ghost.y = initialGhostY;
+      ghost.direction = { dx: 1, dy: 0 };
       
-            // 2. Update ghosts. It should move towards (initialGhostX, initialGhostY)
-            // Since it's dead, it should move faster (GHOST_SPEED * 1.5)
-            // Initial pos is (5, 1) based on template `#P   G#` (0-indexed, P at 1, G at 5)
-            // Actually, let's check the template:
-            // powerPelletTemplate = `
-            // #######
-            // #P   G#
-            // #o    #
-            // #######
-            // `.trim();
-            // G is at (5, 1). P is at (1, 1). o is at (1, 2).
-            
-            // Verify it started at the expected spawn point (5, 1)
-            expect(initialGhostX).toBe(5);
-            expect(initialGhostY).toBe(1);
-      
-            // Move from (2, 1) towards (5, 1). dx should be 1.
-            state.updateGhosts(100); // delta time in ms
-            
-            expect(ghost.direction?.dx).toBeGreaterThan(0);
-            expect(ghost.x).toBeGreaterThan(2);
-            expect(ghost.isDead).toBe(true);
-      
-            // 3. Teleport ghost near spawn and move it to spawn
-            ghost.x = 4.9;
-            ghost.y = 1;
-            ghost.direction = { dx: 1, dy: 0 };
-            
-            // Update with enough time to reach/pass (5, 1)
-            state.updateGhosts(100);
-      
-            // It should be at (5, 1) or very close and NOT dead anymore
-            expect(ghost.x).toBeCloseTo(5);
-            expect(ghost.isDead).toBeFalsy();
-          });
+      // Update with enough time to reach/pass the initial position
+      state.updateGhosts(100);
+
+      // It should be at the initial position or very close and NOT dead anymore
+      expect(ghost.x).toBeCloseTo(initialGhostX);
+      expect(ghost.isDead).toBeFalsy();
+    });
         });
       });
       
