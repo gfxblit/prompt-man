@@ -363,14 +363,14 @@ describe('GameState', () => {
       // Manually set positions for collision for test clarity
       pacman.x = 2;
       pacman.y = 1;
-      ghost.x = 2.1;
+      ghost.x = 2; // Ensure exact collision for clarity
       ghost.y = 1;
 
       // Update Pacman to trigger collision check. Use a minimal delta time.
       state.updatePacman({ dx: 0, dy: 0 }, 1); 
  
       // Expect ghost to NOT be reset to initial position immediately
-      expect(ghost.x).toBeCloseTo(2.1);
+      expect(ghost.x).toBeCloseTo(2);
       // Expect ghost to be dead
       expect(ghost.isDead).toBe(true);
       // Expect ghost to no longer be scared

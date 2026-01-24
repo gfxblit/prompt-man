@@ -263,6 +263,7 @@ export class GameState implements IGameState {
   }
 
   private checkCollisions(pacman: Entity): void {
+    // Dead ghosts do not collide with Pacman as they return to spawn
     const ghosts = this.entities.filter(e => e.type === EntityType.Ghost && !e.isDead);
     for (const ghost of ghosts) {
       const dist = Math.sqrt(
@@ -454,8 +455,10 @@ export class GameState implements IGameState {
       }
     }
 
-    // Dead ghosts pathfind to spawn. Scared ghosts pathfind away from Pacman.
-    // Otherwise, normal ghost pathfinding.
+    // Pathfinding priority:
+    // 1. Dead ghosts: Pathfind to spawn position
+    // 2. Scared ghosts: Pathfind AWAY from Pacman (handled in GhostAI.pickDirection)
+    // 3. Normal ghosts: Pathfind towards Pacman
     const newDir = GhostAI.pickDirection(ghost, target, this.grid, isScared && !isDead);
     ghost.direction = newDir;
     ghost.rotation = Math.atan2(newDir.dy, newDir.dx);

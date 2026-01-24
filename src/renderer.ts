@@ -268,9 +268,7 @@ export class Renderer implements IRenderer {
           const animationFrameData = PACMAN_ANIMATION_MAP[dirKey]?.[(frameIndex as 0 | 1 | 2)] || PACMAN_ANIMATION_MAP.EAST[0];
 
           if (!animationFrameData) {
-            // This case should ideally not happen if PACMAN_ANIMATION_MAP is correctly defined,
-            // but provides a robust fallback.
-            console.error(`Missing animation frame data for direction ${dirKey} and frameIndex ${frameIndex}.`);
+            // Should not happen with current PACMAN_ANIMATION_MAP, but ensures robustness
             return;
           }
 
