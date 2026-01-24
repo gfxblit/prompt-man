@@ -206,7 +206,7 @@ export class Renderer implements IRenderer {
     const frameIndex = entity.animationFrame ?? 0;
 
     if (this.spritesheet) {
-      const frameData = PACMAN_DEATH_ANIMATION_MAP[frameIndex] || PACMAN_DEATH_ANIMATION_MAP[0];
+      const frameData = PACMAN_DEATH_ANIMATION_MAP[frameIndex] ?? PACMAN_DEATH_ANIMATION_MAP[0] ?? [0, 0];
       const [sRow, sCol] = frameData;
       const sourceX = PACMAN_DEATH_PALETTE_OFFSET_X + (sCol * SOURCE_PACMAN_SIZE);
       const sourceY = PACMAN_DEATH_PALETTE_OFFSET_Y + (sRow * SOURCE_PACMAN_SIZE);
