@@ -324,8 +324,8 @@ describe('Renderer', () => {
 
     renderer.render(grid, mockState);
 
-    // Should render eyes (multiple arcs)
-    // 2 for whites, 2 for pupils = at least 4 arc calls
+    // Expect white for the eye whites and blue for the pupils
+    expect(mockContext.fillStyle).toMatch(/(white|blue)/);
     const arcCalls = vi.mocked(mockContext.arc).mock.calls;
     expect(arcCalls.length).toBeGreaterThanOrEqual(4);
   });

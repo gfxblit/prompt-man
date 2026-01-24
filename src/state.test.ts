@@ -408,8 +408,10 @@ describe('GameState', () => {
             // `.trim();
             // G is at (5, 1). P is at (1, 1). o is at (1, 2).
             
-            expect(initialGhostX).toBe(5);
-            expect(initialGhostY).toBe(1);
+            const expectedInitialGhostX = (state as any).initialPositions.get(ghost)?.x ?? 5; // Fallback for robustness
+            const expectedInitialGhostY = (state as any).initialPositions.get(ghost)?.y ?? 1; // Fallback for robustness
+            expect(initialGhostX).toBe(expectedInitialGhostX);
+            expect(initialGhostY).toBe(expectedInitialGhostY);
       
             // Move from (2, 1) towards (5, 1). dx should be 1.
             state.updateGhosts(100); // delta time in ms

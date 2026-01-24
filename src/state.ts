@@ -386,7 +386,9 @@ export class GameState implements IGameState {
       }
     }
 
-    const newDir = GhostAI.pickDirection(ghost, target, this.grid, isScared && !isDead);
+    // If ghost is dead, it moves to spawn, ignoring scared state for pathfinding.
+    // If not dead, its scared state is passed directly.
+    const newDir = GhostAI.pickDirection(ghost, target, this.grid, isDead ? false : isScared);
     ghost.direction = newDir;
     ghost.rotation = Math.atan2(newDir.dy, newDir.dx);
   }

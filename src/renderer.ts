@@ -283,17 +283,17 @@ export class Renderer implements IRenderer {
           this.ctx.fillStyle = 'white';
           this.ctx.beginPath();
           // Left eye
-          this.ctx.arc(screenX - 3, screenY - 2, 2, 0, Math.PI * 2);
+          this.ctx.arc(screenX - TILE_SIZE / 6, screenY - TILE_SIZE / 8, TILE_SIZE / 8, 0, Math.PI * 2);
           // Right eye
-          this.ctx.arc(screenX + 3, screenY - 2, 2, 0, Math.PI * 2);
+          this.ctx.arc(screenX + TILE_SIZE / 6, screenY - TILE_SIZE / 8, TILE_SIZE / 8, 0, Math.PI * 2);
           this.ctx.fill();
 
           this.ctx.fillStyle = 'blue';
           this.ctx.beginPath();
           // Left pupil
-          this.ctx.arc(screenX - 3, screenY - 2, 1, 0, Math.PI * 2);
+          this.ctx.arc(screenX - TILE_SIZE / 6, screenY - TILE_SIZE / 8, TILE_SIZE / 16, 0, Math.PI * 2);
           // Right pupil
-          this.ctx.arc(screenX + 3, screenY - 2, 1, 0, Math.PI * 2);
+          this.ctx.arc(screenX + TILE_SIZE / 6, screenY - TILE_SIZE / 8, TILE_SIZE / 16, 0, Math.PI * 2);
           this.ctx.fill();
         } else {
           this.ctx.fillStyle = entity.isScared ? COLORS.SCARED_GHOST : (entity.color || COLORS.GHOST_DEFAULT);
