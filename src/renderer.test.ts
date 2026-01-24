@@ -316,25 +316,25 @@ describe('Renderer', () => {
     const grid = new Grid(1, 1);
 
     // West direction, pink ghost
-    const entities = [{ 
-      type: EntityType.Ghost, 
-      x: 0, y: 0, 
-      color: 'pink', 
-      direction: { dx: -1, dy: 0 } 
+    const entities = [{
+      type: EntityType.Ghost,
+      x: 0, y: 0,
+      color: 'pink',
+      direction: { dx: -1, dy: 0 }
     }];
     vi.mocked(mockState.getEntities).mockReturnValue(entities);
 
     renderer.render(grid, mockState);
 
     // pink offset is GHOST_OFFSETS.PINK
-    // WEST sCol is 2
-    
+    // WEST sCol is 4 (first frame of WEST animation)
+
     // Check for NO flip
     expect(mockContext.scale).toHaveBeenCalledWith(1, 1);
 
     expect(mockContext.drawImage).toHaveBeenCalledWith(
       mockSpritesheet,
-      GHOST_OFFSETS.PINK.x + (2 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X, // sourceX (sCol=2)
+      GHOST_OFFSETS.PINK.x + (4 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X, // sourceX (sCol=4)
       GHOST_OFFSETS.PINK.y + PALETTE_PADDING_Y, // sourceY
       SOURCE_GHOST_SIZE - PALETTE_PADDING_X,
       SOURCE_GHOST_SIZE - PALETTE_PADDING_Y,
@@ -394,12 +394,12 @@ describe('Renderer', () => {
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
 
     const fillStyleSetter = vi.spyOn(mockContext, 'fillStyle', 'set');
-    
+
     renderer.render(grid, mockState);
-    
+
     // Ensure ghost body color is NOT used
     expect(fillStyleSetter).not.toHaveBeenCalledWith('pink');
-    
+
     // Check for eye white and pupil colors
     expect(fillStyleSetter).toHaveBeenCalledWith('white');
     expect(fillStyleSetter).toHaveBeenCalledWith('blue');
@@ -407,7 +407,7 @@ describe('Renderer', () => {
     const arcCalls = vi.mocked(mockContext.arc).mock.calls;
     // 2 eyes + 2 pupils = 4 arcs
     expect(arcCalls.length).toBeGreaterThanOrEqual(4);
-    
+
     fillStyleSetter.mockRestore();
   });
 
@@ -426,7 +426,7 @@ describe('Renderer', () => {
 
       expect(mockContext.fillStyle).toBe(COLORS.PACMAN);
       const expectedRadius = maxRadius * (1 - i / (PACMAN_DEATH_ANIMATION_FRAMES - 1));
-      
+
       if (expectedRadius > 0) {
         expect(mockContext.beginPath).toHaveBeenCalled();
         expect(mockContext.arc).toHaveBeenCalledWith(
@@ -503,10 +503,10 @@ describe('Renderer', () => {
 
   it('should render GAME OVER when game is over', () => {
     vi.mocked(mockState.isGameOver).mockReturnValue(true);
-    
+
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
     const grid = new Grid(10, 10);
-    
+
     renderer.render(grid, mockState);
 
     expect(mockContext.fillRect).toHaveBeenCalledWith(0, 0, 10 * TILE_SIZE, 10 * TILE_SIZE);
