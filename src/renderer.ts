@@ -264,7 +264,7 @@ export class Renderer implements IRenderer {
           else dirKey = 'EAST';
 
           const frameIndex = entity.animationFrame ?? 0;
-          const [sRow, sCol, flipX, flipY] = PACMAN_ANIMATION_MAP[dirKey][frameIndex as 0 | 1 | 2];
+          const [sRow, sCol, flipX, flipY] = PACMAN_ANIMATION_MAP[dirKey][(frameIndex as 0 | 1 | 2)] || PACMAN_ANIMATION_MAP[dirKey][0]!;
 
           const sourceX = PACMAN_PALETTE_OFFSET_X + (sCol * SOURCE_PACMAN_SIZE);
           const sourceY = PACMAN_PALETTE_OFFSET_Y + (sRow * SOURCE_PACMAN_SIZE);

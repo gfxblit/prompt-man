@@ -103,6 +103,7 @@ describe('GameState Death Logic', () => {
     expect(pacman.x).toBe(initialPacmanX);
     expect(state.getLives()).toBe(initialLives - 1);
     expect(pacman.deathTimer).toBeUndefined();
+    expect(pacman.animationFrame).toBe(0);
   });
 
   it('should trigger game over if no lives left after death animation', () => {

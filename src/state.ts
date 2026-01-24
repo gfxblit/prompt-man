@@ -307,6 +307,7 @@ export class GameState implements IGameState {
     const pacman = this.entities.find(e => e.type === EntityType.Pacman);
     if (pacman) {
       pacman.deathTimer = undefined;
+      pacman.animationFrame = 0;
     }
 
     if (this.lives < 0) {

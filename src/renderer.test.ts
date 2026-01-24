@@ -445,6 +445,27 @@ describe('Renderer', () => {
     expect(mockContext.arc).toHaveBeenCalledTimes(2);
     expect(mockContext.fill).toHaveBeenCalledTimes(2);
   });
+
+  it('should not crash when animationFrame is out of bounds for PACMAN_ANIMATION_MAP', () => {
+    const mockSpritesheet = {} as HTMLImageElement;
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D, mockSpritesheet);
+    const grid = new Grid(1, 1);
+
+    const entities = [{
+      type: EntityType.Pacman,
+      x: 0,
+      y: 0,
+      animationFrame: 11 // Out of bounds for PACMAN_ANIMATION_MAP (0-2)
+    }];
+    vi.mocked(mockState.getEntities).mockReturnValue(entities);
+    vi.mocked(mockState.isDying).mockReturnValue(false);
+
+    // This should NOT throw anymore after the fix, but even if it does, 
+    // the renderer should probably be robust.
+    // However, the fix was to ensure it's reset in the state.
+    // Let's also make the renderer robust as a secondary defense.
+    expect(() => renderer.render(grid, mockState)).not.toThrow();
+  });
 });
 
 describe('UIRenderer', () => {
