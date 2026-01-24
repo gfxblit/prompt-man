@@ -3,7 +3,6 @@ import { GameState } from './state.js';
 import { Grid } from './grid.js';
 import { EntityType } from './types.js';
 import { PACMAN_ANIMATION_SPEED } from './config.js';
-import { GhostAI } from './ghost-ai.js';
 
 const GHOST_ANIMATION_SPEED = 100;
 
