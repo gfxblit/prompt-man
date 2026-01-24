@@ -139,4 +139,27 @@ describe('GameState Death Logic', () => {
     expect(state.getLives()).toBe(0); // Lives clamped to 0
     expect(state.isGameOver()).toBe(true);
   });
+
+  it('should reset ghost states after death animation completes', () => {
+    const state = new GameState(grid);
+    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+    const ghost = state.getEntities().find(e => e.type === EntityType.Ghost)!;
+
+    // Trigger collision
+    pacman.x = ghost.x - 0.4;
+    state.updatePacman({ dx: 0, dy: 0 }, 0);
+    expect(state.isDying()).toBe(true);
+
+    // Set ghost to scared and dead manually
+    ghost.isScared = true;
+    ghost.isDead = true;
+
+    // Finish animation
+    const totalTime = 12 * PACMAN_DEATH_ANIMATION_SPEED;
+    state.updatePacman({ dx: 0, dy: 0 }, totalTime + 1);
+
+    expect(state.isDying()).toBe(false);
+    expect(ghost.isScared).toBe(false);
+    expect(ghost.isDead).toBe(false);
+  });
 });

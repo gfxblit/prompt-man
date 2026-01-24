@@ -330,6 +330,7 @@ export class GameState implements IGameState {
   }
 
   private resetPositions(): void {
+    this.powerUpTimer = 0;
     for (const entity of this.entities) {
       const initialPos = this.initialPositions.get(entity);
       if (initialPos) {
@@ -337,6 +338,10 @@ export class GameState implements IGameState {
         entity.y = initialPos.y;
         entity.direction = { dx: 0, dy: 0 };
         // Reset rotation if needed, but direction reset might be enough
+      }
+      if (entity.type === EntityType.Ghost) {
+        entity.isScared = false;
+        entity.isDead = false;
       }
     }
     this.nextDirection = null;
