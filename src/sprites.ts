@@ -412,14 +412,15 @@ export const GHOST_PALETTE_OFFSETS: Record<string, [number, number]> = {
 
 /**
  * Maps direction names to frames.
- * Each direction has a single frame: [row, col, flipX, flipY]
- * row and col are in 17px units relative to the GHOST_PALETTE_OFFSET position.
+ * Each direction maps to a column index in the sprite sheet.
+ * Row is determined by the ghost color (or scared state).
+ * All frames are 17px wide and non-flipped.
  */
 export const GHOST_ANIMATION_MAP = {
-  EAST: [0, 0, false, false],
-  WEST: [0, 1, false, false],
-  NORTH: [0, 2, false, false],
-  SOUTH: [0, 3, false, false],
+  EAST: 0,
+  WEST: 1,
+  NORTH: 2,
+  SOUTH: 3,
 } as const;
 
 /**
@@ -427,10 +428,12 @@ export const GHOST_ANIMATION_MAP = {
  */
 export function getGhostSpriteSource(color: string, direction: string, isScared: boolean) {
   const colorKey = isScared ? 'scared' : (color || COLORS.GHOST_DEFAULT);
-  const paletteOffset = GHOST_PALETTE_OFFSETS[colorKey] ?? GHOST_PALETTE_OFFSETS['scared'];
+  
+  const defaultOffset = isScared ? GHOST_PALETTE_OFFSETS['scared'] : GHOST_PALETTE_OFFSETS[COLORS.GHOST_DEFAULT];
+  const paletteOffset = GHOST_PALETTE_OFFSETS[colorKey] ?? defaultOffset;
   
   if (!paletteOffset) {
-    // Should not happen if 'scared' is defined in offsets
+    // Should not happen if 'scared' and default colors are defined in offsets
     throw new Error(`Ghost palette offset not found for color: ${colorKey}`);
   }
 
@@ -439,20 +442,21 @@ export function getGhostSpriteSource(color: string, direction: string, isScared:
     dirKey = 'EAST';
   }
 
-  const [row, col, flipX, flipY] = GHOST_ANIMATION_MAP[dirKey];
+  const col = GHOST_ANIMATION_MAP[dirKey];
+  // Row is implicitly 0 relative to the color's starting Y offset
   
   const [offsetX, offsetY] = paletteOffset;
 
   const sourceX = offsetX + (col * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X;
-  const sourceY = offsetY + (row * SOURCE_GHOST_SIZE) + PALETTE_PADDING_Y;
+  const sourceY = offsetY + PALETTE_PADDING_Y;
 
   return {
     x: sourceX,
     y: sourceY,
     width: SOURCE_GHOST_SIZE - PALETTE_PADDING_X,
     height: SOURCE_GHOST_SIZE - PALETTE_PADDING_Y,
-    flipX,
-    flipY
+    flipX: false,
+    flipY: false
   };
 }
 

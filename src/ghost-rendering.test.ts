@@ -27,4 +27,14 @@ describe('Ghost Rendering Logic', () => {
      const coords = getGhostSpriteSource('blue', 'NORTH', true);
      expect(coords).toEqual({ x: 593, y: 346, width: 16, height: 16, flipX: false, flipY: false });
   });
+
+  it('falls back to default ghost color when invalid color is provided', () => {
+    // Default color is 'red'. Red offset: 558, 277.
+    // Invalid color -> fallback to 'red'.
+    // Direction 'EAST' -> col 0 -> 0px offset.
+    // X: 558 + 0 + 1 = 559
+    // Y: 277 + 0 + 1 = 278
+    const coords = getGhostSpriteSource('invalid-color', 'EAST', false);
+    expect(coords).toEqual({ x: 559, y: 278, width: 16, height: 16, flipX: false, flipY: false });
+  });
 });
