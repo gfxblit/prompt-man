@@ -96,7 +96,7 @@ describe('Ghost AI', () => {
 
     // Mock Math.random to potentially favor any index, 
     // but the AI should have already filtered out the reverse direction.
-    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    vi.spyOn(Math, 'random').mockReturnValue(0.99);
 
     state.updateGhosts(0);
     
@@ -136,7 +136,7 @@ describe('Ghost AI', () => {
     // Down (1,2) - Walkable
     // Right (2,1) - Walkable
     
-    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0);
+    vi.spyOn(Math, 'random').mockReturnValue(0);
     state.updateGhosts(0); // Trigger direction picking
     
     // It should pick either Down or Right. 

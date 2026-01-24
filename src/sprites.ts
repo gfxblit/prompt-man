@@ -4,9 +4,9 @@ import {
   GHOST_OFFSETS,
   SOURCE_GHOST_SIZE,
   PALETTE_PADDING_X,
-  PALETTE_PADDING_Y,
-  SpriteOffset
+  PALETTE_PADDING_Y
 } from './config.js';
+import type { SpriteOffset } from './config.js';
 
 /**
  * (row, col) coordinates in the sprite sheet for a 4x4 quadrant.
@@ -439,8 +439,8 @@ export function getGhostSpriteSource(color: string, direction: string, isScared:
   const frames = GHOST_ANIMATION_MAP[dirKey];
   const col = frames[frameIndex % frames.length] ?? 0;
 
-  const sourceX = offset.x + (col * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X;
-  const sourceY = offset.y + PALETTE_PADDING_Y;
+  const sourceX = (offset?.x ?? GHOST_OFFSETS.RED.x) + (col * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X;
+  const sourceY = (offset?.y ?? GHOST_OFFSETS.RED.y) + PALETTE_PADDING_Y;
 
   return {
     x: sourceX,

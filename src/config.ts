@@ -44,13 +44,13 @@ export const SOURCE_GHOST_SIZE = 17;
 
 export type SpriteOffset = { x: number; y: number };
 
-export const GHOST_OFFSETS: Record<string, SpriteOffset> = {
+export const GHOST_OFFSETS = {
   RED: { x: GHOST_PALETTE_OFFSET_X, y: GHOST_PALETTE_OFFSET_Y },
   PINK: { x: GHOST_PALETTE_OFFSET_X, y: GHOST_PALETTE_OFFSET_Y + SOURCE_GHOST_SIZE },
   CYAN: { x: GHOST_PALETTE_OFFSET_X, y: GHOST_PALETTE_OFFSET_Y + SOURCE_GHOST_SIZE * 2 },
   ORANGE: { x: GHOST_PALETTE_OFFSET_X, y: GHOST_PALETTE_OFFSET_Y + SOURCE_GHOST_SIZE * 3 },
   SCARED: { x: GHOST_PALETTE_OFFSET_X, y: GHOST_PALETTE_OFFSET_Y + SOURCE_GHOST_SIZE * 4 },
-};
+} as const;
 
 /** Animation speed in milliseconds per frame. */
 export const PACMAN_ANIMATION_SPEED = 100;
