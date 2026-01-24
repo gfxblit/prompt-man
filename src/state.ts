@@ -276,7 +276,6 @@ export class GameState implements IGameState {
           this.score += GHOST_EATEN_SCORE;
           ghost.isDead = true;
           ghost.isScared = false; // Un-scare the ghost
-          this.chooseGhostDirection(ghost);
           // No life lost for Pacman
         } else {
           // Pacman hit a normal ghost, lose a life
@@ -367,7 +366,12 @@ export class GameState implements IGameState {
         const initialPos = this.initialPositions.get(ghost);
         if (initialPos) {
           const distToSpawn = Math.sqrt(Math.pow(ghost.x - initialPos.x, 2) + Math.pow(ghost.y - initialPos.y, 2));
-          if (distToSpawn < COLLISION_THRESHOLD) {
+          // Check if the ghost is close enough to the spawn point to be considered "at spawn"
+          // or if it has passed the spawn point in its trajectory
+          if (distToSpawn < COLLISION_THRESHOLD || (
+              Math.abs(ghost.x - initialPos.x) < (GHOST_SPEED * DEAD_GHOST_SPEED_MULTIPLIER * deltaTime) &&
+              Math.abs(ghost.y - initialPos.y) < (GHOST_SPEED * DEAD_GHOST_SPEED_MULTIPLIER * deltaTime)
+          )) {
             this.respawnGhost(ghost);
             continue;
           }
@@ -449,9 +453,9 @@ export class GameState implements IGameState {
       }
     }
 
-    // If ghost is dead, it moves to spawn, ignoring scared state for pathfinding.
-    // If not dead, its scared state is passed directly.
-    const newDir = GhostAI.pickDirection(ghost, target, this.grid, isDead ? false : isScared);
+    // Dead ghosts pathfind to spawn. Scared ghosts pathfind away from Pacman.
+    // Otherwise, normal ghost pathfinding.
+    const newDir = GhostAI.pickDirection(ghost, target, this.grid, isScared && !isDead);
     ghost.direction = newDir;
     ghost.rotation = Math.atan2(newDir.dy, newDir.dx);
   }
