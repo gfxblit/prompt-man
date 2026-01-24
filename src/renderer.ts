@@ -216,7 +216,7 @@ export class Renderer implements IRenderer {
     const frameIndex = entity.animationFrame ?? 0;
 
     if (this.spritesheet) {
-      const frameData = PACMAN_DEATH_ANIMATION_MAP[frameIndex] ?? PACMAN_DEATH_ANIMATION_MAP[0];
+      const frameData = PACMAN_DEATH_ANIMATION_MAP[frameIndex] ?? PACMAN_DEATH_ANIMATION_MAP[0]!;
       const [sRow, sCol] = frameData;
       const sourceX = PACMAN_DEATH_PALETTE_OFFSET_X + (sCol * SOURCE_PACMAN_SIZE);
       const sourceY = PACMAN_DEATH_PALETTE_OFFSET_Y + (sRow * SOURCE_PACMAN_SIZE);
@@ -245,6 +245,75 @@ export class Renderer implements IRenderer {
         this.ctx.fill();
       }
     }
+  }
+
+  /**
+   * Renders a ghost sprite with black pixels made transparent.
+   * Used for rendering dead ghost eyes without the black background.
+   */
+  private renderGhostWithTransparentBlack(
+    sourceX: number,
+    sourceY: number,
+    sourceWidth: number,
+    sourceHeight: number,
+    destX: number,
+    destY: number,
+    destWidth: number,
+    destHeight: number
+  ): void {
+    if (!this.spritesheet) return;
+
+    // Create a temporary canvas to extract and modify the sprite
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = sourceWidth;
+    tempCanvas.height = sourceHeight;
+    const tempCtx = tempCanvas.getContext('2d');
+    if (!tempCtx) return;
+
+    // Draw the sprite to the temporary canvas
+    tempCtx.drawImage(
+      this.spritesheet,
+      sourceX,
+      sourceY,
+      sourceWidth,
+      sourceHeight,
+      0,
+      0,
+      sourceWidth,
+      sourceHeight
+    );
+
+    // Get the image data and make black pixels transparent
+    const imageData = tempCtx.getImageData(0, 0, sourceWidth, sourceHeight);
+    const data = imageData.data;
+
+    // Iterate through each pixel
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i]!;
+      const g = data[i + 1]!;
+      const b = data[i + 2]!;
+
+      // If the pixel is black or very close to black, make it transparent
+      if (r < 10 && g < 10 && b < 10) {
+        data[i + 3] = 0; // Set alpha to 0 (transparent)
+      }
+    }
+
+    // Put the modified image data back
+    tempCtx.putImageData(imageData, 0, 0);
+
+    // Draw the modified sprite to the main canvas
+    this.ctx.drawImage(
+      tempCanvas,
+      0,
+      0,
+      sourceWidth,
+      sourceHeight,
+      destX,
+      destY,
+      destWidth,
+      destHeight
+    );
   }
 
   private renderEntities(state: IGameState): void {
@@ -355,17 +424,31 @@ export class Renderer implements IRenderer {
           const scaleY = spriteSource.flipY ? -1 : 1;
           this.ctx.scale(scaleX, scaleY);
 
-          this.ctx.drawImage(
-            this.spritesheet,
-            spriteSource.x,
-            spriteSource.y,
-            spriteSource.width,
-            spriteSource.height,
-            -TILE_SIZE / 2,
-            -TILE_SIZE / 2,
-            TILE_SIZE,
-            TILE_SIZE
-          );
+          // For dead ghosts (eyes), make black pixels transparent
+          if (entity.isDead) {
+            this.renderGhostWithTransparentBlack(
+              spriteSource.x,
+              spriteSource.y,
+              spriteSource.width,
+              spriteSource.height,
+              -TILE_SIZE / 2,
+              -TILE_SIZE / 2,
+              TILE_SIZE,
+              TILE_SIZE
+            );
+          } else {
+            this.ctx.drawImage(
+              this.spritesheet,
+              spriteSource.x,
+              spriteSource.y,
+              spriteSource.width,
+              spriteSource.height,
+              -TILE_SIZE / 2,
+              -TILE_SIZE / 2,
+              TILE_SIZE,
+              TILE_SIZE
+            );
+          }
 
           this.ctx.restore();
         } else if (entity.isDead) {
