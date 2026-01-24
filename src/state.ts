@@ -439,14 +439,13 @@ export class GameState implements IGameState {
       const isMoving = ghost.direction && (ghost.direction.dx !== 0 || ghost.direction.dy !== 0);
       if (isMoving) {
         this.moveEntity(ghost, distance);
-
-        // Update animation only if still moving (didn't hit a wall)
-        if (ghost.direction && (ghost.direction.dx !== 0 || ghost.direction.dy !== 0)) {
-          const currentTimer = (ghost.animationTimer ?? 0) + deltaTime;
-          ghost.animationFrame = Math.floor(currentTimer / GHOST_ANIMATION_SPEED) % GHOST_ANIMATION_FRAMES.length;
-          ghost.animationTimer = currentTimer % (GHOST_ANIMATION_SPEED * GHOST_ANIMATION_FRAMES.length);
-        }
       }
+
+      // 4. Update animation
+      // Ghosts animate even when they are stopped (unless the game is over)
+      const currentTimer = (ghost.animationTimer ?? 0) + deltaTime;
+      ghost.animationFrame = Math.floor(currentTimer / GHOST_ANIMATION_SPEED) % GHOST_ANIMATION_FRAMES.length;
+      ghost.animationTimer = currentTimer % (GHOST_ANIMATION_SPEED * GHOST_ANIMATION_FRAMES.length);
     }
   }
 

@@ -417,10 +417,10 @@ export const GHOST_PALETTE_OFFSETS: Record<string, [number, number]> = {
  * All frames are 17px wide and non-flipped.
  */
 export const GHOST_ANIMATION_MAP = {
-  EAST: [0],
-  WEST: [1],
-  NORTH: [2],
-  SOUTH: [3],
+  EAST: [0, 1],
+  WEST: [2, 3],
+  NORTH: [4, 5],
+  SOUTH: [6, 7],
 } as const;
 
 /**
@@ -443,7 +443,7 @@ export function getGhostSpriteSource(color: string, direction: string, isScared:
 
   const frames = GHOST_ANIMATION_MAP[dirKey];
   // Wrap around frame index if it exceeds available frames
-  const col = frames[frameIndex % frames.length];
+  const col = frames[frameIndex % frames.length]!;
   
   const [offsetX, offsetY] = paletteOffset;
 

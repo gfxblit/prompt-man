@@ -22,33 +22,34 @@ describe('Ghost Directional Animation', () => {
     });
   });
 
-  it('should only have 1 frame for ghosts', () => {
+  it('should animate ghosts when moving', () => {
     const state = new GameState(grid);
     const ghost = state.getEntities().find(e => e.type === EntityType.Ghost)!;
 
     // Force ghost to move right (East)
     ghost.direction = { dx: 1, dy: 0 };
 
-    // It should NOT cycle. Always frame 0.
+    // Initial frame
     expect(ghost.animationFrame).toBe(0);
     
+    // Move for 1 full frame duration
     state.updateGhosts(GHOST_ANIMATION_SPEED);
-    expect(ghost.animationFrame).toBe(0);
+    expect(ghost.animationFrame).toBe(1);
 
+    // Move for another frame duration
     state.updateGhosts(GHOST_ANIMATION_SPEED);
-    expect(ghost.animationFrame).toBe(0);
+    expect(ghost.animationFrame).toBe(2);
   });
 
-  it('should use same frame index for scared ghosts regardless of direction', () => {
+  it('should animate scared ghosts', () => {
     const state = new GameState(grid);
     const ghost = state.getEntities().find(e => e.type === EntityType.Ghost)!;
     ghost.isScared = true;
 
-    // Force ghost to move West
-    ghost.direction = { dx: -1, dy: 0 };
+    // Initial frame
+    expect(ghost.animationFrame).toBe(0);
     
-    expect(ghost.animationFrame).toBe(0);
     state.updateGhosts(GHOST_ANIMATION_SPEED);
-    expect(ghost.animationFrame).toBe(0);
+    expect(ghost.animationFrame).toBe(1);
   });
 });

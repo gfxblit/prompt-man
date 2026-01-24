@@ -11,21 +11,21 @@ describe('Ghost Rendering Logic', () => {
   });
 
   it('calculates correct source coordinates for Pink Ghost moving West', () => {
-    // Pink offset: 558, 294 (277 + 17). West frame: col 1 (17px offset)
-    // X: 558 + 17 + 1 = 576
+    // Pink offset: 558, 294 (277 + 17). West frame: col 2 (17 * 2 = 34px offset)
+    // X: 558 + 34 + 1 = 593
     // Y: 294 + 0 + 1 = 295
     const coords = getGhostSpriteSource('pink', 'WEST', false);
-    expect(coords).toEqual({ x: 576, y: 295, width: 16, height: 16, flipX: false, flipY: false });
+    expect(coords).toEqual({ x: 593, y: 295, width: 16, height: 16, flipX: false, flipY: false });
   });
 
   it('calculates correct source coordinates for Scared Ghost', () => {
      // Scared row is index 4 -> 277 + 4*17 = 345.
-     // North frame is col 2 -> 2*17 = 34 offset.
-     // X: 558 + 34 + 1 = 593
+     // North frame is col 4 -> 4*17 = 68 offset.
+     // X: 558 + 68 + 1 = 627
      // Y: 345 + 0 + 1 = 346
      // Note: passing 'blue' as color but isScared=true overrides it to 'scared' logic inside
      const coords = getGhostSpriteSource('blue', 'NORTH', true);
-     expect(coords).toEqual({ x: 593, y: 346, width: 16, height: 16, flipX: false, flipY: false });
+     expect(coords).toEqual({ x: 627, y: 346, width: 16, height: 16, flipX: false, flipY: false });
   });
 
   it('falls back to default ghost color when invalid color is provided', () => {
