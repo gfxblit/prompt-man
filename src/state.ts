@@ -7,6 +7,7 @@ import {
   GHOST_SPEED,
   POWER_UP_DURATION,
   SCARED_GHOST_SPEED_MULTIPLIER,
+  DEAD_GHOST_SPEED_MULTIPLIER,
   GHOST_EATEN_SCORE,
   ALIGNMENT_TOLERANCE,
   COLLISION_THRESHOLD,
@@ -243,12 +244,7 @@ export class GameState implements IGameState {
         if (ghost.isScared) {
           // Ghost is eaten
           this.score += GHOST_EATEN_SCORE;
-          const initialPos = this.initialPositions.get(ghost);
-          if (initialPos) {
-            ghost.x = initialPos.x;
-            ghost.y = initialPos.y;
-            ghost.direction = { dx: 0, dy: 0 };
-          }
+          ghost.isDead = true;
           ghost.isScared = false; // Un-scare the ghost
           // No life lost for Pacman
         } else {
@@ -301,7 +297,24 @@ export class GameState implements IGameState {
     const ghosts = this.entities.filter(e => e.type === EntityType.Ghost);
     
     for (const ghost of ghosts) {
-      const speed = ghost.isScared ? GHOST_SPEED * SCARED_GHOST_SPEED_MULTIPLIER : GHOST_SPEED;
+      if (ghost.isDead) {
+        const initialPos = this.initialPositions.get(ghost);
+        if (initialPos) {
+          const distToSpawn = Math.sqrt(Math.pow(ghost.x - initialPos.x, 2) + Math.pow(ghost.y - initialPos.y, 2));
+          if (distToSpawn < COLLISION_THRESHOLD) {
+            ghost.isDead = false;
+            ghost.x = initialPos.x;
+            ghost.y = initialPos.y;
+            ghost.direction = { dx: 0, dy: 0 };
+            continue;
+          }
+        }
+      }
+
+      let speed = ghost.isScared ? GHOST_SPEED * SCARED_GHOST_SPEED_MULTIPLIER : GHOST_SPEED;
+      if (ghost.isDead) {
+        speed = GHOST_SPEED * DEAD_GHOST_SPEED_MULTIPLIER;
+      }
       const distance = speed * deltaTime;
 
       // 1. If stopped or no direction, choose one
@@ -359,12 +372,21 @@ export class GameState implements IGameState {
 
   private chooseGhostDirection(ghost: Entity): void {
     const isScared = !!ghost.isScared;
+    const isDead = !!ghost.isDead;
     const pacman = this.entities.find(e => e.type === EntityType.Pacman);
-    const target = pacman
+    
+    let target = pacman
       ? { x: Math.round(pacman.x), y: Math.round(pacman.y) }
       : { x: Math.round(ghost.x), y: Math.round(ghost.y) };
 
-    const newDir = GhostAI.pickDirection(ghost, target, this.grid, isScared);
+    if (isDead) {
+      const initialPos = this.initialPositions.get(ghost);
+      if (initialPos) {
+        target = { x: Math.round(initialPos.x), y: Math.round(initialPos.y) };
+      }
+    }
+
+    const newDir = GhostAI.pickDirection(ghost, target, this.grid, isScared && !isDead);
     ghost.direction = newDir;
     ghost.rotation = Math.atan2(newDir.dy, newDir.dx);
   }

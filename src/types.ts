@@ -48,6 +48,8 @@ export interface Entity {
   animationTimer?: number | undefined;
   /** Optional flag indicating if the entity (e.g., ghost) is scared. */
   isScared?: boolean;
+  /** Optional flag indicating if the entity (e.g., ghost) is dead and returning to jail. */
+  isDead?: boolean;
 }
 
 /**

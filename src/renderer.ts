@@ -278,13 +278,32 @@ export class Renderer implements IRenderer {
       }
 
       case EntityType.Ghost:
-        this.ctx.fillStyle = entity.isScared ? COLORS.SCARED_GHOST : (entity.color || COLORS.GHOST_DEFAULT);
-        this.ctx.beginPath();
-        this.ctx.arc(screenX, screenY, TILE_SIZE / 2 - 1, Math.PI, 0);
-        this.ctx.lineTo(screenX + TILE_SIZE / 2 - 1, screenY + TILE_SIZE / 2 - 1);
-        this.ctx.lineTo(screenX - TILE_SIZE / 2 + 1, screenY + TILE_SIZE / 2 - 1);
-        this.ctx.closePath();
-        this.ctx.fill();
+        if (entity.isDead) {
+          // Render eyes only
+          this.ctx.fillStyle = 'white';
+          this.ctx.beginPath();
+          // Left eye
+          this.ctx.arc(screenX - 3, screenY - 2, 2, 0, Math.PI * 2);
+          // Right eye
+          this.ctx.arc(screenX + 3, screenY - 2, 2, 0, Math.PI * 2);
+          this.ctx.fill();
+
+          this.ctx.fillStyle = 'blue';
+          this.ctx.beginPath();
+          // Left pupil
+          this.ctx.arc(screenX - 3, screenY - 2, 1, 0, Math.PI * 2);
+          // Right pupil
+          this.ctx.arc(screenX + 3, screenY - 2, 1, 0, Math.PI * 2);
+          this.ctx.fill();
+        } else {
+          this.ctx.fillStyle = entity.isScared ? COLORS.SCARED_GHOST : (entity.color || COLORS.GHOST_DEFAULT);
+          this.ctx.beginPath();
+          this.ctx.arc(screenX, screenY, TILE_SIZE / 2 - 1, Math.PI, 0);
+          this.ctx.lineTo(screenX + TILE_SIZE / 2 - 1, screenY + TILE_SIZE / 2 - 1);
+          this.ctx.lineTo(screenX - TILE_SIZE / 2 + 1, screenY + TILE_SIZE / 2 - 1);
+          this.ctx.closePath();
+          this.ctx.fill();
+        }
         break;
     }
   }

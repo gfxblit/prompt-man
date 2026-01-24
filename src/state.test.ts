@@ -346,15 +346,13 @@ describe('GameState', () => {
       expect(ghost?.isScared).toBeFalsy(); // Ghost should no longer be scared
     });
 
-    it('should reset eaten ghost to its initial position and award points, without losing a life', () => {
+    it('should set ghost to dead state and award points when eaten, without losing a life', () => {
       const state = new GameState(powerGrid);
       const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
       const ghost = state.getEntities().find(e => e.type === EntityType.Ghost);
 
       if (!pacman || !ghost) throw new Error('Entities not found');
 
-      const initialGhostX = ghost.x;
-      const initialGhostY = ghost.y;
       const initialLives = state.getLives();
 
       // 1. Move Pacman to consume power pellet (making ghost scared)
@@ -365,21 +363,73 @@ describe('GameState', () => {
       // Manually set positions for collision for test clarity
       pacman.x = 2;
       pacman.y = 1;
-      ghost.x = 2;
+      ghost.x = 2.1;
       ghost.y = 1;
 
       // Update Pacman to trigger collision check. Use a minimal delta time.
-      state.updatePacman({ dx: 0, dy: 0 }, 1);
-
-      // Expect ghost to be reset to initial position
-      expect(ghost.x).toBe(initialGhostX);
-      expect(ghost.y).toBe(initialGhostY);
+      state.updatePacman({ dx: 0, dy: 0 }, 1); 
+ 
+      // Expect ghost to NOT be reset to initial position immediately
+      expect(ghost.x).toBeCloseTo(2.1);
+      // Expect ghost to be dead
+      expect(ghost.isDead).toBe(true);
       // Expect ghost to no longer be scared
       expect(ghost.isScared).toBeFalsy();
       // Expect score to increase by GHOST_EATEN_SCORE (plus power pellet score)
       expect(state.getScore()).toBe(POWER_PELLET_SCORE + GHOST_EATEN_SCORE);
-      // Expect lives to remain unchanged
-      expect(state.getLives()).toBe(initialLives);
-    });
-  });
-});
+            // Expect lives to remain unchanged
+            expect(state.getLives()).toBe(initialLives);
+          });
+      
+          it('should move dead ghost towards its spawn and respawn when it reaches it', () => {
+            const state = new GameState(powerGrid);
+            const ghost = state.getEntities().find(e => e.type === EntityType.Ghost);
+            if (!ghost) throw new Error('Ghost not found');
+      
+            const initialGhostX = ghost.x;
+            const initialGhostY = ghost.y;
+      
+            // 1. Kill the ghost
+            ghost.isDead = true;
+            ghost.isScared = false;
+            // Put it somewhere else
+            ghost.x = 2;
+            ghost.y = 1;
+      
+            // 2. Update ghosts. It should move towards (initialGhostX, initialGhostY)
+            // Since it's dead, it should move faster (GHOST_SPEED * 1.5)
+            // Initial pos is (5, 1) based on template `#P   G#` (0-indexed, P at 1, G at 5)
+            // Actually, let's check the template:
+            // powerPelletTemplate = `
+            // #######
+            // #P   G#
+            // #o    #
+            // #######
+            // `.trim();
+            // G is at (5, 1). P is at (1, 1). o is at (1, 2).
+            
+            expect(initialGhostX).toBe(5);
+            expect(initialGhostY).toBe(1);
+      
+            // Move from (2, 1) towards (5, 1). dx should be 1.
+            state.updateGhosts(100); // delta time in ms
+            
+            expect(ghost.direction?.dx).toBeGreaterThan(0);
+            expect(ghost.x).toBeGreaterThan(2);
+            expect(ghost.isDead).toBe(true);
+      
+            // 3. Teleport ghost near spawn and move it to spawn
+            ghost.x = 4.9;
+            ghost.y = 1;
+            ghost.direction = { dx: 1, dy: 0 };
+            
+            // Update with enough time to reach/pass (5, 1)
+            state.updateGhosts(100);
+      
+            // It should be at (5, 1) or very close and NOT dead anymore
+            expect(ghost.x).toBeCloseTo(5);
+            expect(ghost.isDead).toBeFalsy();
+          });
+        });
+      });
+      
