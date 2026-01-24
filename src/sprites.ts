@@ -1,4 +1,5 @@
 import { MASK } from './autotile.js';
+import { COLORS } from './config.js';
 
 /**
  * (row, col) coordinates in the sprite sheet for a 4x4 quadrant.
@@ -390,3 +391,56 @@ export const PACMAN_DEATH_ANIMATION_MAP: [number, number][] = [
   [0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5],
   [1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5],
 ];
+
+/**
+ * Animation frames for Ghosts.
+ * 8-frame cycle [row, col, flipX, flipY]
+ * row and col are in 17px units relative to the GHOST_PALETTE_OFFSET position.
+ */
+export const GHOST_ANIMATION_FRAMES = [
+  [0, 0, false, false],
+  [0, 1, false, false],
+  [0, 2, false, false],
+  [0, 3, false, false],
+  [0, 4, false, false],
+  [0, 5, false, false],
+  [0, 6, false, false],
+  [0, 7, false, false],
+] as const;
+
+/** Mapping of ghost colors to their row index in the palette. */
+export const GHOST_COLOR_ROWS: Record<string, number> = {
+  ...Object.fromEntries(COLORS.GHOST_COLORS.map((color, index) => [color, index])),
+  'scared': 4
+};
+
+/**
+ * Animation frames for Pacman in each direction.
+ * Each direction has 3 frames: [row, col, flipX, flipY]
+ * row and col are in 17px units relative to the absolute PACMAN_PALETTE_OFFSET position in the image.
+ */
+export const PACMAN_ANIMATION_MAP = {
+  NORTH: [
+    [0, 1, false, true],
+    [1, 1, false, true],
+    [2, 0, false, true],
+  ],
+  SOUTH: [
+    [0, 1, false, false],
+    [1, 1, false, false],
+    [2, 0, false, false],
+  ],
+  WEST: [
+    [0, 0, true, false],
+    [1, 0, true, false],
+    [2, 0, true, false],
+  ],
+  EAST: [
+    [0, 0, false, false],
+    [1, 0, false, false],
+    [2, 0, false, false],
+  ],
+} as const;
+
+/** The sequence of animation frames for Pacman. */
+export const PACMAN_ANIMATION_SEQUENCE = [0, 1, 2, 1] as const;

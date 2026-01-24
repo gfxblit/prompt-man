@@ -16,9 +16,7 @@ import {
   PACMAN_DEATH_ANIMATION_FRAMES,
   GHOST_PALETTE_OFFSET_X,
   GHOST_PALETTE_OFFSET_Y,
-  SOURCE_GHOST_SIZE,
-  PACMAN_ANIMATION_MAP,
-  GHOST_COLOR_ROWS
+  SOURCE_GHOST_SIZE
 } from './config.js';
 import { getTileMask } from './autotile.js';
 import {
@@ -27,7 +25,10 @@ import {
   STATIC_SPRITE_MAP,
   SOURCE_TILE_SIZE,
   SOURCE_PACMAN_SIZE,
-  PACMAN_DEATH_ANIMATION_MAP
+  PACMAN_DEATH_ANIMATION_MAP,
+  GHOST_ANIMATION_FRAMES,
+  PACMAN_ANIMATION_MAP,
+  GHOST_COLOR_ROWS
 } from './sprites.js';
 
 export class Renderer implements IRenderer {

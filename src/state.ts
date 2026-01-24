@@ -15,10 +15,9 @@ import {
   PACMAN_ANIMATION_SPEED,
   PACMAN_DEATH_ANIMATION_SPEED,
   PACMAN_DEATH_ANIMATION_FRAMES,
-  GHOST_ANIMATION_SPEED,
-  GHOST_ANIMATION_FRAMES
+  GHOST_ANIMATION_SPEED
 } from './config.js';
-
+import { GHOST_ANIMATION_FRAMES, PACMAN_ANIMATION_SEQUENCE } from './sprites.js';
 import { GhostAI } from './ghost-ai.js';
 
 export class GameState implements IGameState {
@@ -263,9 +262,9 @@ export class GameState implements IGameState {
     const isMoving = moveDir.dx !== 0 || moveDir.dy !== 0;
     if (isMoving) {
       const currentTimer = (pacman.animationTimer ?? 0) + deltaTime;
-      const frames = [0, 1, 2, 1] as const;
-      const frameIndex = Math.floor(currentTimer / PACMAN_ANIMATION_SPEED) % 4;
-      pacman.animationFrame = frames[frameIndex as 0 | 1 | 2 | 3];
+      const frames = PACMAN_ANIMATION_SEQUENCE;
+      const frameIndex = Math.floor(currentTimer / PACMAN_ANIMATION_SPEED) % frames.length;
+      pacman.animationFrame = frames[frameIndex];
       pacman.animationTimer = currentTimer % (PACMAN_ANIMATION_SPEED * frames.length);
     } else {
       // When static, show the first frame (closed mouth) of the last direction

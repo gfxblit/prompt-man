@@ -74,40 +74,6 @@ export const COLORS = {
   SCARED_GHOST: 'blue',
 } as const;
 
-/** Mapping of ghost colors to their row index in the palette. */
-export const GHOST_COLOR_ROWS: Record<string, number> = {
-  ...Object.fromEntries(COLORS.GHOST_COLORS.map((color, index) => [color, index])),
-  'scared': 4
-};
-
-/**
- * Animation frames for Pacman in each direction.
- * Each direction has 3 frames: [row, col, flipX, flipY]
- * row and col are in 17px units relative to the absolute PACMAN_PALETTE_OFFSET position in the image.
- */
-export const PACMAN_ANIMATION_MAP = {
-  NORTH: [
-    [0, 1, false, true],
-    [1, 1, false, true],
-    [2, 0, false, true],
-  ],
-  SOUTH: [
-    [0, 1, false, false],
-    [1, 1, false, false],
-    [2, 0, false, false],
-  ],
-  WEST: [
-    [0, 0, true, false],
-    [1, 0, true, false],
-    [2, 0, true, false],
-  ],
-  EAST: [
-    [0, 0, false, false],
-    [1, 0, false, false],
-    [2, 0, false, false],
-  ],
-} as const;
-
 /**
  * Joystick configuration
  */
