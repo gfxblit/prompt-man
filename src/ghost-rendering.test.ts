@@ -46,10 +46,10 @@ describe('Ghost Rendering Logic', () => {
   });
 
   it('calculates correct source coordinates for Dead Ghost eyes', () => {
-    // Eyes row is index 5 -> 277 + 5 * SOURCE_GHOST_SIZE = 362.
-    // South frame is col 6 -> 6 * SOURCE_GHOST_SIZE = 102 offset.
-    // X: 558 + 102 + 1 = 661
-    // Y: 362 + 0 + 1 = 363
+    // Eyes row is index 5 in the GHOST_OFFSETS.
+    // The col is derived from GHOST_ANIMATION_MAP['SOUTH'][0], which is 2.
+    // X: GHOST_PALETTE_OFFSET_X (558) + (col * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X (1)
+    // Y: GHOST_OFFSETS.EYES.y + PALETTE_PADDING_Y (1)
     const expectedX = GHOST_PALETTE_OFFSET_X + (GHOST_ANIMATION_MAP['SOUTH'][0] * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X;
     const expectedY = GHOST_OFFSETS.EYES.y + PALETTE_PADDING_Y;
     const coords = getGhostSpriteSource('red', 'SOUTH', false, 0, true);

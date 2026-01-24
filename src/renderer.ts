@@ -216,7 +216,7 @@ export class Renderer implements IRenderer {
     const frameIndex = entity.animationFrame ?? 0;
 
     if (this.spritesheet) {
-      const frameData = PACMAN_DEATH_ANIMATION_MAP[frameIndex] ?? PACMAN_DEATH_ANIMATION_MAP[0] ?? [0, 0];
+      const frameData = PACMAN_DEATH_ANIMATION_MAP[frameIndex] ?? PACMAN_DEATH_ANIMATION_MAP[0];
       const [sRow, sCol] = frameData;
       const sourceX = PACMAN_DEATH_PALETTE_OFFSET_X + (sCol * SOURCE_PACMAN_SIZE);
       const sourceY = PACMAN_DEATH_PALETTE_OFFSET_Y + (sRow * SOURCE_PACMAN_SIZE);
@@ -275,14 +275,7 @@ export class Renderer implements IRenderer {
           else dirKey = 'EAST';
 
           const frameIndex = entity.animationFrame ?? 0;
-          const animationFrameData = PACMAN_ANIMATION_MAP[dirKey]?.[(frameIndex as 0 | 1 | 2)] || PACMAN_ANIMATION_MAP.EAST[0];
-
-          if (!animationFrameData) {
-            // Should not happen with current PACMAN_ANIMATION_MAP, but ensures robustness
-            return;
-          }
-
-          const [sRow, sCol, flipX, flipY] = animationFrameData;
+          const [sRow, sCol, flipX, flipY] = PACMAN_ANIMATION_MAP[dirKey]?.[(frameIndex as 0 | 1 | 2)] || PACMAN_ANIMATION_MAP.EAST[0];
 
           const sourceX = PACMAN_PALETTE_OFFSET_X + (sCol * SOURCE_PACMAN_SIZE);
           const sourceY = PACMAN_PALETTE_OFFSET_Y + (sRow * SOURCE_PACMAN_SIZE);
