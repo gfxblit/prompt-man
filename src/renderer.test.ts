@@ -54,6 +54,7 @@ describe('Renderer', () => {
       getHighScore: vi.fn().mockReturnValue(0),
       getLives: vi.fn().mockReturnValue(0),
       getRemainingPellets: vi.fn().mockReturnValue(0),
+      getSpawnPosition: vi.fn(),
       consumePellet: vi.fn(),
       isPelletEaten: vi.fn().mockReturnValue(false),
       updatePacman: vi.fn(),
