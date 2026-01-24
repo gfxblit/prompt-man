@@ -152,7 +152,7 @@ describe('index robustness', () => {
 
     // Manually trigger a frame update
     (performance.now as Mock).mockReturnValue(100); 
-    
-    expect(highScoreElMock.innerText).toBe('High Score: 100');
+
+    expect(highScoreElMock.innerText).toBe('High Score: 100'); // Ensure it remains correct
   });
 });

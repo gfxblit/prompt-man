@@ -12,8 +12,11 @@ import {
   ALIGNMENT_TOLERANCE,
   COLLISION_THRESHOLD,
   COLORS,
-  PACMAN_ANIMATION_SPEED
+  PACMAN_ANIMATION_SPEED,
+  PACMAN_DEATH_ANIMATION_SPEED,
+  PACMAN_DEATH_ANIMATION_FRAMES
 } from './config.js';
+  
 import { GhostAI } from './ghost-ai.js';
 
 export class GameState implements IGameState {
@@ -22,6 +25,7 @@ export class GameState implements IGameState {
   private highScore: number = 0;
   private lives: number = 2;
   private gameOver: boolean = false;
+  private dying: boolean = false;
   private remainingPellets: number = 0;
   private eatenPellets: Set<string> = new Set();
   private powerUpTimer: number = 0; // New: Timer for power-up duration
@@ -107,6 +111,10 @@ export class GameState implements IGameState {
     return this.gameOver;
   }
 
+  isDying(): boolean {
+    return this.dying;
+  }
+
   isPelletEaten(x: number, y: number): boolean {
     return this.eatenPellets.has(`${x},${y}`);
   }
@@ -147,8 +155,26 @@ export class GameState implements IGameState {
     const pacman = this.entities.find(e => e.type === EntityType.Pacman);
     if (!pacman || this.gameOver) return;
 
+    if (this.dying) {
+      const currentDeathTimer = (pacman.deathTimer || 0) + deltaTime;
+      pacman.deathTimer = currentDeathTimer;
+      
+      const frameIndex = Math.floor(currentDeathTimer / PACMAN_DEATH_ANIMATION_SPEED);
+      if (frameIndex >= PACMAN_DEATH_ANIMATION_FRAMES) {
+        this.finishDying();
+      } else {
+        pacman.animationFrame = Math.min(frameIndex, PACMAN_DEATH_ANIMATION_FRAMES - 1);
+      }
+      return;
+    }
+
     // Check collisions
     this.checkCollisions(pacman);
+    if (this.dying) {
+      // If dying, reset velocity immediately to prevent further movement during animation
+      pacman.direction = { dx: 0, dy: 0 };
+      return;
+    }
 
     // Update intended direction if input is provided
     if (direction.dx !== 0 || direction.dy !== 0) {
@@ -237,6 +263,7 @@ export class GameState implements IGameState {
   }
 
   private checkCollisions(pacman: Entity): void {
+    // Dead ghosts do not collide with Pacman as they return to spawn
     const ghosts = this.entities.filter(e => e.type === EntityType.Ghost && !e.isDead);
     for (const ghost of ghosts) {
       const dist = Math.sqrt(
@@ -262,10 +289,29 @@ export class GameState implements IGameState {
   }
 
   private handleCollision(): void {
-    if (this.gameOver) return;
+    if (this.gameOver || this.dying) return;
 
+    this.dying = true;
+
+    const pacman = this.entities.find(e => e.type === EntityType.Pacman);
+    if (pacman) {
+      pacman.deathTimer = 0;
+      pacman.animationFrame = 0;
+      pacman.direction = { dx: 0, dy: 0 };
+    }
+  }
+
+  private finishDying(): void {
+    this.dying = false;
     this.lives--;
-    if (this.lives <= 0) {
+
+    const pacman = this.entities.find(e => e.type === EntityType.Pacman);
+    if (pacman) {
+      pacman.deathTimer = undefined;
+      pacman.animationFrame = 0;
+    }
+
+    if (this.lives < 0) {
       this.lives = 0;
       this.gameOver = true;
     } else {
@@ -285,6 +331,7 @@ export class GameState implements IGameState {
   }
 
   private resetPositions(): void {
+    this.powerUpTimer = 0;
     for (const entity of this.entities) {
       const initialPos = this.initialPositions.get(entity);
       if (initialPos) {
@@ -293,12 +340,16 @@ export class GameState implements IGameState {
         entity.direction = { dx: 0, dy: 0 };
         // Reset rotation if needed, but direction reset might be enough
       }
+      if (entity.type === EntityType.Ghost) {
+        entity.isScared = false;
+        entity.isDead = false;
+      }
     }
     this.nextDirection = null;
   }
 
   updateGhosts(deltaTime: number): void {
-    if (this.gameOver) return;
+    if (this.gameOver || this.dying) return;
 
     if (this.powerUpTimer > 0) {
       this.powerUpTimer -= deltaTime;
@@ -316,8 +367,13 @@ export class GameState implements IGameState {
       if (ghost.isDead) {
         const initialPos = this.initialPositions.get(ghost);
         if (initialPos) {
-          const distToSpawn = Math.sqrt(Math.pow(ghost.x - initialPos.x, 2) + Math.pow(ghost.y - initialPos.y, 2));
-          if (distToSpawn < COLLISION_THRESHOLD) {
+          // Calculate distance to spawn, using grid coordinates
+          const dx = Math.abs(ghost.x - initialPos.x);
+          const dy = Math.abs(ghost.y - initialPos.y);
+
+          // If the ghost is very close to its spawn point, respawn it.
+          // This ensures it snaps to the spawn point and resets state.
+          if (dx < ALIGNMENT_TOLERANCE && dy < ALIGNMENT_TOLERANCE) {
             this.respawnGhost(ghost);
             continue;
           }
@@ -399,9 +455,11 @@ export class GameState implements IGameState {
       }
     }
 
-    // If ghost is dead, it moves to spawn, ignoring scared state for pathfinding.
-    // If not dead, its scared state is passed directly.
-    const newDir = GhostAI.pickDirection(ghost, target, this.grid, isDead ? false : isScared);
+    // Pathfinding priority:
+    // 1. Dead ghosts: Pathfind to spawn position
+    // 2. Scared ghosts: Pathfind AWAY from Pacman (handled in GhostAI.pickDirection)
+    // 3. Normal ghosts: Pathfind towards Pacman
+    const newDir = GhostAI.pickDirection(ghost, target, this.grid, isScared && !isDead);
     ghost.direction = newDir;
     ghost.rotation = Math.atan2(newDir.dy, newDir.dx);
   }

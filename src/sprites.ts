@@ -410,3 +410,12 @@ export const PACMAN_ANIMATION_MAP = {
     [2, 0, false, false],
   ],
 } as const;
+
+/**
+ * Death animation frames for Pacman.
+ * Array of 12 [row, col] coordinates in 17px units.
+ */
+export const PACMAN_DEATH_ANIMATION_MAP: [number, number][] = [
+  [0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5],
+  [1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5],
+];

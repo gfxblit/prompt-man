@@ -3,7 +3,7 @@ import { Renderer, UIRenderer } from './renderer.js';
 import { Grid } from './grid.js';
 import { TileType, EntityType } from './types.js';
 import type { IGameState } from './types.js';
-import { TILE_SIZE, COLORS } from './config.js';
+import { TILE_SIZE, COLORS, PACMAN_DEATH_ANIMATION_FRAMES } from './config.js';
 
 describe('Renderer', () => {
   let mockContext: {
@@ -60,6 +60,7 @@ describe('Renderer', () => {
       updatePacman: vi.fn(),
       updateGhosts: vi.fn(),
       isGameOver: vi.fn().mockReturnValue(false),
+      isDying: vi.fn().mockReturnValue(false),
     };
   });
 
@@ -341,6 +342,65 @@ describe('Renderer', () => {
     fillStyleSetter.mockRestore();
   });
 
+  it('should render Pacman death animation (fallback)', () => {
+    const grid = new Grid(1, 1);
+    const entities = [{ type: EntityType.Pacman, x: 0, y: 0, animationFrame: 0 }];
+    vi.mocked(mockState.getEntities).mockReturnValue(entities);
+    vi.mocked(mockState.isDying).mockReturnValue(true);
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
+
+    const maxRadius = TILE_SIZE / 2 - 1;
+    for (let i = 0; i < PACMAN_DEATH_ANIMATION_FRAMES; i++) {
+      vi.mocked(mockContext.arc).mockClear();
+      entities[0]!.animationFrame = i;
+      renderer.render(grid, mockState);
+
+      expect(mockContext.fillStyle).toBe(COLORS.PACMAN);
+      const expectedRadius = maxRadius * (1 - i / (PACMAN_DEATH_ANIMATION_FRAMES - 1));
+      
+      if (expectedRadius > 0) {
+        expect(mockContext.beginPath).toHaveBeenCalled();
+        expect(mockContext.arc).toHaveBeenCalledWith(
+          TILE_SIZE / 2,
+          TILE_SIZE / 2,
+          expectedRadius,
+          0,
+          Math.PI * 2
+        );
+      } else {
+        // Last frame might have radius 0, so arc is not called in current implementation
+        expect(mockContext.arc).not.toHaveBeenCalled();
+      }
+    }
+  });
+
+  it('should render Pacman death animation (spritesheet)', () => {
+    const mockSpritesheet = {} as HTMLImageElement;
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D, mockSpritesheet);
+    const grid = new Grid(1, 1);
+    const entities = [{ type: EntityType.Pacman, x: 0, y: 0, animationFrame: 0 }];
+    vi.mocked(mockState.getEntities).mockReturnValue(entities);
+    vi.mocked(mockState.isDying).mockReturnValue(true);
+
+    for (let i = 0; i < PACMAN_DEATH_ANIMATION_FRAMES; i++) {
+      vi.mocked(mockContext.drawImage).mockClear();
+      entities[0]!.animationFrame = i;
+      renderer.render(grid, mockState);
+
+      expect(mockContext.drawImage).toHaveBeenCalledWith(
+        mockSpritesheet,
+        expect.any(Number), // sourceX
+        expect.any(Number), // sourceY
+        expect.any(Number), // sourceWidth
+        expect.any(Number), // sourceHeight
+        0,                  // destX (entity.x * TILE_SIZE)
+        0,                  // destY (entity.y * TILE_SIZE)
+        TILE_SIZE,
+        TILE_SIZE
+      );
+    }
+  });
+
   it('should render multiple tiles correctly', () => {
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
     const grid = Grid.fromString('#.\no ');
@@ -397,6 +457,27 @@ describe('Renderer', () => {
     expect(mockContext.beginPath).toHaveBeenCalledTimes(2);
     expect(mockContext.arc).toHaveBeenCalledTimes(2);
     expect(mockContext.fill).toHaveBeenCalledTimes(2);
+  });
+
+  it('should not crash when animationFrame is out of bounds for PACMAN_ANIMATION_MAP', () => {
+    const mockSpritesheet = {} as HTMLImageElement;
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D, mockSpritesheet);
+    const grid = new Grid(1, 1);
+
+    const entities = [{
+      type: EntityType.Pacman,
+      x: 0,
+      y: 0,
+      animationFrame: 11 // Out of bounds for PACMAN_ANIMATION_MAP (0-2)
+    }];
+    vi.mocked(mockState.getEntities).mockReturnValue(entities);
+    vi.mocked(mockState.isDying).mockReturnValue(false);
+
+    // This should NOT throw anymore after the fix, but even if it does, 
+    // the renderer should probably be robust.
+    // However, the fix was to ensure it's reset in the state.
+    // Let's also make the renderer robust as a secondary defense.
+    expect(() => renderer.render(grid, mockState)).not.toThrow();
   });
 });
 
