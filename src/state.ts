@@ -17,7 +17,7 @@ import {
   PACMAN_DEATH_ANIMATION_FRAMES,
   GHOST_ANIMATION_SPEED
 } from './config.js';
-import { GHOST_ANIMATION_FRAMES, PACMAN_ANIMATION_SEQUENCE } from './sprites.js';
+import { PACMAN_ANIMATION_SEQUENCE } from './sprites.js';
 import { GhostAI } from './ghost-ai.js';
 
 export class GameState implements IGameState {
@@ -443,8 +443,8 @@ export class GameState implements IGameState {
         // Update animation only if still moving (didn't hit a wall)
         if (ghost.direction && (ghost.direction.dx !== 0 || ghost.direction.dy !== 0)) {
           const currentTimer = (ghost.animationTimer ?? 0) + deltaTime;
-          ghost.animationFrame = Math.floor(currentTimer / GHOST_ANIMATION_SPEED) % GHOST_ANIMATION_FRAMES.length;
-          ghost.animationTimer = currentTimer % (GHOST_ANIMATION_SPEED * GHOST_ANIMATION_FRAMES.length);
+          ghost.animationFrame = Math.floor(currentTimer / GHOST_ANIMATION_SPEED) % 2;
+          ghost.animationTimer = currentTimer % (GHOST_ANIMATION_SPEED * 2);
         }
       }
     }

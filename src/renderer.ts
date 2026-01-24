@@ -27,6 +27,7 @@ import {
   SOURCE_PACMAN_SIZE,
   PACMAN_DEATH_ANIMATION_MAP,
   GHOST_ANIMATION_FRAMES,
+  GHOST_ANIMATION_MAP,
   PACMAN_ANIMATION_MAP,
   GHOST_COLOR_ROWS
 } from './sprites.js';
@@ -361,8 +362,19 @@ export class Renderer implements IRenderer {
         } else if (this.spritesheet) {
           const colorKey = entity.isScared ? 'scared' : (entity.color || COLORS.GHOST_DEFAULT);
           const colorRow = GHOST_COLOR_ROWS[colorKey] ?? 0;
+          
+          let dirKey: keyof typeof GHOST_ANIMATION_MAP = 'EAST';
+          if (!entity.isScared && entity.direction) {
+            if (entity.direction.dx > 0) dirKey = 'EAST';
+            else if (entity.direction.dx < 0) dirKey = 'WEST';
+            else if (entity.direction.dy > 0) dirKey = 'SOUTH';
+            else if (entity.direction.dy < 0) dirKey = 'NORTH';
+          }
+
           const frameIndex = entity.animationFrame ?? 0;
-          const frame = GHOST_ANIMATION_FRAMES[frameIndex % GHOST_ANIMATION_FRAMES.length];
+          const directionalFrames = GHOST_ANIMATION_MAP[dirKey];
+          const actualFrameIndex = directionalFrames[frameIndex % directionalFrames.length]!;
+          const frame = GHOST_ANIMATION_FRAMES[actualFrameIndex];
           if (!frame) return;
           const [, sCol, flipX, flipY] = frame;
 

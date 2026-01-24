@@ -408,6 +408,17 @@ export const GHOST_ANIMATION_FRAMES = [
   [0, 7, false, false],
 ] as const;
 
+/**
+ * Maps direction names to indices in GHOST_ANIMATION_FRAMES.
+ * Each direction has 2 frames.
+ */
+export const GHOST_ANIMATION_MAP = {
+  EAST: [0, 1],
+  WEST: [2, 3],
+  NORTH: [4, 5],
+  SOUTH: [6, 7],
+} as const;
+
 /** Mapping of ghost colors to their row index in the palette. */
 export const GHOST_COLOR_ROWS: Record<string, number> = {
   ...Object.fromEntries(COLORS.GHOST_COLORS.map((color, index) => [color, index])),

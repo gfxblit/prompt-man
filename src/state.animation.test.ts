@@ -139,7 +139,7 @@ describe('GameState Animation', () => {
       expect(ghost.animationFrame).toBe(1);
     });
 
-    it('should cycle animation frame through 0-7', () => {
+    it('should cycle animation frame through 0-1', () => {
       const ghostTemplate = `
 ###########
 #G........#
@@ -152,8 +152,8 @@ describe('GameState Animation', () => {
       // Force ghost to move right
       ghost.direction = { dx: 1, dy: 0 };
 
-      for (let i = 0; i < 8; i++) {
-        expect(ghost.animationFrame).toBe(i);
+      for (let i = 0; i < 4; i++) {
+        expect(ghost.animationFrame).toBe(i % 2);
         state.updateGhosts(GHOST_ANIMATION_SPEED);
       }
       expect(ghost.animationFrame).toBe(0);
