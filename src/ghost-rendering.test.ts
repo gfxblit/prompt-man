@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getGhostSpriteSource } from './sprites';
+import { getGhostSpriteSource } from './sprites.js';
 
 describe('Ghost Rendering Logic', () => {
   it('calculates correct source coordinates for Red Ghost moving East', () => {

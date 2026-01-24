@@ -412,14 +412,14 @@ export const GHOST_PALETTE_OFFSETS: Record<string, [number, number]> = {
 
 /**
  * Maps direction names to frames.
- * Each direction has a list of frames: [row, col, flipX, flipY]
+ * Each direction has a single frame: [row, col, flipX, flipY]
  * row and col are in 17px units relative to the GHOST_PALETTE_OFFSET position.
  */
 export const GHOST_ANIMATION_MAP = {
-  EAST: [[0, 0, false, false]],
-  WEST: [[0, 1, false, false]],
-  NORTH: [[0, 2, false, false]],
-  SOUTH: [[0, 3, false, false]],
+  EAST: [0, 0, false, false],
+  WEST: [0, 1, false, false],
+  NORTH: [0, 2, false, false],
+  SOUTH: [0, 3, false, false],
 } as const;
 
 /**
@@ -427,16 +427,19 @@ export const GHOST_ANIMATION_MAP = {
  */
 export function getGhostSpriteSource(color: string, direction: string, isScared: boolean, frameIndex: number) {
   const colorKey = isScared ? 'scared' : (color || COLORS.GHOST_DEFAULT);
-  const paletteOffset = GHOST_PALETTE_OFFSETS[colorKey] || GHOST_PALETTE_OFFSETS['scared']; // Fallback
+  const paletteOffset = GHOST_PALETTE_OFFSETS[colorKey] ?? GHOST_PALETTE_OFFSETS['scared'];
   
+  if (!paletteOffset) {
+    // Should not happen if 'scared' is defined in offsets
+    throw new Error(`Ghost palette offset not found for color: ${colorKey}`);
+  }
+
   let dirKey = direction as keyof typeof GHOST_ANIMATION_MAP;
-  if (!GHOST_ANIMATION_MAP[dirKey]) {
+  if (!(dirKey in GHOST_ANIMATION_MAP)) {
     dirKey = 'EAST';
   }
 
-  const frames = GHOST_ANIMATION_MAP[dirKey];
-  const frame = frames[frameIndex % frames.length];
-  const [row, col, flipX, flipY] = frame;
+  const [row, col, flipX, flipY] = GHOST_ANIMATION_MAP[dirKey];
   
   const [offsetX, offsetY] = paletteOffset;
 
