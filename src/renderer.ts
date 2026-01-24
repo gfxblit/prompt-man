@@ -225,7 +225,7 @@ export class Renderer implements IRenderer {
     } else {
       // Fallback: shrinking circle
       const maxRadius = TILE_SIZE / 2 - 1;
-      const progress = frameIndex / PACMAN_DEATH_ANIMATION_FRAMES;
+      const progress = frameIndex / (PACMAN_DEATH_ANIMATION_FRAMES - 1);
       const radius = Math.max(0, maxRadius * (1 - progress));
 
       if (radius > 0) {
@@ -265,7 +265,7 @@ export class Renderer implements IRenderer {
           else dirKey = 'EAST';
 
           const frameIndex = entity.animationFrame ?? 0;
-          const animationFrameData = PACMAN_ANIMATION_MAP[dirKey]?.[(frameIndex as 0 | 1 | 2)] || PACMAN_ANIMATION_MAP[dirKey]?.[0];
+          const animationFrameData = PACMAN_ANIMATION_MAP[dirKey]?.[(frameIndex as 0 | 1 | 2)] || PACMAN_ANIMATION_MAP.EAST[0];
 
           if (!animationFrameData) {
             // This case should ideally not happen if PACMAN_ANIMATION_MAP is correctly defined,

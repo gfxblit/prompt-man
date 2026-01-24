@@ -3,7 +3,7 @@ import { Renderer, UIRenderer } from './renderer.js';
 import { Grid } from './grid.js';
 import { TileType, EntityType } from './types.js';
 import type { IGameState } from './types.js';
-import { TILE_SIZE, COLORS } from './config.js';
+import { TILE_SIZE, COLORS, PACMAN_DEATH_ANIMATION_FRAMES } from './config.js';
 
 describe('Renderer', () => {
   let mockContext: {
@@ -355,7 +355,7 @@ describe('Renderer', () => {
     expect(mockContext.beginPath).toHaveBeenCalled();
     // At frame 6 of 12, radius should be roughly half of maxRadius
     const maxRadius = TILE_SIZE / 2 - 1;
-    const expectedRadius = maxRadius * (1 - 6/12);
+    const expectedRadius = maxRadius * (1 - 6 / (PACMAN_DEATH_ANIMATION_FRAMES - 1));
     expect(mockContext.arc).toHaveBeenCalledWith(
       TILE_SIZE / 2,
       TILE_SIZE / 2,
