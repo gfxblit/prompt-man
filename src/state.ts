@@ -399,27 +399,23 @@ export class GameState implements IGameState {
 
     const proposed = pos + dir * dist;
     const currentTile = Math.floor(pos + 0.5);
-    const proposedTile = Math.floor(proposed + 0.5);
+    
+    // Calculate the next tile in the direction of movement
+    const nextTile = currentTile + dir;
 
-    if (dir > 0) {
-      if (proposedTile > currentTile) {
-        const wrappedNextTile = this.getWrappedCoordinate(proposedTile, max);
-        const tileX = isHorizontal ? wrappedNextTile : wrappedCrossPos;
-        const tileY = isHorizontal ? wrappedCrossPos : wrappedNextTile;
+    // Check if we would cross into the next tile's area (beyond the current tile center)
+    // For moving right (dir > 0): we're entering next tile area when proposed > currentTile
+    // For moving left (dir < 0): we're entering next tile area when proposed < currentTile
+    const wouldEnterNextTile = dir > 0 ? proposed > currentTile : proposed < currentTile;
 
-        if (!this.grid.isWalkable(tileX, tileY)) {
-          return { pos: currentTile, stopped: true };
-        }
-      }
-    } else {
-      if (proposedTile < currentTile) {
-        const wrappedNextTile = this.getWrappedCoordinate(proposedTile, max);
-        const tileX = isHorizontal ? wrappedNextTile : wrappedCrossPos;
-        const tileY = isHorizontal ? wrappedCrossPos : wrappedNextTile;
+    if (wouldEnterNextTile) {
+      const wrappedNextTile = this.getWrappedCoordinate(nextTile, max);
+      const tileX = isHorizontal ? wrappedNextTile : wrappedCrossPos;
+      const tileY = isHorizontal ? wrappedCrossPos : wrappedNextTile;
 
-        if (!this.grid.isWalkable(tileX, tileY)) {
-          return { pos: currentTile, stopped: true };
-        }
+      if (!this.grid.isWalkable(tileX, tileY)) {
+        // Stop at the center of the current tile
+        return { pos: currentTile, stopped: true };
       }
     }
 
