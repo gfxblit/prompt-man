@@ -233,7 +233,7 @@ export class GameState implements IGameState {
   }
 
   private checkCollisions(pacman: Entity): void {
-    const ghosts = this.entities.filter(e => e.type === EntityType.Ghost);
+    const ghosts = this.entities.filter(e => e.type === EntityType.Ghost && !e.isDead);
     for (const ghost of ghosts) {
       const dist = Math.sqrt(
         Math.pow(pacman.x - ghost.x, 2) + Math.pow(pacman.y - ghost.y, 2)

@@ -426,6 +426,31 @@ describe('GameState', () => {
       expect(ghost.x).toBeCloseTo(initialGhostX);
       expect(ghost.isDead).toBeFalsy();
     });
+
+    it('should not kill Pacman when colliding with a dead ghost', () => {
+      const state = new GameState(powerGrid);
+      const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
+      const ghost = state.getEntities().find(e => e.type === EntityType.Ghost);
+      if (!pacman || !ghost) throw new Error('Entities not found');
+
+      const initialLives = state.getLives();
+
+      // 1. Kill the ghost
+      ghost.isDead = true;
+      
+      // 2. Position them together
+      pacman.x = 2;
+      pacman.y = 1;
+      ghost.x = 2;
+      ghost.y = 1;
+
+      // 3. Update state
+      state.updatePacman({ dx: 0, dy: 0 }, 1);
+
+      // 4. Verify no life lost
+      expect(state.getLives()).toBe(initialLives);
+      expect(state.isGameOver()).toBe(false);
+    });
         });
       });
       
