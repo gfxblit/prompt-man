@@ -11,6 +11,8 @@ import {
   GHOST_EATEN_SCORE,
   ALIGNMENT_TOLERANCE,
   COLLISION_THRESHOLD,
+  GHOST_RESPAWN_THRESHOLD,
+  RESPAWN_INVULNERABILITY_DURATION,
   COLORS,
   PACMAN_ANIMATION_SPEED,
   PACMAN_DEATH_ANIMATION_SPEED,
@@ -274,7 +276,7 @@ export class GameState implements IGameState {
 
   private checkCollisions(pacman: Entity): void {
     // Dead ghosts do not collide with Pacman as they return to spawn
-    const ghosts = this.entities.filter(e => e.type === EntityType.Ghost && !e.isDead);
+    const ghosts = this.entities.filter(e => e.type === EntityType.Ghost && !e.isDead && !e.isRespawning);
     for (const ghost of ghosts) {
       const dist = Math.sqrt(
         Math.pow(pacman.x - ghost.x, 2) + Math.pow(pacman.y - ghost.y, 2)
@@ -334,6 +336,8 @@ export class GameState implements IGameState {
     if (initialPos) {
       ghost.isDead = false;
       ghost.isScared = false;
+      ghost.isRespawning = true;
+      ghost.respawnTimer = RESPAWN_INVULNERABILITY_DURATION;
       ghost.x = initialPos.x;
       ghost.y = initialPos.y;
       ghost.direction = { dx: 0, dy: 0 };
@@ -374,16 +378,20 @@ export class GameState implements IGameState {
     const ghosts = this.entities.filter(e => e.type === EntityType.Ghost);
 
     for (const ghost of ghosts) {
+      // Handle respawning state
+      if (ghost.isRespawning) {
+        ghost.respawnTimer = (ghost.respawnTimer ?? 0) - deltaTime;
+        if (ghost.respawnTimer <= 0) {
+          ghost.isRespawning = false;
+          ghost.respawnTimer = 0;
+        }
+      }
+
       if (ghost.isDead) {
         const initialPos = this.initialPositions.get(ghost);
         if (initialPos) {
-          // Calculate distance to spawn, using grid coordinates
-          const dx = Math.abs(ghost.x - initialPos.x);
-          const dy = Math.abs(ghost.y - initialPos.y);
-
-          // If the ghost is very close to its spawn point, respawn it.
-          // This ensures it snaps to the spawn point and resets state.
-          if (dx < ALIGNMENT_TOLERANCE && dy < ALIGNMENT_TOLERANCE) {
+          const distToSpawn = Math.sqrt(Math.pow(ghost.x - initialPos.x, 2) + Math.pow(ghost.y - initialPos.y, 2));
+          if (distToSpawn < GHOST_RESPAWN_THRESHOLD) {
             this.respawnGhost(ghost);
             continue;
           }
@@ -485,7 +493,7 @@ export class GameState implements IGameState {
     if (isDead) {
       const initialPos = this.initialPositions.get(ghost);
       if (initialPos) {
-        target = { x: Math.round(initialPos.x), y: Math.round(initialPos.y) };
+        target = { x: initialPos.x, y: initialPos.y };
       }
     }
 

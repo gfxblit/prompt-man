@@ -363,7 +363,7 @@ describe('GameState', () => {
       // Manually set positions for collision for test clarity
       pacman.x = 2;
       pacman.y = 1;
-      ghost.x = 2; // Ensure exact collision for clarity
+      ghost.x = 2;
       ghost.y = 1;
 
       // Update Pacman to trigger collision check. Use a minimal delta time.
@@ -450,6 +450,41 @@ describe('GameState', () => {
       // 4. Verify no life lost
       expect(state.getLives()).toBe(initialLives);
       expect(state.isGameOver()).toBe(false);
+    });
+    it('should make ghost invulnerable to collision briefly after respawning', () => {
+      const state = new GameState(powerGrid);
+      const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
+      const ghost = state.getEntities().find(e => e.type === EntityType.Ghost);
+      if (!pacman || !ghost) throw new Error('Entities not found');
+
+      const initialLives = state.getLives();
+      const spawnPos = state.getSpawnPosition(ghost)!;
+
+      // 1. Trigger respawn
+      ghost.isDead = true;
+      ghost.x = spawnPos.x;
+      ghost.y = spawnPos.y;
+      state.updateGhosts(1); // Should trigger respawnGhost
+
+      expect(ghost.isDead).toBe(false);
+      expect(ghost.isRespawning).toBe(true);
+
+      // 2. Position Pacman on top of the newly respawned ghost
+      pacman.x = ghost.x;
+      pacman.y = ghost.y;
+
+      // 3. Update state - should NOT collide because ghost is in isRespawning state
+      state.updatePacman({ dx: 0, dy: 0 }, 1);
+
+      expect(state.getLives()).toBe(initialLives);
+
+      // 4. Advance time past invulnerability duration
+      state.updateGhosts(RESPAWN_INVULNERABILITY_DURATION + 100);
+      expect(ghost.isRespawning).toBe(false);
+
+      // 5. Update state - should NOW collide and lose a life
+      state.updatePacman({ dx: 0, dy: 0 }, 1);
+      expect(state.getLives()).toBe(initialLives - 1);
     });
   });
 });

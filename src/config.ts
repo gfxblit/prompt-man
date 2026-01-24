@@ -14,7 +14,11 @@ export const POWER_UP_DURATION = 10000; // 10 seconds
 /** Speed of scared ghosts, as a fraction of their normal speed. */
 export const SCARED_GHOST_SPEED_MULTIPLIER = 0.5;
 /** Speed of dead ghosts returning to jail, as a fraction of their base speed. */
-export const DEAD_GHOST_SPEED_MULTIPLIER = 1.5; // Multiplier for GHOST_SPEED
+export const DEAD_GHOST_SPEED_MULTIPLIER = 1.5; // Multiplier for GHOST_SPEED.
+/** Duration in milliseconds that a ghost remains non-collidable after respawning. */
+export const RESPAWN_INVULNERABILITY_DURATION = 1000;
+/** Threshold distance to trigger ghost respawn when returning to spawn point. */
+export const GHOST_RESPAWN_THRESHOLD = 0.5;
 /** Score awarded for eating a scared ghost. */
 export const GHOST_EATEN_SCORE = 200;
 /** A small tolerance to check for grid alignment. */

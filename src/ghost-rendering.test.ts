@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { getGhostSpriteSource } from './sprites.js';
+import { getGhostSpriteSource, GHOST_ANIMATION_MAP } from './sprites.js';
+import {
+  GHOST_PALETTE_OFFSET_X,
+  GHOST_OFFSETS,
+  SOURCE_GHOST_SIZE,
+  PALETTE_PADDING_X,
+  PALETTE_PADDING_Y
+} from './config.js';
 
 describe('Ghost Rendering Logic', () => {
   it('calculates correct source coordinates for Red Ghost moving East', () => {
@@ -43,7 +50,9 @@ describe('Ghost Rendering Logic', () => {
     // South frame is col 6 -> 6 * SOURCE_GHOST_SIZE = 102 offset.
     // X: 558 + 102 + 1 = 661
     // Y: 362 + 0 + 1 = 363
+    const expectedX = GHOST_PALETTE_OFFSET_X + (GHOST_ANIMATION_MAP['SOUTH'][0] * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X;
+    const expectedY = GHOST_OFFSETS.EYES.y + PALETTE_PADDING_Y;
     const coords = getGhostSpriteSource('red', 'SOUTH', false, 0, true);
-    expect(coords).toEqual({ x: 661, y: 363, width: 16, height: 16, flipX: false, flipY: false });
+    expect(coords).toEqual({ x: expectedX, y: expectedY, width: 16, height: 16, flipX: false, flipY: false });
   });
 });
