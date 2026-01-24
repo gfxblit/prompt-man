@@ -1,5 +1,12 @@
 import { MASK } from './autotile.js';
-import { COLORS } from './config.js';
+import {
+  COLORS,
+  GHOST_PALETTE_OFFSET_X,
+  GHOST_PALETTE_OFFSET_Y,
+  SOURCE_GHOST_SIZE,
+  PALETTE_PADDING_X,
+  PALETTE_PADDING_Y
+} from './config.js';
 
 /**
  * (row, col) coordinates in the sprite sheet for a 4x4 quadrant.
@@ -393,33 +400,58 @@ export const PACMAN_DEATH_ANIMATION_MAP: [number, number][] = [
 ];
 
 /**
- * Animation frames for Ghosts.
- * One frame per direction: [row, col, flipX, flipY]
- * row and col are in 17px units relative to the GHOST_PALETTE_OFFSET position.
+ * Mapping of ghost colors to their [x, y] palette offset.
  */
-export const GHOST_ANIMATION_FRAMES = [
-  [0, 0, false, false], // EAST
-  [0, 1, false, false], // WEST
-  [0, 2, false, false], // NORTH
-  [0, 3, false, false], // SOUTH
-] as const;
+export const GHOST_PALETTE_OFFSETS: Record<string, [number, number]> = {
+  [COLORS.GHOST_COLORS[0]]: [GHOST_PALETTE_OFFSET_X, GHOST_PALETTE_OFFSET_Y], // red
+  [COLORS.GHOST_COLORS[1]]: [GHOST_PALETTE_OFFSET_X, GHOST_PALETTE_OFFSET_Y + SOURCE_GHOST_SIZE], // pink
+  [COLORS.GHOST_COLORS[2]]: [GHOST_PALETTE_OFFSET_X, GHOST_PALETTE_OFFSET_Y + SOURCE_GHOST_SIZE * 2], // cyan
+  [COLORS.GHOST_COLORS[3]]: [GHOST_PALETTE_OFFSET_X, GHOST_PALETTE_OFFSET_Y + SOURCE_GHOST_SIZE * 3], // orange
+  'scared': [GHOST_PALETTE_OFFSET_X, GHOST_PALETTE_OFFSET_Y + SOURCE_GHOST_SIZE * 4],
+};
 
 /**
- * Maps direction names to indices in GHOST_ANIMATION_FRAMES.
- * Each direction has 1 frame.
+ * Maps direction names to frames.
+ * Each direction has a list of frames: [row, col, flipX, flipY]
+ * row and col are in 17px units relative to the GHOST_PALETTE_OFFSET position.
  */
 export const GHOST_ANIMATION_MAP = {
-  EAST: [0],
-  WEST: [1],
-  NORTH: [2],
-  SOUTH: [3],
+  EAST: [[0, 0, false, false]],
+  WEST: [[0, 1, false, false]],
+  NORTH: [[0, 2, false, false]],
+  SOUTH: [[0, 3, false, false]],
 } as const;
 
-/** Mapping of ghost colors to their row index in the palette. */
-export const GHOST_COLOR_ROWS: Record<string, number> = {
-  ...Object.fromEntries(COLORS.GHOST_COLORS.map((color, index) => [color, index])),
-  'scared': 4
-};
+/**
+ * Calculates the source sprite coordinates for a ghost.
+ */
+export function getGhostSpriteSource(color: string, direction: string, isScared: boolean, frameIndex: number) {
+  const colorKey = isScared ? 'scared' : (color || COLORS.GHOST_DEFAULT);
+  const paletteOffset = GHOST_PALETTE_OFFSETS[colorKey] || GHOST_PALETTE_OFFSETS['scared']; // Fallback
+  
+  let dirKey = direction as keyof typeof GHOST_ANIMATION_MAP;
+  if (!GHOST_ANIMATION_MAP[dirKey]) {
+    dirKey = 'EAST';
+  }
+
+  const frames = GHOST_ANIMATION_MAP[dirKey];
+  const frame = frames[frameIndex % frames.length];
+  const [row, col, flipX, flipY] = frame;
+  
+  const [offsetX, offsetY] = paletteOffset;
+
+  const sourceX = offsetX + (col * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X;
+  const sourceY = offsetY + (row * SOURCE_GHOST_SIZE) + PALETTE_PADDING_Y;
+
+  return {
+    x: sourceX,
+    y: sourceY,
+    width: SOURCE_GHOST_SIZE - PALETTE_PADDING_X,
+    height: SOURCE_GHOST_SIZE - PALETTE_PADDING_Y,
+    flipX,
+    flipY
+  };
+}
 
 /**
  * Animation frames for Pacman in each direction.

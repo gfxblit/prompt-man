@@ -26,10 +26,9 @@ import {
   SOURCE_TILE_SIZE,
   SOURCE_PACMAN_SIZE,
   PACMAN_DEATH_ANIMATION_MAP,
-  GHOST_ANIMATION_FRAMES,
+  getGhostSpriteSource,
   GHOST_ANIMATION_MAP,
-  PACMAN_ANIMATION_MAP,
-  GHOST_COLOR_ROWS
+  PACMAN_ANIMATION_MAP
 } from './sprites.js';
 
 export class Renderer implements IRenderer {
@@ -360,9 +359,6 @@ export class Renderer implements IRenderer {
           this.ctx.arc(screenX + TILE_SIZE / 6, screenY - TILE_SIZE / 8, TILE_SIZE / 16, 0, Math.PI * 2);
           this.ctx.fill();
         } else if (this.spritesheet) {
-          const colorKey = entity.isScared ? 'scared' : (entity.color || COLORS.GHOST_DEFAULT);
-          const colorRow = GHOST_COLOR_ROWS[colorKey] ?? 0;
-          
           let dirKey: keyof typeof GHOST_ANIMATION_MAP = 'EAST';
           if (!entity.isScared && entity.direction) {
             if (entity.direction.dx > 0) dirKey = 'EAST';
@@ -371,29 +367,26 @@ export class Renderer implements IRenderer {
             else if (entity.direction.dy < 0) dirKey = 'NORTH';
           }
 
-          const frameIndex = entity.animationFrame ?? 0;
-          const directionalFrames = GHOST_ANIMATION_MAP[dirKey];
-          const actualFrameIndex = directionalFrames[frameIndex % directionalFrames.length]!;
-          const frame = GHOST_ANIMATION_FRAMES[actualFrameIndex];
-          if (!frame) return;
-          const [, sCol, flipX, flipY] = frame;
-
-          const sourceX = GHOST_PALETTE_OFFSET_X + (sCol * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X;
-          const sourceY = GHOST_PALETTE_OFFSET_Y + (colorRow * SOURCE_GHOST_SIZE) + PALETTE_PADDING_Y;
+          const spriteSource = getGhostSpriteSource(
+            entity.color || COLORS.GHOST_DEFAULT,
+            dirKey,
+            !!entity.isScared,
+            entity.animationFrame ?? 0
+          );
 
           this.ctx.save();
           this.ctx.translate(screenX, screenY);
 
-          const scaleX = flipX ? -1 : 1;
-          const scaleY = flipY ? -1 : 1;
+          const scaleX = spriteSource.flipX ? -1 : 1;
+          const scaleY = spriteSource.flipY ? -1 : 1;
           this.ctx.scale(scaleX, scaleY);
 
           this.ctx.drawImage(
             this.spritesheet,
-            sourceX,
-            sourceY,
-            SOURCE_GHOST_SIZE - PALETTE_PADDING_X,
-            SOURCE_GHOST_SIZE - PALETTE_PADDING_Y,
+            spriteSource.x,
+            spriteSource.y,
+            spriteSource.width,
+            spriteSource.height,
             -TILE_SIZE / 2,
             -TILE_SIZE / 2,
             TILE_SIZE,
