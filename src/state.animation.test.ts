@@ -115,11 +115,11 @@ describe('GameState Animation', () => {
       expect(ghost.animationTimer).toBe(0);
     });
 
-    it('should update animation timer and frame when Ghost is moving', () => {
+    it('should NOT update animation timer and frame when Ghost is moving', () => {
       const ghostTemplate = `
-#####
-#G..#
-#####
+###########
+#G........#
+###########
       `.trim();
       const ghostGrid = Grid.fromString(ghostTemplate);
       const state = new GameState(ghostGrid);
@@ -130,16 +130,16 @@ describe('GameState Animation', () => {
 
       state.updateGhosts(GHOST_ANIMATION_SPEED / 2);
 
-      expect(ghost.animationTimer).toBe(GHOST_ANIMATION_SPEED / 2);
+      expect(ghost.animationTimer).toBe(0);
       expect(ghost.animationFrame).toBe(0);
 
       state.updateGhosts(GHOST_ANIMATION_SPEED / 2 + 1);
 
-      expect(ghost.animationTimer).toBe(GHOST_ANIMATION_SPEED + 1);
-      expect(ghost.animationFrame).toBe(1);
+      expect(ghost.animationTimer).toBe(0);
+      expect(ghost.animationFrame).toBe(0);
     });
 
-    it('should cycle animation frame through 0-1', () => {
+    it('should NOT cycle animation frame', () => {
       const ghostTemplate = `
 ###########
 #G........#
@@ -153,9 +153,10 @@ describe('GameState Animation', () => {
       ghost.direction = { dx: 1, dy: 0 };
 
       for (let i = 0; i < 4; i++) {
-        expect(ghost.animationFrame).toBe(i % 2);
+        expect(ghost.animationFrame).toBe(0);
         state.updateGhosts(GHOST_ANIMATION_SPEED);
       }
+
       expect(ghost.animationFrame).toBe(0);
     });
 

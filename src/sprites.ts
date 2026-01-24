@@ -394,29 +394,25 @@ export const PACMAN_DEATH_ANIMATION_MAP: [number, number][] = [
 
 /**
  * Animation frames for Ghosts.
- * 8-frame cycle [row, col, flipX, flipY]
+ * One frame per direction: [row, col, flipX, flipY]
  * row and col are in 17px units relative to the GHOST_PALETTE_OFFSET position.
  */
 export const GHOST_ANIMATION_FRAMES = [
-  [0, 0, false, false],
-  [0, 1, false, false],
-  [0, 2, false, false],
-  [0, 3, false, false],
-  [0, 4, false, false],
-  [0, 5, false, false],
-  [0, 6, false, false],
-  [0, 7, false, false],
+  [0, 0, false, false], // EAST
+  [0, 2, false, false], // WEST
+  [0, 4, false, false], // NORTH
+  [0, 6, false, false], // SOUTH
 ] as const;
 
 /**
  * Maps direction names to indices in GHOST_ANIMATION_FRAMES.
- * Each direction has 2 frames.
+ * Each direction has 1 frame.
  */
 export const GHOST_ANIMATION_MAP = {
-  EAST: [0, 1],
-  WEST: [2, 3],
-  NORTH: [4, 5],
-  SOUTH: [6, 7],
+  EAST: [0],
+  WEST: [1],
+  NORTH: [2],
+  SOUTH: [3],
 } as const;
 
 /** Mapping of ghost colors to their row index in the palette. */
