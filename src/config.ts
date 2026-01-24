@@ -49,12 +49,12 @@ export const SOURCE_GHOST_SIZE = 17;
 export type SpriteOffset = { x: number; y: number };
 
 export const GHOST_OFFSETS: Record<string, SpriteOffset> = {
-  RED: { x: GHOST_PALETTE_OFFSET_X, y: GHOST_PALETTE_OFFSET_Y },
-  PINK: { x: GHOST_PALETTE_OFFSET_X, y: GHOST_PALETTE_OFFSET_Y + SOURCE_GHOST_SIZE },
-  CYAN: { x: GHOST_PALETTE_OFFSET_X, y: GHOST_PALETTE_OFFSET_Y + SOURCE_GHOST_SIZE * 2 },
-  ORANGE: { x: GHOST_PALETTE_OFFSET_X, y: GHOST_PALETTE_OFFSET_Y + SOURCE_GHOST_SIZE * 3 },
-  SCARED: { x: GHOST_PALETTE_OFFSET_X, y: GHOST_PALETTE_OFFSET_Y + SOURCE_GHOST_SIZE * 4 },
-  EYES: { x: GHOST_PALETTE_OFFSET_X, y: GHOST_PALETTE_OFFSET_Y + SOURCE_GHOST_SIZE * 5 },
+  RED: { x: 0, y: 82 },
+  PINK: { x: 200, y: 82 },
+  CYAN: { x: 400, y: 82 },
+  ORANGE: { x: 600, y: 82 },
+  SCARED: { x: 200, y: 167 },
+  EYES: { x: 200, y: 268 },
 };
 
 /** Animation speed in milliseconds per frame. */

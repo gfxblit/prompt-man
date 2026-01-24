@@ -417,9 +417,10 @@ export const GHOST_PALETTE_OFFSETS: Record<string, SpriteOffset> = {
  */
 export const GHOST_ANIMATION_MAP = {
   EAST: [0, 1],
-  WEST: [2, 3],
-  NORTH: [4, 5],
-  SOUTH: [6, 7],
+  WEST: [4, 5],
+  NORTH: [6, 7],
+  SOUTH: [2, 3],
+  SCARED: [0, 1],
 } as const;
 
 /** The sequence of animation frames for Ghosts. */
@@ -443,6 +444,10 @@ export function getGhostSpriteSource(color: string, direction: string, isScared:
   let dirKey = direction as keyof typeof GHOST_ANIMATION_MAP;
   if (!(dirKey in GHOST_ANIMATION_MAP)) {
     dirKey = 'EAST';
+  }
+
+  if (isScared) {
+    dirKey = 'SCARED';
   }
 
   const frames = GHOST_ANIMATION_MAP[dirKey];
