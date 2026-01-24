@@ -207,10 +207,6 @@ export class Renderer implements IRenderer {
 
     if (this.spritesheet) {
       const frameData = PACMAN_DEATH_ANIMATION_MAP[frameIndex] || PACMAN_DEATH_ANIMATION_MAP[0];
-      if (!frameData) {
-        console.warn(`PACMAN_DEATH_ANIMATION_MAP entry for frameIndex ${frameIndex} or default frame is undefined.`);
-        return;
-      }
       const [sRow, sCol] = frameData;
       const sourceX = PACMAN_DEATH_PALETTE_OFFSET_X + (sCol * SOURCE_PACMAN_SIZE);
       const sourceY = PACMAN_DEATH_PALETTE_OFFSET_Y + (sRow * SOURCE_PACMAN_SIZE);
@@ -269,7 +265,16 @@ export class Renderer implements IRenderer {
           else dirKey = 'EAST';
 
           const frameIndex = entity.animationFrame ?? 0;
-          const [sRow, sCol, flipX, flipY] = PACMAN_ANIMATION_MAP[dirKey][(frameIndex as 0 | 1 | 2)] || PACMAN_ANIMATION_MAP[dirKey][0]!;
+          const animationFrameData = PACMAN_ANIMATION_MAP[dirKey]?.[(frameIndex as 0 | 1 | 2)] || PACMAN_ANIMATION_MAP[dirKey]?.[0];
+
+          if (!animationFrameData) {
+            // This case should ideally not happen if PACMAN_ANIMATION_MAP is correctly defined,
+            // but provides a robust fallback.
+            console.error(`Missing animation frame data for direction ${dirKey} and frameIndex ${frameIndex}.`);
+            return;
+          }
+
+          const [sRow, sCol, flipX, flipY] = animationFrameData;
 
           const sourceX = PACMAN_PALETTE_OFFSET_X + (sCol * SOURCE_PACMAN_SIZE);
           const sourceY = PACMAN_PALETTE_OFFSET_Y + (sRow * SOURCE_PACMAN_SIZE);
