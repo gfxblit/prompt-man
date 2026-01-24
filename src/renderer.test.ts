@@ -322,12 +322,22 @@ describe('Renderer', () => {
     vi.mocked(mockState.getEntities).mockReturnValue(entities);
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
 
+    const fillStyleSetter = vi.spyOn(mockContext, 'fillStyle', 'set');
+    
     renderer.render(grid, mockState);
+    
+    // Ensure ghost body color is NOT used
+    expect(fillStyleSetter).not.toHaveBeenCalledWith('pink');
+    
+    // Check for eye white and pupil colors
+    expect(fillStyleSetter).toHaveBeenCalledWith('white');
+    expect(fillStyleSetter).toHaveBeenCalledWith('blue');
 
-    // Expect white for the eye whites and blue for the pupils
-    expect(mockContext.fillStyle).toMatch(/(white|blue)/);
     const arcCalls = vi.mocked(mockContext.arc).mock.calls;
+    // 2 eyes + 2 pupils = 4 arcs
     expect(arcCalls.length).toBeGreaterThanOrEqual(4);
+    
+    fillStyleSetter.mockRestore();
   });
 
   it('should render multiple tiles correctly', () => {

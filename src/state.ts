@@ -99,6 +99,10 @@ export class GameState implements IGameState {
     return this.remainingPellets;
   }
 
+  getSpawnPosition(entity: Entity): { x: number, y: number } | undefined {
+    return this.initialPositions.get(entity);
+  }
+
   isGameOver(): boolean {
     return this.gameOver;
   }
@@ -246,6 +250,7 @@ export class GameState implements IGameState {
           this.score += GHOST_EATEN_SCORE;
           ghost.isDead = true;
           ghost.isScared = false; // Un-scare the ghost
+          this.chooseGhostDirection(ghost);
           // No life lost for Pacman
         } else {
           // Pacman hit a normal ghost, lose a life
@@ -265,6 +270,17 @@ export class GameState implements IGameState {
       this.gameOver = true;
     } else {
       this.resetPositions();
+    }
+  }
+
+  private respawnGhost(ghost: Entity): void {
+    const initialPos = this.initialPositions.get(ghost);
+    if (initialPos) {
+      ghost.isDead = false;
+      ghost.isScared = false;
+      ghost.x = initialPos.x;
+      ghost.y = initialPos.y;
+      ghost.direction = { dx: 0, dy: 0 };
     }
   }
 
@@ -302,10 +318,7 @@ export class GameState implements IGameState {
         if (initialPos) {
           const distToSpawn = Math.sqrt(Math.pow(ghost.x - initialPos.x, 2) + Math.pow(ghost.y - initialPos.y, 2));
           if (distToSpawn < COLLISION_THRESHOLD) {
-            ghost.isDead = false;
-            ghost.x = initialPos.x;
-            ghost.y = initialPos.y;
-            ghost.direction = { dx: 0, dy: 0 };
+            this.respawnGhost(ghost);
             continue;
           }
         }

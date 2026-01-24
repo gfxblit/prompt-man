@@ -346,7 +346,7 @@ describe('GameState', () => {
       expect(ghost?.isScared).toBeFalsy(); // Ghost should no longer be scared
     });
 
-    it('should set ghost to dead state and award points when eaten, without losing a life', () => {
+    it('should set ghost to dead state and award points without resetting its position immediately, when eaten', () => {
       const state = new GameState(powerGrid);
       const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
       const ghost = state.getEntities().find(e => e.type === EntityType.Ghost);
@@ -377,54 +377,54 @@ describe('GameState', () => {
       expect(ghost.isScared).toBeFalsy();
       // Expect score to increase by GHOST_EATEN_SCORE (plus power pellet score)
       expect(state.getScore()).toBe(POWER_PELLET_SCORE + GHOST_EATEN_SCORE);
-            // Expect lives to remain unchanged
-            expect(state.getLives()).toBe(initialLives);
-          });
+      // Expect lives to remain unchanged
+      expect(state.getLives()).toBe(initialLives);
+    });
       
     it('should move dead ghost towards its spawn and respawn when it reaches it', () => {
       const state = new GameState(powerGrid);
       const ghost = state.getEntities().find(e => e.type === EntityType.Ghost);
       if (!ghost) throw new Error('Ghost not found');
 
-      const initialGhostX = ghost.x;
-      const initialGhostY = ghost.y;
+      const spawnPos = state.getSpawnPosition(ghost);
+      if (!spawnPos) throw new Error('Spawn position not found');
 
-      // 1. Kill the ghost
+      // 1. Kill the ghost and make it scared initially to verify it clears scared state on respawn
       ghost.isDead = true;
-      ghost.isScared = false;
+      ghost.isScared = true;
       // Put it somewhere else
       ghost.x = 2;
       ghost.y = 1;
 
-      // 2. Update ghosts. It should move towards (initialGhostX, initialGhostY)
+      // 2. Update ghosts. It should move towards spawnPos
       // Since it's dead, it should move faster (GHOST_SPEED * 1.5)
       // G is at (5, 1). P is at (1, 1). o is at (1, 2).
       
-      // Dynamically retrieve initial position to avoid brittleness with map changes
-      const actualInitialPos = (state as unknown as { initialPositions: Map<Entity, { x: number, y: number }> }).initialPositions.get(ghost);
-      if (!actualInitialPos) throw new Error('Initial position not found');
-      expect(initialGhostX).toBe(actualInitialPos.x);
-      expect(initialGhostY).toBe(actualInitialPos.y);
-
-      // Move from (2, 1) towards (initialGhostX, initialGhostY). dx should be 1.
+      // Move from (2, 1) towards spawnPos. dx should be positive if spawn is to the right.
       state.updateGhosts(100); // delta time in ms
       
-      expect(ghost.direction?.dx).toBeGreaterThan(0);
-      expect(ghost.x).toBeGreaterThan(2);
+      const expectedDx = Math.sign(spawnPos.x - 2);
+      const expectedDy = Math.sign(spawnPos.y - 1);
+
+      if (expectedDx !== 0) expect(ghost.direction?.dx).toBe(expectedDx);
+      if (expectedDy !== 0) expect(ghost.direction?.dy).toBe(expectedDy);
+      
       expect(ghost.isDead).toBe(true);
 
       // 3. Teleport ghost near spawn and move it to spawn
-      // Using a small offset from initial position to be within COLLISION_THRESHOLD
-      ghost.x = initialGhostX - COLLISION_THRESHOLD / 2;
-      ghost.y = initialGhostY;
+      // Using COLLISION_THRESHOLD / 2 to be within range
+      ghost.x = spawnPos.x - COLLISION_THRESHOLD / 2;
+      ghost.y = spawnPos.y;
       ghost.direction = { dx: 1, dy: 0 };
       
-      // Update with enough time to reach/pass the initial position
+      // Update with enough time to reach/pass the spawn position
       state.updateGhosts(100);
 
-      // It should be at the initial position or very close and NOT dead anymore
-      expect(ghost.x).toBeCloseTo(initialGhostX);
+      // It should be at the spawn position and NOT dead and NOT scared anymore
+      expect(ghost.x).toBeCloseTo(spawnPos.x);
+      expect(ghost.y).toBeCloseTo(spawnPos.y);
       expect(ghost.isDead).toBeFalsy();
+      expect(ghost.isScared).toBeFalsy();
     });
 
     it('should not kill Pacman when colliding with a dead ghost', () => {

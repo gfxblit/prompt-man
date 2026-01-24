@@ -94,6 +94,8 @@ export interface IGameState {
   getHighScore(): number;
   /** Returns the total number of pellets remaining in the grid. */
   getRemainingPellets(): number;
+  /** Returns the spawn position for a given entity. */
+  getSpawnPosition(entity: Entity): { x: number; y: number } | undefined;
   /** Consumes a pellet at the specified coordinates and updates state. */
   consumePellet(x: number, y: number): void;
   /** Checks if a pellet at the specified coordinates has already been eaten. */
