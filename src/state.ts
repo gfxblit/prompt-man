@@ -16,7 +16,7 @@ import {
   PACMAN_DEATH_ANIMATION_SPEED,
   PACMAN_DEATH_ANIMATION_FRAMES
 } from './config.js';
-  
+
 import { GhostAI } from './ghost-ai.js';
 
 export class GameState implements IGameState {
@@ -134,6 +134,13 @@ export class GameState implements IGameState {
         this.powerUpTimer = POWER_UP_DURATION;
         this.entities.filter(e => e.type === EntityType.Ghost).forEach(ghost => {
           ghost.isScared = true;
+          // Immediately reverse direction (classic Pac-Man behavior)
+          if (ghost.direction) {
+            ghost.direction = {
+              dx: -ghost.direction.dx || 0,
+              dy: -ghost.direction.dy || 0
+            };
+          }
         });
       }
 
@@ -158,7 +165,7 @@ export class GameState implements IGameState {
     if (this.dying) {
       const currentDeathTimer = (pacman.deathTimer || 0) + deltaTime;
       pacman.deathTimer = currentDeathTimer;
-      
+
       const frameIndex = Math.floor(currentDeathTimer / PACMAN_DEATH_ANIMATION_SPEED);
       if (frameIndex >= PACMAN_DEATH_ANIMATION_FRAMES) {
         this.finishDying();
@@ -362,7 +369,7 @@ export class GameState implements IGameState {
     }
 
     const ghosts = this.entities.filter(e => e.type === EntityType.Ghost);
-    
+
     for (const ghost of ghosts) {
       if (ghost.isDead) {
         const initialPos = this.initialPositions.get(ghost);
@@ -398,19 +405,29 @@ export class GameState implements IGameState {
           const x = Math.round(ghost.x);
           const y = Math.round(ghost.y);
 
-          // Check if continuing in the current direction is possible
-          const canContinueStraight = this.grid.isWalkable(x + ghost.direction.dx, y + ghost.direction.dy);
-          const allPossibleDirs = this.getPossibleDirections(x, y); // Get all directions, including reverse for dead-end check
-          const nonReversePossibleDirs = allPossibleDirs.filter(
-            dir => !(dir.dx === -ghost.direction!.dx && dir.dy === -ghost.direction!.dy)
-          );
+          // Check if continuing in the current direction is possible (with grid wrapping)
+          const nextX = this.getWrappedCoordinate(x + ghost.direction.dx, this.width);
+          const nextY = this.getWrappedCoordinate(y + ghost.direction.dy, this.height);
+          const canContinueStraight = this.grid.isWalkable(nextX, nextY);
 
-          // Change direction if we hit a wall or at an intersection (more than 1 choice besides going back)
-          if (!canContinueStraight || nonReversePossibleDirs.length > 1) {
-            // Only change if we are actually close to the center to avoid "jitter"
-            ghost.x = x;
-            ghost.y = y;
-            this.chooseGhostDirection(ghost);
+          // Scared ghosts only change direction when they hit a wall (not at every intersection)
+          // This prevents jiggling from random re-picks while still in alignment tolerance
+          // Normal/dead ghosts re-evaluate at intersections to chase Pac-Man
+          const isScaredAndCanContinue = ghost.isScared && !ghost.isDead && canContinueStraight;
+
+          if (!isScaredAndCanContinue) {
+            const allPossibleDirs = this.getPossibleDirections(x, y); // Get all directions, including reverse for dead-end check
+            const nonReversePossibleDirs = allPossibleDirs.filter(
+              dir => !(dir.dx === -ghost.direction!.dx && dir.dy === -ghost.direction!.dy)
+            );
+
+            // Change direction if we hit a wall or at an intersection (more than 1 choice besides going back)
+            if (!canContinueStraight || nonReversePossibleDirs.length > 1) {
+              // Only change if we are actually close to the center to avoid "jitter"
+              ghost.x = x;
+              ghost.y = y;
+              this.chooseGhostDirection(ghost);
+            }
           }
         }
       }
@@ -431,11 +448,16 @@ export class GameState implements IGameState {
     ];
 
     return dirs.filter(dir => {
-      // Don't allow immediate reversal
-      if (currentDir && dir.dx === -currentDir.dx && dir.dy === -currentDir.dy) {
-        return false;
+      // Don't allow immediate reversal (only if ghost is actually moving)
+      if (currentDir && (currentDir.dx !== 0 || currentDir.dy !== 0)) {
+        if (dir.dx === -currentDir.dx && dir.dy === -currentDir.dy) {
+          return false;
+        }
       }
-      return this.grid.isWalkable(x + dir.dx, y + dir.dy);
+      // Use grid wrapping for tunnel support
+      const targetX = this.getWrappedCoordinate(x + dir.dx, this.width);
+      const targetY = this.getWrappedCoordinate(y + dir.dy, this.height);
+      return this.grid.isWalkable(targetX, targetY);
     });
   }
 
@@ -443,7 +465,7 @@ export class GameState implements IGameState {
     const isScared = !!ghost.isScared;
     const isDead = !!ghost.isDead;
     const pacman = this.entities.find(e => e.type === EntityType.Pacman);
-    
+
     let target = pacman
       ? { x: Math.round(pacman.x), y: Math.round(pacman.y) }
       : { x: Math.round(ghost.x), y: Math.round(ghost.y) };
@@ -494,7 +516,7 @@ export class GameState implements IGameState {
 
     const proposed = pos + dir * dist;
     const currentTile = Math.floor(pos + 0.5);
-    
+
     // Calculate the next tile in the direction of movement
     const nextTile = currentTile + dir;
 
