@@ -443,9 +443,10 @@ export class GameState implements IGameState {
 
       // 4. Update animation
       // Ghosts animate even when they are stopped (unless the game is over)
+      const framesCount = 2;
       const currentTimer = (ghost.animationTimer ?? 0) + deltaTime;
-      ghost.animationFrame = Math.floor(currentTimer / GHOST_ANIMATION_SPEED) % GHOST_ANIMATION_FRAMES.length;
-      ghost.animationTimer = currentTimer % (GHOST_ANIMATION_SPEED * GHOST_ANIMATION_FRAMES.length);
+      ghost.animationTimer = currentTimer % (GHOST_ANIMATION_SPEED * framesCount);
+      ghost.animationFrame = Math.floor(ghost.animationTimer / GHOST_ANIMATION_SPEED) % framesCount;
     }
   }
 

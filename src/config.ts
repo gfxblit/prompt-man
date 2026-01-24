@@ -38,6 +38,15 @@ export const PACMAN_PALETTE_OFFSET_Y = 319;
 export const GHOST_PALETTE_OFFSET_X = 558;
 /** Y offset (pixels) for Ghost sprites in the palette image. */
 export const GHOST_PALETTE_OFFSET_Y = 277;
+
+export const GHOST_OFFSETS = {
+  RED: [GHOST_PALETTE_OFFSET_X, GHOST_PALETTE_OFFSET_Y],
+  PINK: [GHOST_PALETTE_OFFSET_X, GHOST_PALETTE_OFFSET_Y + 17],
+  CYAN: [GHOST_PALETTE_OFFSET_X, GHOST_PALETTE_OFFSET_Y + 34],
+  ORANGE: [GHOST_PALETTE_OFFSET_X, GHOST_PALETTE_OFFSET_Y + 51],
+  SCARED: [GHOST_PALETTE_OFFSET_X, GHOST_PALETTE_OFFSET_Y + 68],
+} as const;
+
 /** Pixel size of the Ghost sprite in the source palette. */
 export const SOURCE_GHOST_SIZE = 17;
 /** Animation speed in milliseconds per frame. */

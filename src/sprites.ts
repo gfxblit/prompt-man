@@ -1,8 +1,7 @@
 import { MASK } from './autotile.js';
 import {
   COLORS,
-  GHOST_PALETTE_OFFSET_X,
-  GHOST_PALETTE_OFFSET_Y,
+  GHOST_OFFSETS,
   SOURCE_GHOST_SIZE,
   PALETTE_PADDING_X,
   PALETTE_PADDING_Y
@@ -402,50 +401,40 @@ export const PACMAN_DEATH_ANIMATION_MAP: [number, number][] = [
 /**
  * Mapping of ghost colors to their [x, y] palette offset.
  */
-export const GHOST_PALETTE_OFFSETS: Record<string, [number, number]> = {
-  [COLORS.GHOST_COLORS[0]]: [GHOST_PALETTE_OFFSET_X, GHOST_PALETTE_OFFSET_Y], // red
-  [COLORS.GHOST_COLORS[1]]: [GHOST_PALETTE_OFFSET_X, GHOST_PALETTE_OFFSET_Y + SOURCE_GHOST_SIZE], // pink
-  [COLORS.GHOST_COLORS[2]]: [GHOST_PALETTE_OFFSET_X, GHOST_PALETTE_OFFSET_Y + SOURCE_GHOST_SIZE * 2], // cyan
-  [COLORS.GHOST_COLORS[3]]: [GHOST_PALETTE_OFFSET_X, GHOST_PALETTE_OFFSET_Y + SOURCE_GHOST_SIZE * 3], // orange
-  'scared': [GHOST_PALETTE_OFFSET_X, GHOST_PALETTE_OFFSET_Y + SOURCE_GHOST_SIZE * 4],
+export const GHOST_PALETTE_OFFSETS: Record<string, readonly [number, number]> = {
+  [COLORS.GHOST_COLORS[0]]: GHOST_OFFSETS.RED,
+  [COLORS.GHOST_COLORS[1]]: GHOST_OFFSETS.PINK,
+  [COLORS.GHOST_COLORS[2]]: GHOST_OFFSETS.CYAN,
+  [COLORS.GHOST_COLORS[3]]: GHOST_OFFSETS.ORANGE,
+  'scared': GHOST_OFFSETS.SCARED,
 };
 
 /**
- * Maps direction names to frames.
- * Each direction maps to a list of column indices in the sprite sheet (animation frames).
- * Row is determined by the ghost color (or scared state).
- * All frames are 17px wide and non-flipped.
+ * Maps direction names to their base column index in the sprite sheet.
+ * Each animation has 2 frames starting from this base column.
  */
 export const GHOST_ANIMATION_MAP = {
-  EAST: [0, 1],
-  WEST: [2, 3],
-  NORTH: [4, 5],
-  SOUTH: [6, 7],
+  EAST: 0,
+  WEST: 2,
+  NORTH: 4,
+  SOUTH: 6,
 } as const;
 
 /**
  * Calculates the source sprite coordinates for a ghost.
  */
 export function getGhostSpriteSource(color: string, direction: string, isScared: boolean, frameIndex: number = 0) {
-  let finalColor = color;
-  if (isScared) {
-    finalColor = 'scared';
-  } else if (!GHOST_PALETTE_OFFSETS[color]) {
-    finalColor = COLORS.GHOST_DEFAULT;
-  }
-
-  const paletteOffset = GHOST_PALETTE_OFFSETS[finalColor]!;
+  const finalColor = isScared ? 'scared' : (GHOST_PALETTE_OFFSETS[color] ? color : COLORS.GHOST_DEFAULT);
+  const [offsetX, offsetY] = GHOST_PALETTE_OFFSETS[finalColor]!;
 
   let dirKey = direction as keyof typeof GHOST_ANIMATION_MAP;
   if (!(dirKey in GHOST_ANIMATION_MAP)) {
     dirKey = 'EAST';
   }
 
-  const frames = GHOST_ANIMATION_MAP[dirKey];
-  // Wrap around frame index if it exceeds available frames
-  const col = frames[frameIndex % frames.length]!;
-  
-  const [offsetX, offsetY] = paletteOffset;
+  const baseCol = GHOST_ANIMATION_MAP[dirKey];
+  // Ghosts have 2 animation frames
+  const col = baseCol + (frameIndex % 2);
 
   const sourceX = offsetX + (col * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X;
   const sourceY = offsetY + PALETTE_PADDING_Y;

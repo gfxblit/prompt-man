@@ -158,7 +158,7 @@ describe('GameState Animation', () => {
       state.updateGhosts(GHOST_ANIMATION_SPEED);
       expect(ghost.animationFrame).toBe(1);
       state.updateGhosts(GHOST_ANIMATION_SPEED);
-      expect(ghost.animationFrame).toBe(2);
+      expect(ghost.animationFrame).toBe(0); // Should cycle
     });
 
     it('should update animation frame even when Ghost is NOT moving', () => {
@@ -172,6 +172,8 @@ describe('GameState Animation', () => {
       expect(ghost.animationFrame).toBe(0);
       state.updateGhosts(GHOST_ANIMATION_SPEED);
       expect(ghost.animationFrame).toBe(1);
+      state.updateGhosts(GHOST_ANIMATION_SPEED);
+      expect(ghost.animationFrame).toBe(0); // Should cycle
     });
   });
 });

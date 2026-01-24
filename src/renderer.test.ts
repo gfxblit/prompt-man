@@ -7,8 +7,7 @@ import {
   TILE_SIZE,
   COLORS,
   PACMAN_DEATH_ANIMATION_FRAMES,
-  GHOST_PALETTE_OFFSET_X,
-  GHOST_PALETTE_OFFSET_Y,
+  GHOST_OFFSETS,
   SOURCE_GHOST_SIZE,
   PALETTE_PADDING_X,
   PALETTE_PADDING_Y
@@ -299,8 +298,8 @@ describe('Renderer', () => {
     expect(mockContext.save).toHaveBeenCalled();
     expect(mockContext.drawImage).toHaveBeenCalledWith(
       mockSpritesheet,
-      GHOST_PALETTE_OFFSET_X + (0 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X, // sourceX
-      GHOST_PALETTE_OFFSET_Y + (0 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_Y, // sourceY
+      GHOST_OFFSETS.RED[0] + (0 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X, // sourceX
+      GHOST_OFFSETS.RED[1] + PALETTE_PADDING_Y, // sourceY
       SOURCE_GHOST_SIZE - PALETTE_PADDING_X,
       SOURCE_GHOST_SIZE - PALETTE_PADDING_Y,
       -TILE_SIZE / 2,     // destX
@@ -327,7 +326,7 @@ describe('Renderer', () => {
 
     renderer.render(grid, mockState);
 
-    // pink colorRow is 1
+    // pink offset is GHOST_OFFSETS.PINK
     // WEST sCol is 2
     
     // Check for NO flip
@@ -335,8 +334,8 @@ describe('Renderer', () => {
 
     expect(mockContext.drawImage).toHaveBeenCalledWith(
       mockSpritesheet,
-      GHOST_PALETTE_OFFSET_X + (2 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X, // sourceX (sCol=2)
-      GHOST_PALETTE_OFFSET_Y + (1 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_Y, // sourceY (colorRow=1)
+      GHOST_OFFSETS.PINK[0] + (2 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X, // sourceX (sCol=2)
+      GHOST_OFFSETS.PINK[1] + PALETTE_PADDING_Y, // sourceY
       SOURCE_GHOST_SIZE - PALETTE_PADDING_X,
       SOURCE_GHOST_SIZE - PALETTE_PADDING_Y,
       -TILE_SIZE / 2,     // destX

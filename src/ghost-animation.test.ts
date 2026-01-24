@@ -38,7 +38,7 @@ describe('Ghost Directional Animation', () => {
 
     // Move for another frame duration
     state.updateGhosts(GHOST_ANIMATION_SPEED);
-    expect(ghost.animationFrame).toBe(2);
+    expect(ghost.animationFrame).toBe(0); // Should cycle back to 0
   });
 
   it('should animate scared ghosts', () => {
@@ -51,5 +51,8 @@ describe('Ghost Directional Animation', () => {
     
     state.updateGhosts(GHOST_ANIMATION_SPEED);
     expect(ghost.animationFrame).toBe(1);
+
+    state.updateGhosts(GHOST_ANIMATION_SPEED);
+    expect(ghost.animationFrame).toBe(0); // Should cycle back to 0
   });
 });
