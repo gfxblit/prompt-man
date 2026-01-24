@@ -103,7 +103,15 @@ describe('GameState Power Up Mechanics', () => {
     
     gameState.updatePacman({ dx: 1, dy: 0 }, 10);
     
+    // Now it should be dying
+    expect(gameState.isDying()).toBe(true);
+    expect(gameState.getLives()).toBe(initialLives); // Life not lost yet
+
+    // Advance time to finish animation (100ms * 12 frames = 1200ms)
+    gameState.updatePacman({ dx: 0, dy: 0 }, 1200);
+    
     expect(gameState.getLives()).toBe(initialLives - 1);
+    expect(gameState.isDying()).toBe(false);
   });
   
   it('scared ghosts move slower', () => {
