@@ -147,4 +147,35 @@ describe('Ghost AI', () => {
     
     expect(ghost.direction).toEqual({ dx: 0, dy: 1 });
   });
+
+  it('should move dead ghosts towards their spawn point', () => {
+    const deadTemplate = `
+#######
+#G....#
+#.....#
+#....P#
+#######
+    `.trim();
+    // G is at (1,1), P is at (5,3). G's spawn is (1,1).
+    const customGrid = Grid.fromString(deadTemplate);
+    const state = new GameState(customGrid);
+    const ghost = state.getEntities().find(e => e.type === EntityType.Ghost)!;
+    
+    // Kill the ghost at a different position
+    ghost.x = 5;
+    ghost.y = 1;
+    ghost.isDead = true;
+    
+    // At (5,1), spawn is at (1,1).
+    // Target is (1,1).
+    // Possible moves from (5,1):
+    // Left (4,1) -> dist to (1,1): |1-4| + |1-1| = 3
+    // Down (5,2) -> dist to (1,1): |1-5| + |1-2| = 4 + 1 = 5
+    // Left is better.
+    
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    state.updateGhosts(0);
+    
+    expect(ghost.direction).toEqual({ dx: -1, dy: 0 });
+  });
 });

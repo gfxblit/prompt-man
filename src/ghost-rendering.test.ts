@@ -37,4 +37,13 @@ describe('Ghost Rendering Logic', () => {
     const coords = getGhostSpriteSource('invalid-color', 'EAST', false);
     expect(coords).toEqual({ x: 559, y: 278, width: 16, height: 16, flipX: false, flipY: false });
   });
+
+  it('calculates correct source coordinates for Dead Ghost eyes', () => {
+    // Eyes row is index 5 -> 277 + 5 * SOURCE_GHOST_SIZE = 362.
+    // South frame is col 6 -> 6 * SOURCE_GHOST_SIZE = 102 offset.
+    // X: 558 + 102 + 1 = 661
+    // Y: 362 + 0 + 1 = 363
+    const coords = getGhostSpriteSource('red', 'SOUTH', false, 0, true);
+    expect(coords).toEqual({ x: 661, y: 363, width: 16, height: 16, flipX: false, flipY: false });
+  });
 });

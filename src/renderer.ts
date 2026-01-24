@@ -341,26 +341,9 @@ export class Renderer implements IRenderer {
       }
 
       case EntityType.Ghost:
-        if (entity.isDead) {
-          // Render eyes only
-          this.ctx.fillStyle = 'white';
-          this.ctx.beginPath();
-          // Left eye
-          this.ctx.arc(screenX - TILE_SIZE / 6, screenY - TILE_SIZE / 8, TILE_SIZE / 8, 0, Math.PI * 2);
-          // Right eye
-          this.ctx.arc(screenX + TILE_SIZE / 6, screenY - TILE_SIZE / 8, TILE_SIZE / 8, 0, Math.PI * 2);
-          this.ctx.fill();
-
-          this.ctx.fillStyle = 'blue';
-          this.ctx.beginPath();
-          // Left pupil
-          this.ctx.arc(screenX - TILE_SIZE / 6, screenY - TILE_SIZE / 8, TILE_SIZE / 16, 0, Math.PI * 2);
-          // Right pupil
-          this.ctx.arc(screenX + TILE_SIZE / 6, screenY - TILE_SIZE / 8, TILE_SIZE / 16, 0, Math.PI * 2);
-          this.ctx.fill();
-        } else if (this.spritesheet) {
+        if (this.spritesheet) {
           let dirKey: keyof typeof GHOST_ANIMATION_MAP = 'EAST';
-          if (!entity.isScared && entity.direction) {
+          if (entity.direction) {
             if (entity.direction.dx > 0) dirKey = 'EAST';
             else if (entity.direction.dx < 0) dirKey = 'WEST';
             else if (entity.direction.dy > 0) dirKey = 'SOUTH';
@@ -371,7 +354,8 @@ export class Renderer implements IRenderer {
             entity.color || COLORS.GHOST_DEFAULT,
             dirKey,
             !!entity.isScared,
-            entity.animationFrame || 0
+            entity.animationFrame || 0,
+            !!entity.isDead
           );
 
           this.ctx.save();
@@ -394,6 +378,23 @@ export class Renderer implements IRenderer {
           );
 
           this.ctx.restore();
+        } else if (entity.isDead) {
+          // Render eyes only
+          this.ctx.fillStyle = 'white';
+          this.ctx.beginPath();
+          // Left eye
+          this.ctx.arc(screenX - TILE_SIZE / 6, screenY - TILE_SIZE / 8, TILE_SIZE / 8, 0, Math.PI * 2);
+          // Right eye
+          this.ctx.arc(screenX + TILE_SIZE / 6, screenY - TILE_SIZE / 8, TILE_SIZE / 8, 0, Math.PI * 2);
+          this.ctx.fill();
+
+          this.ctx.fillStyle = 'blue';
+          this.ctx.beginPath();
+          // Left pupil
+          this.ctx.arc(screenX - TILE_SIZE / 6, screenY - TILE_SIZE / 8, TILE_SIZE / 16, 0, Math.PI * 2);
+          // Right pupil
+          this.ctx.arc(screenX + TILE_SIZE / 6, screenY - TILE_SIZE / 8, TILE_SIZE / 16, 0, Math.PI * 2);
+          this.ctx.fill();
         } else {
           this.ctx.fillStyle = entity.isScared ? COLORS.SCARED_GHOST : (entity.color || COLORS.GHOST_DEFAULT);
           this.ctx.beginPath();

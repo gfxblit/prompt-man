@@ -408,6 +408,7 @@ export const GHOST_PALETTE_OFFSETS: Record<string, SpriteOffset> = {
   cyan: GHOST_OFFSETS.CYAN,
   orange: GHOST_OFFSETS.ORANGE,
   scared: GHOST_OFFSETS.SCARED,
+  eyes: GHOST_OFFSETS.EYES,
 };
 
 /**
@@ -427,8 +428,16 @@ export const GHOST_ANIMATION_SEQUENCE = [0, 1] as const;
 /**
  * Calculates the source sprite coordinates for a ghost.
  */
-export function getGhostSpriteSource(color: string, direction: string, isScared: boolean, frameIndex: number = 0) {
-  const resolvedColor = isScared ? 'scared' : (GHOST_PALETTE_OFFSETS[color] ? color : COLORS.GHOST_DEFAULT);
+export function getGhostSpriteSource(color: string, direction: string, isScared: boolean, frameIndex: number = 0, isDead: boolean = false) {
+  let resolvedColor = color;
+  if (isDead) {
+    resolvedColor = 'eyes';
+  } else if (isScared) {
+    resolvedColor = 'scared';
+  } else if (!GHOST_PALETTE_OFFSETS[color]) {
+    resolvedColor = COLORS.GHOST_DEFAULT;
+  }
+
   const offset = GHOST_PALETTE_OFFSETS[resolvedColor] || GHOST_OFFSETS.RED;
 
   let dirKey = direction as keyof typeof GHOST_ANIMATION_MAP;
@@ -437,10 +446,12 @@ export function getGhostSpriteSource(color: string, direction: string, isScared:
   }
 
   const frames = GHOST_ANIMATION_MAP[dirKey];
-  const col = frames[frameIndex % frames.length] ?? 0;
+  // Dead ghosts (eyes) typically don't animate the same way, but they might have different eye directions.
+  // Standard sprite sheets have eyes facing East, West, North, South.
+  const col = isDead ? (frames[0] ?? 0) : (frames[frameIndex % frames.length] ?? 0);
 
-  const sourceX = (offset?.x ?? GHOST_OFFSETS.RED.x) + (col * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X;
-  const sourceY = (offset?.y ?? GHOST_OFFSETS.RED.y) + PALETTE_PADDING_Y;
+  const sourceX = offset.x + (col * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X;
+  const sourceY = offset.y + PALETTE_PADDING_Y;
 
   return {
     x: sourceX,
