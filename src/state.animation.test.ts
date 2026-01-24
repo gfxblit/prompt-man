@@ -117,7 +117,7 @@ describe('GameState Animation', () => {
       expect(ghost.animationTimer).toBe(0);
     });
 
-    it('should update animation timer and frame when Ghost is moving', () => {
+    it('should update animation timer and frame correctly when Ghost is moving', () => {
       const ghostTemplate = `
 ###########
 #G........#
@@ -141,7 +141,7 @@ describe('GameState Animation', () => {
       expect(ghost.animationFrame).toBe(1);
     });
 
-    it('should cycle animation frame', () => {
+    it('should cycle animation frame through two frames', () => {
       const ghostTemplate = `
 ###########
 #G........#
@@ -161,7 +161,7 @@ describe('GameState Animation', () => {
       expect(ghost.animationFrame).toBe(0); // Should cycle
     });
 
-    it('should update animation frame even when Ghost is NOT moving', () => {
+    it('should cycle animation frame through two frames even when Ghost is NOT moving', () => {
       const trappedGrid = Grid.fromString('###\n#G#\n###');
       const state = new GameState(trappedGrid);
       const ghost = state.getEntities().find(e => e.type === EntityType.Ghost)!;

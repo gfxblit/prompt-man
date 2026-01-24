@@ -11,7 +11,7 @@ describe('Ghost Rendering Logic', () => {
   });
 
   it('calculates correct source coordinates for Pink Ghost moving West', () => {
-    // Pink offset: 558, 294 (277 + 17). West frame: col 2 (17 * 2 = 34px offset)
+    // Pink offset: 558, 294 (277 + SOURCE_GHOST_SIZE). West frame: col 2 (SOURCE_GHOST_SIZE * 2 = 34px offset)
     // X: 558 + 34 + 1 = 593
     // Y: 294 + 0 + 1 = 295
     const coords = getGhostSpriteSource('pink', 'WEST', false);
@@ -19,8 +19,8 @@ describe('Ghost Rendering Logic', () => {
   });
 
   it('calculates correct source coordinates for Scared Ghost', () => {
-     // Scared row is index 4 -> 277 + 4*17 = 345.
-     // North frame is col 4 -> 4*17 = 68 offset.
+     // Scared row is index 4 -> 277 + 4 * SOURCE_GHOST_SIZE = 345.
+     // North frame is col 4 -> 4 * SOURCE_GHOST_SIZE = 68 offset.
      // X: 558 + 68 + 1 = 627
      // Y: 345 + 0 + 1 = 346
      // Note: passing 'blue' as color but isScared=true overrides it to 'scared' logic inside

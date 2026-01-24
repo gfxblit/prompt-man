@@ -410,31 +410,31 @@ export const GHOST_PALETTE_OFFSETS: Record<string, readonly [number, number]> = 
 };
 
 /**
- * Maps direction names to their base column index in the sprite sheet.
- * Each animation has 2 frames starting from this base column.
+ * Maps direction names to their column indices in the sprite sheet.
+ * Ghosts have 2 animation frames per direction.
  */
 export const GHOST_ANIMATION_MAP = {
-  EAST: 0,
-  WEST: 2,
-  NORTH: 4,
-  SOUTH: 6,
+  EAST: [0, 1],
+  WEST: [2, 3],
+  NORTH: [4, 5],
+  SOUTH: [6, 7],
 } as const;
 
 /**
  * Calculates the source sprite coordinates for a ghost.
  */
 export function getGhostSpriteSource(color: string, direction: string, isScared: boolean, frameIndex: number = 0) {
-  const finalColor = isScared ? 'scared' : (GHOST_PALETTE_OFFSETS[color] ? color : COLORS.GHOST_DEFAULT);
-  const [offsetX, offsetY] = GHOST_PALETTE_OFFSETS[finalColor]!;
+  const resolvedColor = isScared ? 'scared' : (GHOST_PALETTE_OFFSETS[color] ? color : COLORS.GHOST_DEFAULT);
+  // Ensure that resolvedColor always maps to a valid offset.
+  const [offsetX, offsetY] = GHOST_PALETTE_OFFSETS[resolvedColor] || GHOST_OFFSETS.RED;
 
   let dirKey = direction as keyof typeof GHOST_ANIMATION_MAP;
   if (!(dirKey in GHOST_ANIMATION_MAP)) {
     dirKey = 'EAST';
   }
 
-  const baseCol = GHOST_ANIMATION_MAP[dirKey];
-  // Ghosts have 2 animation frames
-  const col = baseCol + (frameIndex % 2);
+  const frames = GHOST_ANIMATION_MAP[dirKey];
+  const col = frames[frameIndex % frames.length] ?? 0;
 
   const sourceX = offsetX + (col * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X;
   const sourceY = offsetY + PALETTE_PADDING_Y;

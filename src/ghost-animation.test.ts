@@ -22,7 +22,7 @@ describe('Ghost Directional Animation', () => {
     });
   });
 
-  it('should animate ghosts when moving', () => {
+  it('should animate ghosts through two frames and cycle', () => {
     const state = new GameState(grid);
     const ghost = state.getEntities().find(e => e.type === EntityType.Ghost)!;
 
@@ -41,7 +41,7 @@ describe('Ghost Directional Animation', () => {
     expect(ghost.animationFrame).toBe(0); // Should cycle back to 0
   });
 
-  it('should animate scared ghosts', () => {
+  it('should animate scared ghosts through two frames and cycle', () => {
     const state = new GameState(grid);
     const ghost = state.getEntities().find(e => e.type === EntityType.Ghost)!;
     ghost.isScared = true;
