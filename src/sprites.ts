@@ -425,7 +425,7 @@ export const GHOST_ANIMATION_MAP = {
 /**
  * Calculates the source sprite coordinates for a ghost.
  */
-export function getGhostSpriteSource(color: string, direction: string, isScared: boolean, frameIndex: number) {
+export function getGhostSpriteSource(color: string, direction: string, isScared: boolean) {
   const colorKey = isScared ? 'scared' : (color || COLORS.GHOST_DEFAULT);
   const paletteOffset = GHOST_PALETTE_OFFSETS[colorKey] ?? GHOST_PALETTE_OFFSETS['scared'];
   

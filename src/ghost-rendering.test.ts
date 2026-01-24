@@ -14,7 +14,7 @@ describe('Ghost Rendering Logic', () => {
     // Pink offset: 558, 294 (277 + 17). West frame: col 1 (17px offset)
     // X: 558 + 17 + 1 = 576
     // Y: 294 + 0 + 1 = 295
-    const coords = getGhostSpriteSource('pink', 'WEST', false, 0);
+    const coords = getGhostSpriteSource('pink', 'WEST', false);
     expect(coords).toEqual({ x: 576, y: 295, width: 16, height: 16, flipX: false, flipY: false });
   });
 
@@ -24,7 +24,7 @@ describe('Ghost Rendering Logic', () => {
      // X: 558 + 34 + 1 = 593
      // Y: 345 + 0 + 1 = 346
      // Note: passing 'blue' as color but isScared=true overrides it to 'scared' logic inside
-     const coords = getGhostSpriteSource('blue', 'NORTH', true, 0);
+     const coords = getGhostSpriteSource('blue', 'NORTH', true);
      expect(coords).toEqual({ x: 593, y: 346, width: 16, height: 16, flipX: false, flipY: false });
   });
 });
