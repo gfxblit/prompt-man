@@ -370,7 +370,8 @@ export class Renderer implements IRenderer {
           const spriteSource = getGhostSpriteSource(
             entity.color || COLORS.GHOST_DEFAULT,
             dirKey,
-            !!entity.isScared
+            !!entity.isScared,
+            entity.animationFrame || 0
           );
 
           this.ctx.save();

@@ -412,38 +412,38 @@ export const GHOST_PALETTE_OFFSETS: Record<string, [number, number]> = {
 
 /**
  * Maps direction names to frames.
- * Each direction maps to a column index in the sprite sheet.
+ * Each direction maps to a list of column indices in the sprite sheet (animation frames).
  * Row is determined by the ghost color (or scared state).
  * All frames are 17px wide and non-flipped.
  */
 export const GHOST_ANIMATION_MAP = {
-  EAST: 0,
-  WEST: 1,
-  NORTH: 2,
-  SOUTH: 3,
+  EAST: [0],
+  WEST: [1],
+  NORTH: [2],
+  SOUTH: [3],
 } as const;
 
 /**
  * Calculates the source sprite coordinates for a ghost.
  */
-export function getGhostSpriteSource(color: string, direction: string, isScared: boolean) {
-  const colorKey = isScared ? 'scared' : (color || COLORS.GHOST_DEFAULT);
-  
-  const defaultOffset = isScared ? GHOST_PALETTE_OFFSETS['scared'] : GHOST_PALETTE_OFFSETS[COLORS.GHOST_DEFAULT];
-  const paletteOffset = GHOST_PALETTE_OFFSETS[colorKey] ?? defaultOffset;
-  
-  if (!paletteOffset) {
-    // Should not happen if 'scared' and default colors are defined in offsets
-    throw new Error(`Ghost palette offset not found for color: ${colorKey}`);
+export function getGhostSpriteSource(color: string, direction: string, isScared: boolean, frameIndex: number = 0) {
+  let finalColor = color;
+  if (isScared) {
+    finalColor = 'scared';
+  } else if (!GHOST_PALETTE_OFFSETS[color]) {
+    finalColor = COLORS.GHOST_DEFAULT;
   }
+
+  const paletteOffset = GHOST_PALETTE_OFFSETS[finalColor]!;
 
   let dirKey = direction as keyof typeof GHOST_ANIMATION_MAP;
   if (!(dirKey in GHOST_ANIMATION_MAP)) {
     dirKey = 'EAST';
   }
 
-  const col = GHOST_ANIMATION_MAP[dirKey];
-  // Row is implicitly 0 relative to the color's starting Y offset
+  const frames = GHOST_ANIMATION_MAP[dirKey];
+  // Wrap around frame index if it exceeds available frames
+  const col = frames[frameIndex % frames.length];
   
   const [offsetX, offsetY] = paletteOffset;
 
