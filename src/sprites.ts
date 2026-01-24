@@ -4,7 +4,8 @@ import {
   GHOST_OFFSETS,
   SOURCE_GHOST_SIZE,
   PALETTE_PADDING_X,
-  PALETTE_PADDING_Y
+  PALETTE_PADDING_Y,
+  SpriteOffset
 } from './config.js';
 
 /**
@@ -399,14 +400,14 @@ export const PACMAN_DEATH_ANIMATION_MAP: [number, number][] = [
 ];
 
 /**
- * Mapping of ghost colors to their [x, y] palette offset.
+ * Mapping of ghost colors to their palette offset.
  */
-export const GHOST_PALETTE_OFFSETS: Record<string, readonly [number, number]> = {
-  [COLORS.GHOST_COLORS[0]]: GHOST_OFFSETS.RED,
-  [COLORS.GHOST_COLORS[1]]: GHOST_OFFSETS.PINK,
-  [COLORS.GHOST_COLORS[2]]: GHOST_OFFSETS.CYAN,
-  [COLORS.GHOST_COLORS[3]]: GHOST_OFFSETS.ORANGE,
-  'scared': GHOST_OFFSETS.SCARED,
+export const GHOST_PALETTE_OFFSETS: Record<string, SpriteOffset> = {
+  red: GHOST_OFFSETS.RED,
+  pink: GHOST_OFFSETS.PINK,
+  cyan: GHOST_OFFSETS.CYAN,
+  orange: GHOST_OFFSETS.ORANGE,
+  scared: GHOST_OFFSETS.SCARED,
 };
 
 /**
@@ -420,13 +421,15 @@ export const GHOST_ANIMATION_MAP = {
   SOUTH: [6, 7],
 } as const;
 
+/** The sequence of animation frames for Ghosts. */
+export const GHOST_ANIMATION_SEQUENCE = [0, 1] as const;
+
 /**
  * Calculates the source sprite coordinates for a ghost.
  */
 export function getGhostSpriteSource(color: string, direction: string, isScared: boolean, frameIndex: number = 0) {
   const resolvedColor = isScared ? 'scared' : (GHOST_PALETTE_OFFSETS[color] ? color : COLORS.GHOST_DEFAULT);
-  // Ensure that resolvedColor always maps to a valid offset.
-  const [offsetX, offsetY] = GHOST_PALETTE_OFFSETS[resolvedColor] || GHOST_OFFSETS.RED;
+  const offset = GHOST_PALETTE_OFFSETS[resolvedColor] || GHOST_OFFSETS.RED;
 
   let dirKey = direction as keyof typeof GHOST_ANIMATION_MAP;
   if (!(dirKey in GHOST_ANIMATION_MAP)) {
@@ -436,8 +439,8 @@ export function getGhostSpriteSource(color: string, direction: string, isScared:
   const frames = GHOST_ANIMATION_MAP[dirKey];
   const col = frames[frameIndex % frames.length] ?? 0;
 
-  const sourceX = offsetX + (col * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X;
-  const sourceY = offsetY + PALETTE_PADDING_Y;
+  const sourceX = offset.x + (col * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X;
+  const sourceY = offset.y + PALETTE_PADDING_Y;
 
   return {
     x: sourceX,

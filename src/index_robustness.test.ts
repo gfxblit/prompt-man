@@ -99,7 +99,7 @@ describe('index robustness', () => {
     // Mock requestAnimationFrame
     vi.stubGlobal('requestAnimationFrame', vi.fn((cb) => {
       // Store callback for manual execution if needed, but don't auto-run
-      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+        // biome-ignore lint/suspicious/noExplicitAny: lastRafCallback is a test utility not part of the production code.
       (globalThis as any).lastRafCallback = cb; 
       return 1;
     }));
@@ -143,7 +143,7 @@ describe('index robustness', () => {
     expect(canvas.getContext).toHaveBeenCalledWith('2d');
 
     // Execute the captured loop callback manually
-    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+      // biome-ignore lint/suspicious/noExplicitAny: lastRafCallback is a test utility not part of the production code.
     const loop = (globalThis as any).lastRafCallback;
     if (loop) loop(100);
 

@@ -72,12 +72,11 @@ export class GhostAI {
     }
 
     // Otherwise, pick the move that optimizes Manhattan distance to target
-    let bestMoves: Direction[] = [];
-    // If scared, we want to maximize distance (start with -Infinity).
-    // If not scared, we want to minimize distance (start with Infinity).
-    let bestDist = isScared ? -Infinity : Infinity;
+    let bestDist = this.getManhattanDistance(x + validMoves[0]!.dx, y + validMoves[0]!.dy, target.x, target.y);
+    let bestMoves: Direction[] = [validMoves[0]!];
 
-    for (const dir of validMoves) {
+    for (let i = 1; i < validMoves.length; i++) {
+      const dir = validMoves[i]!;
       const distance = this.getManhattanDistance(x + dir.dx, y + dir.dy, target.x, target.y);
 
       if (isScared) {

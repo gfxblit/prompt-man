@@ -17,7 +17,7 @@ import {
   PACMAN_DEATH_ANIMATION_FRAMES,
   GHOST_ANIMATION_SPEED
 } from './config.js';
-import { GHOST_ANIMATION_FRAMES, PACMAN_ANIMATION_SEQUENCE } from './sprites.js';
+import { PACMAN_ANIMATION_SEQUENCE, GHOST_ANIMATION_SEQUENCE } from './sprites.js';
 import { GhostAI } from './ghost-ai.js';
 
 export class GameState implements IGameState {
@@ -443,10 +443,11 @@ export class GameState implements IGameState {
 
       // 4. Update animation
       // Ghosts animate even when they are stopped (unless the game is over)
-      const framesCount = 2;
+      const frames = GHOST_ANIMATION_SEQUENCE;
       const currentTimer = (ghost.animationTimer ?? 0) + deltaTime;
-      ghost.animationTimer = currentTimer % (GHOST_ANIMATION_SPEED * framesCount);
-      ghost.animationFrame = Math.floor(ghost.animationTimer / GHOST_ANIMATION_SPEED) % framesCount;
+      const frameIndex = Math.floor(currentTimer / GHOST_ANIMATION_SPEED) % frames.length;
+      ghost.animationFrame = frames[frameIndex];
+      ghost.animationTimer = currentTimer % (GHOST_ANIMATION_SPEED * frames.length);
     }
   }
 

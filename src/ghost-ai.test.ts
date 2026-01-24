@@ -22,6 +22,7 @@ describe('Ghost AI', () => {
 
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it('should initialize ghosts with different colors', () => {
@@ -109,8 +110,6 @@ describe('Ghost AI', () => {
       { dx: 0, dy: 1 },  // Down
     ];
     expect(validNonReverseDirections).toContainEqual(ghost.direction);
-    
-    randomSpy.mockRestore();
   });
 
   it('should move ghosts towards Pacman using Manhattan distance', () => {
@@ -147,6 +146,5 @@ describe('Ghost AI', () => {
     // Since Down comes before Right in the list, it should pick Down with random 0.
     
     expect(ghost.direction).toEqual({ dx: 0, dy: 1 });
-    randomSpy.mockRestore();
   });
 });

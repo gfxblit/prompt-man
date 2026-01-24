@@ -298,8 +298,8 @@ describe('Renderer', () => {
     expect(mockContext.save).toHaveBeenCalled();
     expect(mockContext.drawImage).toHaveBeenCalledWith(
       mockSpritesheet,
-      GHOST_OFFSETS.RED[0] + (0 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X, // sourceX
-      GHOST_OFFSETS.RED[1] + PALETTE_PADDING_Y, // sourceY
+      GHOST_OFFSETS.RED.x + (0 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X, // sourceX
+      GHOST_OFFSETS.RED.y + PALETTE_PADDING_Y, // sourceY
       SOURCE_GHOST_SIZE - PALETTE_PADDING_X,
       SOURCE_GHOST_SIZE - PALETTE_PADDING_Y,
       -TILE_SIZE / 2,     // destX
@@ -334,8 +334,8 @@ describe('Renderer', () => {
 
     expect(mockContext.drawImage).toHaveBeenCalledWith(
       mockSpritesheet,
-      GHOST_OFFSETS.PINK[0] + (2 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X, // sourceX (sCol=2)
-      GHOST_OFFSETS.PINK[1] + PALETTE_PADDING_Y, // sourceY
+      GHOST_OFFSETS.PINK.x + (2 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X, // sourceX (sCol=2)
+      GHOST_OFFSETS.PINK.y + PALETTE_PADDING_Y, // sourceY
       SOURCE_GHOST_SIZE - PALETTE_PADDING_X,
       SOURCE_GHOST_SIZE - PALETTE_PADDING_Y,
       -TILE_SIZE / 2,     // destX
