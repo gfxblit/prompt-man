@@ -4,13 +4,6 @@ import { Grid } from './grid.js';
 import { EntityType } from './types.js';
 import { PACMAN_SPEED, POWER_UP_DURATION, GHOST_EATEN_SCORE, POWER_PELLET_SCORE, COLLISION_THRESHOLD } from './config.js';
 
-// New template for power pellet tests
-const powerPelletTemplate = `
-#######
-#P   G#
-#o    #
-#######
-  `.trim();
 
 describe('GameState', () => {
   let grid: Grid;
@@ -293,6 +286,13 @@ describe('GameState', () => {
   });
 
   describe('Power-up mechanics', () => {
+    // New template for power pellet tests
+    const powerPelletTemplate = `
+#######
+#P   G#
+#o    #
+#######
+    `.trim();
     let powerGrid: Grid;
     const powerPelletX = 1;
     const powerPelletY = 2; // 'o' in the powerPelletTemplate
@@ -380,7 +380,7 @@ describe('GameState', () => {
       // Expect lives to remain unchanged
       expect(state.getLives()).toBe(initialLives);
     });
-      
+
     it('should move dead ghost towards its spawn and respawn when it reaches it', () => {
       const state = new GameState(powerGrid);
       const ghost = state.getEntities().find(e => e.type === EntityType.Ghost);
@@ -451,6 +451,5 @@ describe('GameState', () => {
       expect(state.getLives()).toBe(initialLives);
       expect(state.isGameOver()).toBe(false);
     });
-        });
-      });
-      
+  });
+});
