@@ -2,8 +2,10 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { GameState } from './state.js';
 import { Grid } from './grid.js';
 import { EntityType } from './types.js';
-import { PACMAN_ANIMATION_SPEED, GHOST_ANIMATION_SPEED } from './config.js';
+import { PACMAN_ANIMATION_SPEED } from './config.js';
 import { GhostAI } from './ghost-ai.js';
+
+const GHOST_ANIMATION_SPEED = 100;
 
 describe('GameState Animation', () => {
   let grid: Grid;

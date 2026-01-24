@@ -2,7 +2,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { GameState } from './state.js';
 import { Grid } from './grid.js';
 import { EntityType } from './types.js';
-import { GHOST_ANIMATION_SPEED } from './config.js';
+
+const GHOST_ANIMATION_SPEED = 100;
 
 describe('Ghost Directional Animation', () => {
   let grid: Grid;
