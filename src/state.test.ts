@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { GameState } from './state.js';
 import { Grid } from './grid.js';
 import { EntityType } from './types.js';
-import { PACMAN_SPEED, POWER_UP_DURATION, GHOST_EATEN_SCORE, POWER_PELLET_SCORE } from './config.js';
+import { PACMAN_SPEED, POWER_UP_DURATION, GHOST_EATEN_SCORE, POWER_PELLET_SCORE, COLLISION_THRESHOLD } from './config.js';
 
 // New template for power pellet tests
 const powerPelletTemplate = `
@@ -414,7 +414,7 @@ describe('GameState', () => {
 
       // 3. Teleport ghost near spawn and move it to spawn
       // Using a small offset from initial position to be within COLLISION_THRESHOLD
-      ghost.x = initialGhostX - 0.1;
+      ghost.x = initialGhostX - COLLISION_THRESHOLD / 2;
       ghost.y = initialGhostY;
       ghost.direction = { dx: 1, dy: 0 };
       
