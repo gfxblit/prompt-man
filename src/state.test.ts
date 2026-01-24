@@ -4,8 +4,8 @@ import { Grid } from './grid.js';
 import { EntityType } from './types.js';
 import { PACMAN_SPEED, POWER_UP_DURATION, GHOST_EATEN_SCORE, POWER_PELLET_SCORE } from './config.js';
 
-  // New template for power pellet tests
-  const powerPelletTemplate = `
+// New template for power pellet tests
+const powerPelletTemplate = `
 #######
 #P   G#
 #o    #
@@ -40,9 +40,9 @@ describe('GameState', () => {
   it('should initialize entities from grid spawns', () => {
     const state = new GameState(grid);
     const entities = state.getEntities();
-    
+
     expect(entities).toHaveLength(2);
-    
+
     const pacman = entities.find(e => e.type === EntityType.Pacman);
     expect(pacman).toBeDefined();
     expect(pacman?.x).toBe(1);
@@ -68,11 +68,11 @@ describe('GameState', () => {
 
   it('should update score and pellet count when consuming a pellet', () => {
     const state = new GameState(grid);
-    
+
     state.consumePellet(2, 1);
     expect(state.getRemainingPellets()).toBe(3);
     expect(state.getScore()).toBe(10);
-    
+
     // Consuming empty space should do nothing
     state.consumePellet(1, 1);
     expect(state.getRemainingPellets()).toBe(3);
@@ -81,7 +81,7 @@ describe('GameState', () => {
 
   it('should update score and pellet count when consuming a power pellet', () => {
     const state = new GameState(grid);
-    
+
     state.consumePellet(1, 2);
     expect(state.getRemainingPellets()).toBe(3);
     expect(state.getScore()).toBe(50);
@@ -91,7 +91,7 @@ describe('GameState', () => {
     const state = new GameState(grid);
     const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
     if (!pacman) throw new Error('Pacman not found');
-    
+
     // Move Pacman to (2,1) which has a pellet
     state.updatePacman({ dx: 1, dy: 0 }, deltaTimeForOneTile);
 
@@ -108,10 +108,10 @@ describe('GameState', () => {
     const initialX = pacman.x;
     const initialY = pacman.y;
     pacman.direction = undefined; // Ensure starting from standstill
-    
+
     // Move Left (1,1) -> (0,1) is wall
     state.updatePacman({ dx: -1, dy: 0 }, deltaTimeForHalfTile);
-    
+
     expect(pacman.x).toBe(initialX);
     expect(pacman.y).toBe(initialY);
     expect(pacman.direction).toEqual({ dx: 0, dy: 0 });
@@ -144,7 +144,7 @@ describe('GameState', () => {
 
     // Initially at (1,1).
     // Set initial direction to Right
-    state.updatePacman({ dx: 1, dy: 0 }, deltaTimeForOneTile); 
+    state.updatePacman({ dx: 1, dy: 0 }, deltaTimeForOneTile);
     expect(pacman.x).toBe(2);
     expect(pacman.y).toBe(1);
     expect(pacman.direction).toEqual({ dx: 1, dy: 0 });
@@ -153,7 +153,7 @@ describe('GameState', () => {
     // Request Up { dx: 0, dy: -1 }.
     // It should be buffered, but for now we continue Right.
     state.updatePacman({ dx: 0, dy: -1 }, deltaTimeForOneTile);
-    
+
     // Should not move Up (blocked), should continue moving in the current direction (Right).
     expect(pacman.x).toBe(3);
     expect(pacman.y).toBe(1);
@@ -177,7 +177,7 @@ describe('GameState', () => {
 
     // 1. Start moving Right.
     // Move small step to be misaligned: x=1.5
-    state.updatePacman({ dx: 1, dy: 0 }, deltaTimeForHalfTile); 
+    state.updatePacman({ dx: 1, dy: 0 }, deltaTimeForHalfTile);
     expect(pacman.x).toBeCloseTo(1.5);
     expect(pacman.direction).toEqual({ dx: 1, dy: 0 });
 
@@ -185,7 +185,7 @@ describe('GameState', () => {
     // We are at 1.5. Center is 2.0. We are not aligned.
     // Down (1.5, 2) is not checked yet, but we check alignment first.
     state.updatePacman({ dx: 0, dy: 1 }, deltaTimeForHalfTile);
-    
+
     // Should continue Right because we haven't reached the turn (x=2) yet.
     // x becomes 2.0.
     expect(pacman.x).toBeCloseTo(2.0);
@@ -228,7 +228,7 @@ describe('GameState', () => {
 
     // 2. Request Left. Should turn IMMEDIATELY even if not aligned.
     state.updatePacman({ dx: -1, dy: 0 }, deltaTimeForHalfTile);
-    
+
     // Should be at 1.0 (1.5 - 0.5) and still moving left (hasn't hit wall at x=0 yet)
     expect(pacman.x).toBeCloseTo(1.0);
     expect(pacman.direction).toEqual({ dx: -1, dy: 0 });
@@ -259,6 +259,37 @@ describe('GameState', () => {
     // After attempting to move right from x=3, Pacman should remain at x=3 because x=4 is a wall.
     expect(pacman.x).toBe(3);
     expect(pacman.direction?.dx).toBe(0); // Should be stopped
+  });
+
+  it('should not bounce when hitting a wall with small incremental movements (Issue #48)', () => {
+    // This test verifies the fix for issue #48: when Pacman hits a wall,
+    // it should stop at the center of the grid tile, not go beyond and bounce back
+    const customTemplate = `
+#####
+#P..#
+#####
+    `.trim();
+    const customGrid = Grid.fromString(customTemplate);
+    const state = new GameState(customGrid);
+    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
+    if (!pacman) throw new Error('Pacman not found');
+
+    // Move Pacman to (3,1) - the last valid tile before wall at (4,1)
+    state.updatePacman({ dx: 1, dy: 0 }, deltaTimeForOneTile);
+    state.updatePacman({ dx: 1, dy: 0 }, deltaTimeForOneTile);
+    expect(pacman.x).toBe(3);
+
+    // Now try to move with small increments towards the wall
+    // Pacman should never go beyond 3.0 (the tile center)
+    for (let i = 0; i < 10; i++) {
+      state.updatePacman({ dx: 1, dy: 0 }, deltaTimeForHalfTile);
+      // Pacman should be stopped at exactly 3, never going past
+      expect(pacman.x).toBe(3);
+    }
+
+    // Verify direction is cleared (stopped)
+    expect(pacman.direction?.dx).toBe(0);
+    expect(pacman.direction?.dy).toBe(0);
   });
 
   describe('Power-up mechanics', () => {
@@ -336,11 +367,11 @@ describe('GameState', () => {
       pacman.y = 1;
       ghost.x = 2;
       ghost.y = 1;
-      
+
       // Update Pacman to trigger collision check. Use a minimal delta time.
-      state.updatePacman({ dx: 0, dy: 0 }, 1); 
- 
-       // Expect ghost to be reset to initial position
+      state.updatePacman({ dx: 0, dy: 0 }, 1);
+
+      // Expect ghost to be reset to initial position
       expect(ghost.x).toBe(initialGhostX);
       expect(ghost.y).toBe(initialGhostY);
       // Expect ghost to no longer be scared
