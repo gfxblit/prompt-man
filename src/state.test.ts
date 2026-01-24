@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { GameState } from './state.js';
 import { Grid } from './grid.js';
 import { EntityType } from './types.js';
-import { PACMAN_SPEED, POWER_UP_DURATION, GHOST_EATEN_SCORE, POWER_PELLET_SCORE, ALIGNMENT_TOLERANCE } from './config.js';
+import { PACMAN_SPEED, POWER_UP_DURATION, GHOST_EATEN_SCORE, POWER_PELLET_SCORE, ALIGNMENT_TOLERANCE, RESPAWN_INVULNERABILITY_DURATION } from './config.js';
 
 
 describe('GameState', () => {
@@ -482,12 +482,12 @@ describe('GameState', () => {
       state.updateGhosts(RESPAWN_INVULNERABILITY_DURATION + 100);
       expect(ghost.isRespawning).toBe(false);
 
-      // 5. Update state - should NOW collide and lose a life
+      // 5. Update state - should NOW collide
       // Make sure they are still overlapping as ghost might have moved
       pacman.x = ghost.x;
       pacman.y = ghost.y;
       state.updatePacman({ dx: 0, dy: 0 }, 1);
-      expect(state.getLives()).toBe(initialLives - 1);
+      expect(state.isDying()).toBe(true);
     });
   });
 });
