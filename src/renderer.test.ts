@@ -328,10 +328,10 @@ describe('Renderer', () => {
     renderer.render(grid, mockState);
 
     // pink colorRow is 1
-    // WEST sCol is 2
+    // WEST sCol is 1
     expect(mockContext.drawImage).toHaveBeenCalledWith(
       mockSpritesheet,
-      GHOST_PALETTE_OFFSET_X + (2 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X, // sourceX (sCol=2)
+      GHOST_PALETTE_OFFSET_X + (1 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X, // sourceX (sCol=1)
       GHOST_PALETTE_OFFSET_Y + (1 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_Y, // sourceY (colorRow=1)
       SOURCE_GHOST_SIZE - PALETTE_PADDING_X,
       SOURCE_GHOST_SIZE - PALETTE_PADDING_Y,

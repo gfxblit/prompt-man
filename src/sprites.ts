@@ -399,9 +399,9 @@ export const PACMAN_DEATH_ANIMATION_MAP: [number, number][] = [
  */
 export const GHOST_ANIMATION_FRAMES = [
   [0, 0, false, false], // EAST
-  [0, 2, false, false], // WEST
-  [0, 4, false, false], // NORTH
-  [0, 6, false, false], // SOUTH
+  [0, 1, false, false], // WEST
+  [0, 2, false, false], // NORTH
+  [0, 3, false, false], // SOUTH
 ] as const;
 
 /**
