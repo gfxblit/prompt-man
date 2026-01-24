@@ -6,7 +6,7 @@ describe('Ghost Rendering Logic', () => {
     // Red offset: 558, 277. East frame: col 0 (0px offset)
     // X: 558 + 0 + 1 (padding) = 559
     // Y: 277 + 0 + 1 (padding) = 278
-    const coords = getGhostSpriteSource('red', 'EAST', false, 0);
+    const coords = getGhostSpriteSource('red', 'EAST', false);
     expect(coords).toEqual({ x: 559, y: 278, width: 16, height: 16, flipX: false, flipY: false });
   });
 
