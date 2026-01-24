@@ -3,7 +3,15 @@ import { Renderer, UIRenderer } from './renderer.js';
 import { Grid } from './grid.js';
 import { TileType, EntityType } from './types.js';
 import type { IGameState } from './types.js';
-import { TILE_SIZE, COLORS, PACMAN_DEATH_ANIMATION_FRAMES } from './config.js';
+import {
+  TILE_SIZE,
+  COLORS,
+  PACMAN_DEATH_ANIMATION_FRAMES,
+  GHOST_OFFSETS,
+  SOURCE_GHOST_SIZE,
+  PALETTE_PADDING_X,
+  PALETTE_PADDING_Y
+} from './config.js';
 
 describe('Renderer', () => {
   let mockContext: {
@@ -276,6 +284,67 @@ describe('Renderer', () => {
     expect(lastArcCall![4]).toBeCloseTo(endAngle);
   });
 
+  it('should render a Ghost using spritesheet when provided', () => {
+    const mockSpritesheet = {} as HTMLImageElement;
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D, mockSpritesheet);
+    const grid = new Grid(1, 1);
+
+    // Frame 0, red ghost
+    const entities = [{ type: EntityType.Ghost, x: 0, y: 0, color: 'red', animationFrame: 0 }];
+    vi.mocked(mockState.getEntities).mockReturnValue(entities);
+
+    renderer.render(grid, mockState);
+
+    expect(mockContext.save).toHaveBeenCalled();
+    expect(mockContext.drawImage).toHaveBeenCalledWith(
+      mockSpritesheet,
+      GHOST_OFFSETS.RED!.x + (0 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X, // sourceX
+      GHOST_OFFSETS.RED!.y + PALETTE_PADDING_Y, // sourceY
+      SOURCE_GHOST_SIZE - PALETTE_PADDING_X,
+      SOURCE_GHOST_SIZE - PALETTE_PADDING_Y,
+      -TILE_SIZE / 2,     // destX
+      -TILE_SIZE / 2,     // destY
+      TILE_SIZE,
+      TILE_SIZE
+    );
+    expect(mockContext.restore).toHaveBeenCalled();
+  });
+
+  it('should render different Ghost colors and directions using spritesheet', () => {
+    const mockSpritesheet = {} as HTMLImageElement;
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D, mockSpritesheet);
+    const grid = new Grid(1, 1);
+
+    // West direction, pink ghost
+    const entities = [{
+      type: EntityType.Ghost,
+      x: 0, y: 0,
+      color: 'pink',
+      direction: { dx: -1, dy: 0 }
+    }];
+    vi.mocked(mockState.getEntities).mockReturnValue(entities);
+
+    renderer.render(grid, mockState);
+
+    // pink offset is GHOST_OFFSETS.PINK
+    // WEST sCol is 4 (first frame of WEST animation)
+
+    // Check for NO flip
+    expect(mockContext.scale).toHaveBeenCalledWith(1, 1);
+
+    expect(mockContext.drawImage).toHaveBeenCalledWith(
+      mockSpritesheet,
+      GHOST_OFFSETS.PINK!.x + (4 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X, // sourceX (sCol=4)
+      GHOST_OFFSETS.PINK!.y + PALETTE_PADDING_Y, // sourceY
+      SOURCE_GHOST_SIZE - PALETTE_PADDING_X,
+      SOURCE_GHOST_SIZE - PALETTE_PADDING_Y,
+      -TILE_SIZE / 2,     // destX
+      -TILE_SIZE / 2,     // destY
+      TILE_SIZE,
+      TILE_SIZE
+    );
+  });
+
   it('should render a Ghost correctly', () => {
     const grid = new Grid(1, 1);
     const entities = [{ type: EntityType.Ghost, x: 0, y: 0, color: 'pink' }];
@@ -325,12 +394,12 @@ describe('Renderer', () => {
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
 
     const fillStyleSetter = vi.spyOn(mockContext, 'fillStyle', 'set');
-    
+
     renderer.render(grid, mockState);
-    
+
     // Ensure ghost body color is NOT used
     expect(fillStyleSetter).not.toHaveBeenCalledWith('pink');
-    
+
     // Check for eye white and pupil colors
     expect(fillStyleSetter).toHaveBeenCalledWith('white');
     expect(fillStyleSetter).toHaveBeenCalledWith('blue');
@@ -338,7 +407,7 @@ describe('Renderer', () => {
     const arcCalls = vi.mocked(mockContext.arc).mock.calls;
     // 2 eyes + 2 pupils = 4 arcs
     expect(arcCalls.length).toBeGreaterThanOrEqual(4);
-    
+
     fillStyleSetter.mockRestore();
   });
 
@@ -357,7 +426,7 @@ describe('Renderer', () => {
 
       expect(mockContext.fillStyle).toBe(COLORS.PACMAN);
       const expectedRadius = maxRadius * (1 - i / (PACMAN_DEATH_ANIMATION_FRAMES - 1));
-      
+
       if (expectedRadius > 0) {
         expect(mockContext.beginPath).toHaveBeenCalled();
         expect(mockContext.arc).toHaveBeenCalledWith(
@@ -434,10 +503,10 @@ describe('Renderer', () => {
 
   it('should render GAME OVER when game is over', () => {
     vi.mocked(mockState.isGameOver).mockReturnValue(true);
-    
+
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
     const grid = new Grid(10, 10);
-    
+
     renderer.render(grid, mockState);
 
     expect(mockContext.fillRect).toHaveBeenCalledWith(0, 0, 10 * TILE_SIZE, 10 * TILE_SIZE);

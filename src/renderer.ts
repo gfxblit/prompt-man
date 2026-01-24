@@ -16,7 +16,17 @@ import {
   PACMAN_DEATH_ANIMATION_FRAMES
 } from './config.js';
 import { getTileMask } from './autotile.js';
-import { TILE_MAP, SOURCE_QUADRANT_SIZE, STATIC_SPRITE_MAP, SOURCE_TILE_SIZE, PACMAN_ANIMATION_MAP, SOURCE_PACMAN_SIZE, PACMAN_DEATH_ANIMATION_MAP } from './sprites.js';
+import {
+  TILE_MAP,
+  SOURCE_QUADRANT_SIZE,
+  STATIC_SPRITE_MAP,
+  SOURCE_TILE_SIZE,
+  SOURCE_PACMAN_SIZE,
+  PACMAN_DEATH_ANIMATION_MAP,
+  getGhostSpriteSource,
+  GHOST_ANIMATION_MAP,
+  PACMAN_ANIMATION_MAP
+} from './sprites.js';
 
 export class Renderer implements IRenderer {
   constructor(
@@ -206,7 +216,7 @@ export class Renderer implements IRenderer {
     const frameIndex = entity.animationFrame ?? 0;
 
     if (this.spritesheet) {
-      const frameData = PACMAN_DEATH_ANIMATION_MAP[frameIndex] ?? PACMAN_DEATH_ANIMATION_MAP[0] ?? [0, 0];
+      const frameData = PACMAN_DEATH_ANIMATION_MAP[frameIndex] ?? PACMAN_DEATH_ANIMATION_MAP[0]!;
       const [sRow, sCol] = frameData;
       const sourceX = PACMAN_DEATH_PALETTE_OFFSET_X + (sCol * SOURCE_PACMAN_SIZE);
       const sourceY = PACMAN_DEATH_PALETTE_OFFSET_Y + (sRow * SOURCE_PACMAN_SIZE);
@@ -237,6 +247,75 @@ export class Renderer implements IRenderer {
     }
   }
 
+  /**
+   * Renders a ghost sprite with black pixels made transparent.
+   * Used for rendering dead ghost eyes without the black background.
+   */
+  private renderGhostWithTransparentBlack(
+    sourceX: number,
+    sourceY: number,
+    sourceWidth: number,
+    sourceHeight: number,
+    destX: number,
+    destY: number,
+    destWidth: number,
+    destHeight: number
+  ): void {
+    if (!this.spritesheet) return;
+
+    // Create a temporary canvas to extract and modify the sprite
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = sourceWidth;
+    tempCanvas.height = sourceHeight;
+    const tempCtx = tempCanvas.getContext('2d');
+    if (!tempCtx) return;
+
+    // Draw the sprite to the temporary canvas
+    tempCtx.drawImage(
+      this.spritesheet,
+      sourceX,
+      sourceY,
+      sourceWidth,
+      sourceHeight,
+      0,
+      0,
+      sourceWidth,
+      sourceHeight
+    );
+
+    // Get the image data and make black pixels transparent
+    const imageData = tempCtx.getImageData(0, 0, sourceWidth, sourceHeight);
+    const data = imageData.data;
+
+    // Iterate through each pixel
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i]!;
+      const g = data[i + 1]!;
+      const b = data[i + 2]!;
+
+      // If the pixel is black or very close to black, make it transparent
+      if (r < 10 && g < 10 && b < 10) {
+        data[i + 3] = 0; // Set alpha to 0 (transparent)
+      }
+    }
+
+    // Put the modified image data back
+    tempCtx.putImageData(imageData, 0, 0);
+
+    // Draw the modified sprite to the main canvas
+    this.ctx.drawImage(
+      tempCanvas,
+      0,
+      0,
+      sourceWidth,
+      sourceHeight,
+      destX,
+      destY,
+      destWidth,
+      destHeight
+    );
+  }
+
   private renderEntities(state: IGameState): void {
     for (const entity of state.getEntities()) {
       this.renderEntity(entity, state);
@@ -265,14 +344,7 @@ export class Renderer implements IRenderer {
           else dirKey = 'EAST';
 
           const frameIndex = entity.animationFrame ?? 0;
-          const animationFrameData = PACMAN_ANIMATION_MAP[dirKey]?.[(frameIndex as 0 | 1 | 2)] || PACMAN_ANIMATION_MAP.EAST[0];
-
-          if (!animationFrameData) {
-            // Should not happen with current PACMAN_ANIMATION_MAP, but ensures robustness
-            return;
-          }
-
-          const [sRow, sCol, flipX, flipY] = animationFrameData;
+          const [sRow, sCol, flipX, flipY] = PACMAN_ANIMATION_MAP[dirKey]?.[(frameIndex as 0 | 1 | 2)] || PACMAN_ANIMATION_MAP.EAST[0];
 
           const sourceX = PACMAN_PALETTE_OFFSET_X + (sCol * SOURCE_PACMAN_SIZE);
           const sourceY = PACMAN_PALETTE_OFFSET_Y + (sRow * SOURCE_PACMAN_SIZE);
@@ -328,7 +400,58 @@ export class Renderer implements IRenderer {
       }
 
       case EntityType.Ghost:
-        if (entity.isDead) {
+        if (this.spritesheet) {
+          let dirKey: keyof typeof GHOST_ANIMATION_MAP = 'EAST';
+          if (entity.direction) {
+            if (entity.direction.dx > 0) dirKey = 'EAST';
+            else if (entity.direction.dx < 0) dirKey = 'WEST';
+            else if (entity.direction.dy > 0) dirKey = 'SOUTH';
+            else if (entity.direction.dy < 0) dirKey = 'NORTH';
+          }
+
+          const spriteSource = getGhostSpriteSource(
+            entity.color || COLORS.GHOST_DEFAULT,
+            dirKey,
+            !!entity.isScared,
+            entity.animationFrame || 0,
+            !!entity.isDead
+          );
+
+          this.ctx.save();
+          this.ctx.translate(screenX, screenY);
+
+          const scaleX = spriteSource.flipX ? -1 : 1;
+          const scaleY = spriteSource.flipY ? -1 : 1;
+          this.ctx.scale(scaleX, scaleY);
+
+          // For dead ghosts (eyes), make black pixels transparent
+          if (entity.isDead) {
+            this.renderGhostWithTransparentBlack(
+              spriteSource.x,
+              spriteSource.y,
+              spriteSource.width,
+              spriteSource.height,
+              -TILE_SIZE / 2,
+              -TILE_SIZE / 2,
+              TILE_SIZE,
+              TILE_SIZE
+            );
+          } else {
+            this.ctx.drawImage(
+              this.spritesheet,
+              spriteSource.x,
+              spriteSource.y,
+              spriteSource.width,
+              spriteSource.height,
+              -TILE_SIZE / 2,
+              -TILE_SIZE / 2,
+              TILE_SIZE,
+              TILE_SIZE
+            );
+          }
+
+          this.ctx.restore();
+        } else if (entity.isDead) {
           // Render eyes only
           this.ctx.fillStyle = 'white';
           this.ctx.beginPath();

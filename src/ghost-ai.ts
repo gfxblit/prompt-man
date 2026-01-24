@@ -72,29 +72,37 @@ export class GhostAI {
     }
 
     // Otherwise, pick the move that optimizes Manhattan distance to target
-    let bestDir = validMoves[0]!;
-    // If scared, we want to maximize distance (start with -Infinity).
-    // If not scared, we want to minimize distance (start with Infinity).
-    let bestDist = isScared ? -Infinity : Infinity;
+    let bestDist = this.getManhattanDistance(x + validMoves[0]!.dx, y + validMoves[0]!.dy, target.x, target.y);
+    let bestMoves: Direction[] = [validMoves[0]!];
 
-    for (const dir of validMoves) {
+    for (let i = 1; i < validMoves.length; i++) {
+      const dir = validMoves[i]!;
       const distance = this.getManhattanDistance(x + dir.dx, y + dir.dy, target.x, target.y);
 
       if (isScared) {
         // Flee: Maximize distance
         if (distance > bestDist) {
           bestDist = distance;
-          bestDir = dir;
+          bestMoves = [dir];
+        } else if (distance === bestDist) {
+          bestMoves.push(dir);
         }
       } else {
         // Chase: Minimize distance
         if (distance < bestDist) {
           bestDist = distance;
-          bestDir = dir;
+          bestMoves = [dir];
+        } else if (distance === bestDist) {
+          bestMoves.push(dir);
         }
       }
     }
 
-    return bestDir;
+    if (bestMoves.length === 0) return { dx: 0, dy: 0 };
+    if (bestMoves.length === 1) return bestMoves[0]!;
+    
+    // Use Math.random() to break ties among equally good moves
+    const randomIndex = Math.floor(Math.random() * bestMoves.length);
+    return bestMoves[randomIndex]!;
   }
 }

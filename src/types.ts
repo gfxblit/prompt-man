@@ -52,6 +52,10 @@ export interface Entity {
   isDead?: boolean;
   /** Optional timer for tracking death animation progress in milliseconds. */
   deathTimer?: number | undefined;
+  /** Optional flag indicating if the entity (e.g., ghost) is in a brief non-collidable state after respawning. */
+  isRespawning?: boolean;
+  /** Optional timer for tracking how long the isRespawning state should last. */
+  respawnTimer?: number;
 }
 
 /**

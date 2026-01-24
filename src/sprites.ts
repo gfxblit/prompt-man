@@ -1,4 +1,12 @@
 import { MASK } from './autotile.js';
+import {
+  COLORS,
+  GHOST_OFFSETS,
+  SOURCE_GHOST_SIZE,
+  PALETTE_PADDING_X,
+  PALETTE_PADDING_Y
+} from './config.js';
+import type { SpriteOffset } from './config.js';
 
 /**
  * (row, col) coordinates in the sprite sheet for a 4x4 quadrant.
@@ -382,6 +390,83 @@ export const SOURCE_TILE_SIZE = 9;
  * Pixel size of the Pacman sprite in the source palette.
  */
 export const SOURCE_PACMAN_SIZE = 17;
+/**
+ * Death animation frames for Pacman.
+ * Array of 12 [row, col] coordinates in 17px units.
+ */
+export const PACMAN_DEATH_ANIMATION_MAP: [number, number][] = [
+  [0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5],
+  [1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5],
+];
+
+/**
+ * Mapping of ghost colors to their palette offset.
+ */
+export const GHOST_PALETTE_OFFSETS: Record<string, SpriteOffset> = {
+  red: GHOST_OFFSETS.RED!,
+  pink: GHOST_OFFSETS.PINK!,
+  cyan: GHOST_OFFSETS.CYAN!,
+  orange: GHOST_OFFSETS.ORANGE!,
+  scared: GHOST_OFFSETS.SCARED!,
+  eyes: GHOST_OFFSETS.EYES!,
+};
+
+/**
+ * Maps direction names to their column indices in the sprite sheet.
+ * Ghosts have 2 animation frames per direction.
+ */
+export const GHOST_ANIMATION_MAP = {
+  EAST: [0, 1],
+  WEST: [4, 5],
+  NORTH: [6, 7],
+  SOUTH: [2, 3],
+  SCARED: [0, 1],
+} as const;
+
+/** The sequence of animation frames for Ghosts. */
+export const GHOST_ANIMATION_SEQUENCE = [0, 1] as const;
+
+/**
+ * Calculates the source sprite coordinates for a ghost.
+ */
+export function getGhostSpriteSource(color: string, direction: string, isScared: boolean, frameIndex: number = 0, isDead: boolean = false) {
+  let resolvedColor = color;
+  if (isDead) {
+    resolvedColor = 'eyes';
+  } else if (isScared) {
+    resolvedColor = 'scared';
+  } else if (!GHOST_PALETTE_OFFSETS[color]) {
+    resolvedColor = COLORS.GHOST_DEFAULT;
+  }
+
+  const offset = GHOST_PALETTE_OFFSETS[resolvedColor] || GHOST_OFFSETS.RED!;
+
+  let dirKey = direction as keyof typeof GHOST_ANIMATION_MAP;
+  if (!(dirKey in GHOST_ANIMATION_MAP)) {
+    dirKey = 'EAST';
+  }
+
+  if (isScared) {
+    dirKey = 'SCARED';
+  }
+
+  const frames = GHOST_ANIMATION_MAP[dirKey];
+  // Dead ghosts (eyes) typically don't animate the same way, but they might have different eye directions.
+  // Standard sprite sheets have eyes facing East, West, North, South.
+  const col = isDead ? (frames[0] ?? 0) : (frames[frameIndex % frames.length] ?? 0);
+
+  const sourceX = offset!.x + (col * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X;
+  const sourceY = offset!.y + PALETTE_PADDING_Y;
+
+  return {
+    x: sourceX,
+    y: sourceY,
+    width: SOURCE_GHOST_SIZE - PALETTE_PADDING_X,
+    height: SOURCE_GHOST_SIZE - PALETTE_PADDING_Y,
+    flipX: false,
+    flipY: false
+  };
+}
 
 /**
  * Animation frames for Pacman in each direction.
@@ -411,11 +496,5 @@ export const PACMAN_ANIMATION_MAP = {
   ],
 } as const;
 
-/**
- * Death animation frames for Pacman.
- * Array of 12 [row, col] coordinates in 17px units.
- */
-export const PACMAN_DEATH_ANIMATION_MAP: [number, number][] = [
-  [0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5],
-  [1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5],
-];
+/** The sequence of animation frames for Pacman. */
+export const PACMAN_ANIMATION_SEQUENCE = [0, 1, 2, 1] as const;
