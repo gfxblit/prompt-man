@@ -276,6 +276,7 @@ export class GameState implements IGameState {
           this.score += GHOST_EATEN_SCORE;
           ghost.isDead = true;
           ghost.isScared = false; // Un-scare the ghost
+          this.chooseGhostDirection(ghost);
           // No life lost for Pacman
         } else {
           // Pacman hit a normal ghost, lose a life

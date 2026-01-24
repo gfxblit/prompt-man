@@ -17,6 +17,13 @@ describe('GameState', () => {
   const deltaTimeForOneTile = 1 / PACMAN_SPEED;
   const deltaTimeForHalfTile = 0.5 / PACMAN_SPEED;
 
+  const powerPelletTemplate = `
+#######
+#P   G#
+#o    #
+#######
+  `.trim();
+
   beforeEach(() => {
     grid = Grid.fromString(template);
     vi.stubGlobal('localStorage', {
@@ -286,13 +293,6 @@ describe('GameState', () => {
   });
 
   describe('Power-up mechanics', () => {
-    // New template for power pellet tests
-    const powerPelletTemplate = `
-#######
-#P   G#
-#o    #
-#######
-    `.trim();
     let powerGrid: Grid;
     const powerPelletX = 1;
     const powerPelletY = 2; // 'o' in the powerPelletTemplate
