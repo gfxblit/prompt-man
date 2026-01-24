@@ -150,4 +150,37 @@ describe('GameState Power Up Mechanics', () => {
     
     expect(movedDistScared).toBeCloseTo(GHOST_SPEED * SCARED_GHOST_SPEED_MULTIPLIER * dt);
   });
+
+  it('power-up timer persists after Pacman dies', () => {
+    // 1. Eat power pellet
+    gameState.consumePellet(5, 1);
+    const ghosts = gameState.getEntities().filter(e => e.type === EntityType.Ghost);
+    expect(ghosts[0]!.isScared).toBe(true);
+
+    // 2. Kill Pacman
+    const pacman = gameState.getEntities().find(e => e.type === EntityType.Pacman)!;
+    const ghost = ghosts[0]!;
+    
+    // Scared ghost collision won't kill Pacman. 
+    // We need to un-scare one ghost manually to kill him or just call handleCollision.
+    ghost.isScared = false;
+    pacman.x = ghost.x;
+    pacman.y = ghost.y;
+    
+    gameState.updatePacman({ dx: 1, dy: 0 }, 10);
+    expect(gameState.isDying()).toBe(true);
+
+    // 3. Finish death animation
+    const animationDuration = PACMAN_DEATH_ANIMATION_SPEED * PACMAN_DEATH_ANIMATION_FRAMES;
+    gameState.updatePacman({ dx: 0, dy: 0 }, animationDuration);
+    
+    expect(gameState.isDying()).toBe(false);
+    expect(gameState.getLives()).toBe(1); // Lost one life (2 -> 1)
+
+    // 4. Verify ghosts are STILL scared (the ones that were scared)
+    const otherGhosts = gameState.getEntities().filter(e => e.type === EntityType.Ghost && e !== ghost);
+    for (const g of otherGhosts) {
+        expect(g.isScared).toBe(true);
+    }
+  });
 });

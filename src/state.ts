@@ -345,7 +345,6 @@ export class GameState implements IGameState {
   }
 
   private resetPositions(): void {
-    this.powerUpTimer = 0;
     for (const entity of this.entities) {
       const initialPos = this.initialPositions.get(entity);
       if (initialPos) {
@@ -355,7 +354,9 @@ export class GameState implements IGameState {
         // Reset rotation if needed, but direction reset might be enough
       }
       if (entity.type === EntityType.Ghost) {
-        entity.isScared = false;
+        if (this.powerUpTimer === 0) {
+          entity.isScared = false;
+        }
         entity.isDead = false;
       }
     }
@@ -450,7 +451,8 @@ export class GameState implements IGameState {
       }
 
       // 4. Update animation
-      // Ghosts animate even when they are stopped (unless the game is over)
+      // Ghosts always animate as long as the game is not over or Pacman is not dying.
+      // Their animation does not depend on their movement.
       const frames = GHOST_ANIMATION_SEQUENCE;
       const currentTimer = (ghost.animationTimer ?? 0) + deltaTime;
       const frameIndex = Math.floor(currentTimer / GHOST_ANIMATION_SPEED) % frames.length;

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { GameState } from './state.js';
 import { Grid } from './grid.js';
 import { EntityType } from './types.js';
@@ -22,8 +22,11 @@ describe('GameState Animation', () => {
       setItem: vi.fn(),
       clear: vi.fn(),
     });
-    // Mock GhostAI to always move right by default in tests to avoid flakiness
-    vi.spyOn(GhostAI, 'pickDirection').mockReturnValue({ dx: 1, dy: 0 });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   describe('Pacman', () => {
