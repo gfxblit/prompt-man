@@ -416,6 +416,6 @@ export const PACMAN_ANIMATION_MAP = {
  * Array of 12 [row, col] coordinates in 17px units.
  */
 export const PACMAN_DEATH_ANIMATION_MAP: [number, number][] = [
-  [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7],
-  [0, 8], [0, 9], [0, 10], [0, 11], [0, 12], [0, 13]
+  [0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5],
+  [1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5],
 ];
