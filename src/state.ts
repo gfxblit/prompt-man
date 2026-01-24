@@ -366,13 +366,13 @@ export class GameState implements IGameState {
       if (ghost.isDead) {
         const initialPos = this.initialPositions.get(ghost);
         if (initialPos) {
-          const distToSpawn = Math.sqrt(Math.pow(ghost.x - initialPos.x, 2) + Math.pow(ghost.y - initialPos.y, 2));
-          // Check if the ghost is close enough to the spawn point to be considered "at spawn"
-          // or if it has passed the spawn point in its trajectory
-          if (distToSpawn < COLLISION_THRESHOLD || (
-              Math.abs(ghost.x - initialPos.x) < (GHOST_SPEED * DEAD_GHOST_SPEED_MULTIPLIER * deltaTime) &&
-              Math.abs(ghost.y - initialPos.y) < (GHOST_SPEED * DEAD_GHOST_SPEED_MULTIPLIER * deltaTime)
-          )) {
+          // Calculate distance to spawn, using grid coordinates
+          const dx = Math.abs(ghost.x - initialPos.x);
+          const dy = Math.abs(ghost.y - initialPos.y);
+
+          // If the ghost is very close to its spawn point, respawn it.
+          // This ensures it snaps to the spawn point and resets state.
+          if (dx < ALIGNMENT_TOLERANCE && dy < ALIGNMENT_TOLERANCE) {
             this.respawnGhost(ghost);
             continue;
           }

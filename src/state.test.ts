@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { GameState } from './state.js';
 import { Grid } from './grid.js';
 import { EntityType } from './types.js';
-import { PACMAN_SPEED, POWER_UP_DURATION, GHOST_EATEN_SCORE, POWER_PELLET_SCORE, COLLISION_THRESHOLD } from './config.js';
+import { PACMAN_SPEED, POWER_UP_DURATION, GHOST_EATEN_SCORE, POWER_PELLET_SCORE, COLLISION_THRESHOLD, ALIGNMENT_TOLERANCE } from './config.js';
 
 
 describe('GameState', () => {
@@ -412,13 +412,13 @@ describe('GameState', () => {
       expect(ghost.isDead).toBe(true);
 
       // 3. Teleport ghost near spawn and move it to spawn
-      // Using COLLISION_THRESHOLD / 2 to be within range
-      ghost.x = spawnPos.x - COLLISION_THRESHOLD / 2;
+      // Using ALIGNMENT_TOLERANCE / 2 to be within range
+      ghost.x = spawnPos.x - ALIGNMENT_TOLERANCE / 2;
       ghost.y = spawnPos.y;
       ghost.direction = { dx: 1, dy: 0 };
       
-      // Update with enough time to reach/pass the spawn position
-      state.updateGhosts(100);
+      // Update once. It should detect being near spawn and respawn.
+      state.updateGhosts(16);
 
       // It should be at the spawn position and NOT dead and NOT scared anymore
       expect(ghost.x).toBeCloseTo(spawnPos.x);
