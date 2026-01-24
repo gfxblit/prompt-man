@@ -328,10 +328,14 @@ describe('Renderer', () => {
     renderer.render(grid, mockState);
 
     // pink colorRow is 1
-    // WEST sCol is 1
+    // WEST sCol is 0 (flipped East)
+    
+    // Check for flip
+    expect(mockContext.scale).toHaveBeenCalledWith(-1, 1);
+
     expect(mockContext.drawImage).toHaveBeenCalledWith(
       mockSpritesheet,
-      GHOST_PALETTE_OFFSET_X + (1 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X, // sourceX (sCol=1)
+      GHOST_PALETTE_OFFSET_X + (0 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X, // sourceX (sCol=0)
       GHOST_PALETTE_OFFSET_Y + (1 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_Y, // sourceY (colorRow=1)
       SOURCE_GHOST_SIZE - PALETTE_PADDING_X,
       SOURCE_GHOST_SIZE - PALETTE_PADDING_Y,
