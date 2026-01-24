@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { GameState } from './state.js';
 import { Grid } from './grid.js';
 import { EntityType } from './types.js';
-import { POWER_UP_DURATION, GHOST_EATEN_SCORE, GHOST_SPEED, SCARED_GHOST_SPEED_MULTIPLIER } from './config.js';
+import { POWER_UP_DURATION, GHOST_EATEN_SCORE, GHOST_SPEED, SCARED_GHOST_SPEED_MULTIPLIER, PACMAN_DEATH_ANIMATION_SPEED, PACMAN_DEATH_ANIMATION_FRAMES } from './config.js';
 
 describe('GameState Power Up Mechanics', () => {
   let gameState: GameState;
@@ -107,8 +107,9 @@ describe('GameState Power Up Mechanics', () => {
     expect(gameState.isDying()).toBe(true);
     expect(gameState.getLives()).toBe(initialLives); // Life not lost yet
 
-    // Advance time to finish animation (100ms * 12 frames = 1200ms)
-    gameState.updatePacman({ dx: 0, dy: 0 }, 1200);
+    // Advance time to finish animation
+    const animationDuration = PACMAN_DEATH_ANIMATION_SPEED * PACMAN_DEATH_ANIMATION_FRAMES;
+    gameState.updatePacman({ dx: 0, dy: 0 }, animationDuration);
     
     expect(gameState.getLives()).toBe(initialLives - 1);
     expect(gameState.isDying()).toBe(false);
