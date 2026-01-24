@@ -483,6 +483,9 @@ describe('GameState', () => {
       expect(ghost.isRespawning).toBe(false);
 
       // 5. Update state - should NOW collide and lose a life
+      // Make sure they are still overlapping as ghost might have moved
+      pacman.x = ghost.x;
+      pacman.y = ghost.y;
       state.updatePacman({ dx: 0, dy: 0 }, 1);
       expect(state.getLives()).toBe(initialLives - 1);
     });
