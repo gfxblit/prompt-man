@@ -352,7 +352,7 @@ describe('Renderer', () => {
     const maxRadius = TILE_SIZE / 2 - 1;
     for (let i = 0; i < PACMAN_DEATH_ANIMATION_FRAMES; i++) {
       vi.mocked(mockContext.arc).mockClear();
-      entities[0].animationFrame = i;
+      entities[0]!.animationFrame = i;
       renderer.render(grid, mockState);
 
       expect(mockContext.fillStyle).toBe(COLORS.PACMAN);
@@ -384,7 +384,7 @@ describe('Renderer', () => {
 
     for (let i = 0; i < PACMAN_DEATH_ANIMATION_FRAMES; i++) {
       vi.mocked(mockContext.drawImage).mockClear();
-      entities[0].animationFrame = i;
+      entities[0]!.animationFrame = i;
       renderer.render(grid, mockState);
 
       expect(mockContext.drawImage).toHaveBeenCalledWith(
