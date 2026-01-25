@@ -6,7 +6,7 @@ import { EntityType } from './types.js';
 import type { IGrid } from './types.js';
 import { PACMAN_DEATH_ANIMATION_SPEED } from './config.js';
 
-// Mock configuration to disable the "Ready" state delay for these tests
+// Mock configuration to disable the "Ready" state delay for these tests. This allows tests to focus on core logic without waiting for the initial pause.
 vi.mock('./config.js', async (importOriginal) => {
   const mod = await importOriginal<typeof import('./config.js')>();
   return {

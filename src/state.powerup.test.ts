@@ -4,7 +4,7 @@ import { Grid } from './grid.js';
 import { EntityType } from './types.js';
 import { POWER_UP_DURATION, GHOST_SPEED, GHOST_EATEN_SCORE, PACMAN_DEATH_ANIMATION_SPEED, PACMAN_DEATH_ANIMATION_FRAMES, SCARED_GHOST_SPEED_MULTIPLIER } from './config.js';
 
-// Mock configuration to disable the "Ready" state delay for these tests
+// Mock configuration to disable the "Ready" state delay for these tests. This allows tests to focus on core logic without waiting for the initial pause.
 vi.mock('./config.js', async (importOriginal) => {
   const mod = await importOriginal<typeof import('./config.js')>();
   return {

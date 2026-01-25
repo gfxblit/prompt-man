@@ -75,12 +75,9 @@ export class Renderer implements IRenderer {
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
 
-    // Position comfortably below the ghost house (center of screen, slightly lower)
-    // Ghost house is roughly in the middle, so we can put it around 60% down or just center it.
-    // Classic Pac-Man puts "READY!" right below the ghost house.
-    // Given the template, center seems fine or slightly offset.
-    // Let's stick to center for now, similar to Game Over but yellow.
-    this.ctx.fillText('READY!', width / 2, height / 2 + TILE_SIZE * 2);
+    // Position comfortably below the ghost house (approx 60% down).
+    // This provides a consistent relative position across different grid sizes.
+    this.ctx.fillText('READY!', width / 2, height * 0.6);
   }
 
   private renderGameOver(grid: IGrid): void {

@@ -3,7 +3,7 @@ import { GameState } from './state.js';
 import { Renderer } from './renderer.js';
 import { Grid } from './grid.js';
 import { READY_DURATION, COLORS } from './config.js';
-import { TileType } from './types.js';
+import { TileType, EntityType } from './types.js';
 
 describe('Issue #63 Verification: Ready Title and State', () => {
   let grid: Grid;
@@ -114,12 +114,14 @@ describe('Issue #63 Verification: Ready Title and State', () => {
     state.updatePacman({ dx: 0, dy: 0 }, READY_DURATION + 100);
     expect(state.isReady()).toBe(false);
 
-    // Force collision by not moving (they are next to each other? No, need to overlap)
-    // Actually in template PG, P is at 1,1 and G is at 2,1.
-    // Move Pacman to Ghost
-    state.updatePacman({ dx: 1, dy: 0 }, 250); // Move right // Move right
-    // Trigger another update to detect collision
-    state.updatePacman({ dx: 1, dy: 0 }, 16);
+    // Set Pacman's position to overlap the ghost for immediate collision
+    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
+    const ghost = state.getEntities().find(e => e.type === EntityType.Ghost);
+    if (pacman && ghost) {
+      pacman.x = ghost.x;
+      pacman.y = ghost.y;
+    }
+    state.updatePacman({ dx: 0, dy: 0 }, 10); // Small deltaTime to trigger collision check
     
     // Should be dying now
     expect(state.isDying()).toBe(true);
@@ -144,8 +146,15 @@ describe('Issue #63 Verification: Ready Title and State', () => {
 
     // Fast forward to death and respawn
     state.updatePacman({ dx: 0, dy: 0 }, READY_DURATION + 100);
-    state.updatePacman({ dx: 1, dy: 0 }, 250); // Move right // Collide
-    state.updatePacman({ dx: 1, dy: 0 }, 16); // Detect collision
+    
+    // Force collision
+    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
+    const ghost = state.getEntities().find(e => e.type === EntityType.Ghost);
+    if (pacman && ghost) {
+      pacman.x = ghost.x;
+      pacman.y = ghost.y;
+    }
+    state.updatePacman({ dx: 0, dy: 0 }, 10); // Detect collision
     state.updatePacman({ dx: 0, dy: 0 }, 5000); // Finish dying
 
     expect(state.isReady()).toBe(true);
