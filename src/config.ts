@@ -26,7 +26,7 @@ export const ALIGNMENT_TOLERANCE = 0.05;
 /** Collision threshold: roughly overlapping (less than 1 tile usually). */
 export const COLLISION_THRESHOLD = 0.5;
 /**
- * Duration in milliseconds for the "READY!" state at start and after death.
+ * Duration in milliseconds for the "READY\!" state at start and after death.
  * 2000ms matches the typical delay in original arcade Pac-Man.
  */
 export const READY_DURATION = 2000;
