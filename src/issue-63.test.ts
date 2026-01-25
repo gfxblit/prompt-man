@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { GameState } from './state.js';
 import { Renderer } from './renderer.js';
 import { Grid } from './grid.js';
-import { READY_DURATION, COLORS } from './config.js';
+import { READY_DURATION, COLORS, PACMAN_SPEED } from './config.js';
 import { TileType, EntityType } from './types.js';
 
 describe('Issue #63 Verification: Ready Title and State', () => {
@@ -115,14 +115,11 @@ describe('Issue #63 Verification: Ready Title and State', () => {
     state.updatePacman({ dx: 0, dy: 0 }, READY_DURATION + 100);
     expect(state.isReady()).toBe(false);
 
-    // Set Pacman's position to overlap the ghost for immediate collision
-    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
-    const ghost = state.getEntities().find(e => e.type === EntityType.Ghost);
-    if (pacman && ghost) {
-      pacman.x = ghost.x;
-      pacman.y = ghost.y;
-    }
-    state.updatePacman({ dx: 0, dy: 0 }, 10); // Small deltaTime to trigger collision check
+    // Move Pacman towards the ghost to trigger collision
+    // P is at (1, 1), G is at (2, 1). Distance is 1.0.
+    // Moving 0.6 tiles right will bring distance to 0.4 (< 0.5 threshold)
+    state.updatePacman({ dx: 1, dy: 0 }, 0.6 / PACMAN_SPEED); 
+    state.updatePacman({ dx: 0, dy: 0 }, 1); // Trigger collision check at new position
     
     // Should be dying now
     expect(state.isDying()).toBe(true);
@@ -148,14 +145,11 @@ describe('Issue #63 Verification: Ready Title and State', () => {
     // Fast forward to death and respawn
     state.updatePacman({ dx: 0, dy: 0 }, READY_DURATION + 100);
     
-    // Force collision
-    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
-    const ghost = state.getEntities().find(e => e.type === EntityType.Ghost);
-    if (pacman && ghost) {
-      pacman.x = ghost.x;
-      pacman.y = ghost.y;
-    }
-    state.updatePacman({ dx: 0, dy: 0 }, 10); // Detect collision
+    // Move Pacman towards the ghost to trigger collision
+    // P is at (1, 1), G is at (2, 1). Distance is 1.0.
+    // Moving 0.6 tiles right will bring distance to 0.4 (< 0.5 threshold)
+    state.updatePacman({ dx: 1, dy: 0 }, 0.6 / PACMAN_SPEED); 
+    state.updatePacman({ dx: 0, dy: 0 }, 1); // Trigger collision check at new position
     state.updatePacman({ dx: 0, dy: 0 }, 5000); // Finish dying
 
     expect(state.isReady()).toBe(true);
@@ -171,22 +165,25 @@ describe('Issue #63 Verification: Ready Title and State', () => {
   });
 
   it('should not show "READY!" when game is over', () => {
-    const state = new GameState(grid);
+    const template = `
+#####
+#PG.#
+#####
+    `.trim();
+    const gameOverGrid = Grid.fromString(template);
+    const state = new GameState(gameOverGrid);
     
     // Force game over
-    // We need to die enough times
-    for (let i = 0; i < 4; i++) {
+    // We need to die enough times (starting lives is 2, so 3 deaths to lose)
+    for (let i = 0; i < 3; i++) {
       // Exit ready state
       state.updatePacman({ dx: 0, dy: 0 }, READY_DURATION + 100);
       
-      // Force collision
-      const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
-      const ghost = state.getEntities().find(e => e.type === EntityType.Ghost);
-      if (pacman && ghost) {
-        pacman.x = ghost.x;
-        pacman.y = ghost.y;
-      }
-      state.updatePacman({ dx: 0, dy: 0 }, 10); // Start dying
+      // Move Pacman towards the ghost to trigger collision
+      // P is at (1, 1), G is at (2, 1). Distance is 1.0.
+      // Moving 0.6 tiles right will bring distance to 0.4 (< 0.5 threshold)
+      state.updatePacman({ dx: 1, dy: 0 }, 0.6 / PACMAN_SPEED); 
+      state.updatePacman({ dx: 0, dy: 0 }, 1); // Trigger collision check
       state.updatePacman({ dx: 0, dy: 0 }, 10000); // Finish dying
     }
 
@@ -194,7 +191,7 @@ describe('Issue #63 Verification: Ready Title and State', () => {
     expect(state.isReady()).toBe(false);
 
     vi.clearAllMocks();
-    renderer.render(grid, state);
+    renderer.render(gameOverGrid, state);
 
     expect(mockContext.fillText).not.toHaveBeenCalledWith(
       'READY!',

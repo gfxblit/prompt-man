@@ -75,9 +75,8 @@ export class Renderer implements IRenderer {
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
 
-    // Position comfortably below the ghost house (approx 60% down).
-    // This provides a consistent relative position across different grid sizes.
-    this.ctx.fillText('READY!', width / 2, height * 0.6);
+    // Position comfortably below the ghost house.
+    this.ctx.fillText('READY!', width / 2, height / 2 + TILE_SIZE * 2);
   }
 
   private renderGameOver(grid: IGrid): void {
