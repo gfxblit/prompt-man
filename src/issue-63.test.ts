@@ -3,7 +3,7 @@ import { GameState } from './state.js';
 import { Renderer } from './renderer.js';
 import { Grid } from './grid.js';
 import { READY_DURATION, COLORS, PACMAN_SPEED } from './config.js';
-import { TileType, EntityType } from './types.js';
+import { TileType } from './types.js';
 
 describe('Issue #63 Verification: Ready Title and State', () => {
   let grid: Grid;
