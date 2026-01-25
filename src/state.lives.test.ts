@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { GameState } from './state.js';
 import { Grid } from './grid.js';
 import { EntityType } from './types.js';
+import type { IGrid } from './types.js';
 import { PACMAN_DEATH_ANIMATION_SPEED } from './config.js';
 
 // Mock configuration to disable the "Ready" state delay for these tests

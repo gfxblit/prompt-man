@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Renderer } from './renderer.js';
 import { Grid } from './grid.js';
-import { IGameState } from './types.js';
+import type { IGameState } from './types.js';
 import { COLORS } from './config.js';
 
 describe('Renderer - Ready State', () => {
