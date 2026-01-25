@@ -14,6 +14,7 @@ describe('Issue #63 Verification: Ready Title and State', () => {
   beforeEach(() => {
     grid = new Grid(10, 10);
     grid.setTile(0, 0, TileType.PacmanSpawn);
+    grid.setTile(1, 1, TileType.GhostSpawn);
     vi.stubGlobal('localStorage', {
       getItem: vi.fn(),
       setItem: vi.fn(),
@@ -164,6 +165,44 @@ describe('Issue #63 Verification: Ready Title and State', () => {
 
     expect(mockContext.fillText).toHaveBeenCalledWith(
       'READY!',
+      expect.any(Number),
+      expect.any(Number)
+    );
+  });
+
+  it('should not show "READY!" when game is over', () => {
+    const state = new GameState(grid);
+    
+    // Force game over
+    // We need to die enough times
+    for (let i = 0; i < 4; i++) {
+      // Exit ready state
+      state.updatePacman({ dx: 0, dy: 0 }, READY_DURATION + 100);
+      
+      // Force collision
+      const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
+      const ghost = state.getEntities().find(e => e.type === EntityType.Ghost);
+      if (pacman && ghost) {
+        pacman.x = ghost.x;
+        pacman.y = ghost.y;
+      }
+      state.updatePacman({ dx: 0, dy: 0 }, 10); // Start dying
+      state.updatePacman({ dx: 0, dy: 0 }, 10000); // Finish dying
+    }
+
+    expect(state.isGameOver()).toBe(true);
+    expect(state.isReady()).toBe(false);
+
+    vi.clearAllMocks();
+    renderer.render(grid, state);
+
+    expect(mockContext.fillText).not.toHaveBeenCalledWith(
+      'READY!',
+      expect.any(Number),
+      expect.any(Number)
+    );
+    expect(mockContext.fillText).toHaveBeenCalledWith(
+      'GAME OVER',
       expect.any(Number),
       expect.any(Number)
     );
