@@ -114,6 +114,8 @@ export interface IGameState {
   isGameOver(): boolean;
   /** Returns true if Pacman is currently in the death animation. */
   isDying(): boolean;
+  /** Returns true if the game is in the "Ready" state (frozen before start). */
+  isReady(): boolean;
 }
 
 /**

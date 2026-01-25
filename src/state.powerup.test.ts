@@ -1,8 +1,17 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { GameState } from './state.js';
 import { Grid } from './grid.js';
 import { EntityType } from './types.js';
-import { POWER_UP_DURATION, GHOST_EATEN_SCORE, GHOST_SPEED, SCARED_GHOST_SPEED_MULTIPLIER, PACMAN_DEATH_ANIMATION_SPEED, PACMAN_DEATH_ANIMATION_FRAMES } from './config.js';
+import { POWER_UP_DURATION, GHOST_SPEED, GHOST_EATEN_SCORE, PACMAN_DEATH_ANIMATION_SPEED, PACMAN_DEATH_ANIMATION_FRAMES, SCARED_GHOST_SPEED_MULTIPLIER } from './config.js';
+
+// Mock configuration to disable the "Ready" state delay for these tests
+vi.mock('./config.js', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('./config.js')>();
+  return {
+    ...mod,
+    READY_DURATION: 0,
+  };
+});
 
 describe('GameState Power Up Mechanics', () => {
   let gameState: GameState;

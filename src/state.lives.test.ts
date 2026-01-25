@@ -2,8 +2,17 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { GameState } from './state.js';
 import { Grid } from './grid.js';
+import { EntityType } from './types.js';
 import { PACMAN_DEATH_ANIMATION_SPEED } from './config.js';
-import { EntityType, type IGrid } from './types.js';
+
+// Mock configuration to disable the "Ready" state delay for these tests
+vi.mock('./config.js', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('./config.js')>();
+  return {
+    ...mod,
+    READY_DURATION: 0,
+  };
+});
 
 describe('GameState Lives', () => {
   let grid: IGrid;

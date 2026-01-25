@@ -25,6 +25,8 @@ export const GHOST_EATEN_SCORE = 200;
 export const ALIGNMENT_TOLERANCE = 0.05;
 /** Collision threshold: roughly overlapping (less than 1 tile usually). */
 export const COLLISION_THRESHOLD = 0.5;
+/** Duration in milliseconds for the "READY!" state at start and after death. */
+export const READY_DURATION = 2000;
 
 /**
  * Assets configuration
@@ -122,13 +124,13 @@ export const LEVEL_TEMPLATE = `
       .   #      #   .      
 ######.## #      # ##.######
      #.## ######## ##.#     
-     #.##    P     ##.#     
+     #.##          ##.#     
      #.## ######## ##.#     
 ######.## ######## ##.######
 #............##............#
 #.####.#####.##.#####.####.#
 #.####.#####.##.#####.####.#
-#o..##................##..o#
+#o..##.......P........##..o#
 ###.##.##.########.##.##.###
 ###.##.##.########.##.##.###
 #......##....##....##......#
