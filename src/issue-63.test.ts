@@ -52,7 +52,7 @@ describe('Issue #63 Verification: Ready Title and State', () => {
     expect(state.isReady()).toBe(true);
   });
 
-  it('should render "READY\!" text in yellow when in ready state', () => {
+  it('should render "READY!" text in yellow when in ready state', () => {
     const state = new GameState(grid);
     // Ensure we are in ready state
     expect(state.isReady()).toBe(true);
@@ -61,7 +61,7 @@ describe('Issue #63 Verification: Ready Title and State', () => {
 
     // Verify text
     expect(mockContext.fillText).toHaveBeenCalledWith(
-      'READY\!',
+      'READY!',
       expect.any(Number), // x
       expect.any(Number)  // y
     );
@@ -82,7 +82,7 @@ describe('Issue #63 Verification: Ready Title and State', () => {
     expect(state.isReady()).toBe(false);
   });
 
-  it('should stop showing "READY\!" text after ready state ends', () => {
+  it('should stop showing "READY!" text after ready state ends', () => {
     const state = new GameState(grid);
     
     // Advance past duration
@@ -95,7 +95,7 @@ describe('Issue #63 Verification: Ready Title and State', () => {
     renderer.render(grid, state);
 
     expect(mockContext.fillText).not.toHaveBeenCalledWith(
-      'READY\!',
+      'READY!',
       expect.any(Number),
       expect.any(Number)
     );
@@ -136,7 +136,7 @@ describe('Issue #63 Verification: Ready Title and State', () => {
     expect(state.getLives()).toBeGreaterThan(0);
   });
 
-  it('should display "READY\!" again after respawn', () => {
+  it('should display "READY!" again after respawn', () => {
     const template = `
 #####
 #PG.#
@@ -164,13 +164,13 @@ describe('Issue #63 Verification: Ready Title and State', () => {
     renderer.render(deathGrid, state);
 
     expect(mockContext.fillText).toHaveBeenCalledWith(
-      'READY\!',
+      'READY!',
       expect.any(Number),
       expect.any(Number)
     );
   });
 
-  it('should not show "READY\!" when game is over', () => {
+  it('should not show "READY!" when game is over', () => {
     const state = new GameState(grid);
     
     // Force game over
@@ -197,7 +197,7 @@ describe('Issue #63 Verification: Ready Title and State', () => {
     renderer.render(grid, state);
 
     expect(mockContext.fillText).not.toHaveBeenCalledWith(
-      'READY\!',
+      'READY!',
       expect.any(Number),
       expect.any(Number)
     );

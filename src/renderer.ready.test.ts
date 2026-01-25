@@ -50,29 +50,29 @@ describe('Renderer - Ready State', () => {
     renderer = new Renderer(mockContext);
   });
 
-  it('should render READY\! text when state is ready', () => {
+  it('should render READY! text when state is ready', () => {
     vi.mocked(mockState.isReady).mockReturnValue(true);
     const grid = new Grid(10, 10);
     
     renderer.render(grid, mockState);
     
     expect(mockContext.fillStyle).toBe(COLORS.PACMAN);
-    // Expect "READY\!" to be drawn
+    // Expect "READY!" to be drawn
     expect(mockContext.fillText).toHaveBeenCalledWith(
-      'READY\!', 
+      'READY!', 
       expect.any(Number), 
       expect.any(Number)
     );
   });
 
-  it('should NOT render READY\! text when state is NOT ready', () => {
+  it('should NOT render READY! text when state is NOT ready', () => {
     vi.mocked(mockState.isReady).mockReturnValue(false);
     const grid = new Grid(10, 10);
     
     renderer.render(grid, mockState);
     
     expect(mockContext.fillText).not.toHaveBeenCalledWith(
-      'READY\!', 
+      'READY!', 
       expect.any(Number), 
       expect.any(Number)
     );

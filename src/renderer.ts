@@ -77,7 +77,7 @@ export class Renderer implements IRenderer {
 
     // Position comfortably below the ghost house (approx 60% down).
     // This provides a consistent relative position across different grid sizes.
-    this.ctx.fillText('READY\!', width / 2, height * 0.6);
+    this.ctx.fillText('READY!', width / 2, height * 0.6);
   }
 
   private renderGameOver(grid: IGrid): void {
