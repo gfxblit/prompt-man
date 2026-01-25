@@ -36,6 +36,10 @@ describe('Issue 60 Reproduction: Ghost-Ghost Collision', () => {
     const ghost1 = ghosts[0];
     const ghost2 = ghosts[1];
 
+    if (!ghost1 || !ghost2) {
+      throw new Error('Ghosts not found');
+    }
+
     // Set ghost1 to scared
     ghost1.isScared = true;
     ghost2.isScared = false;
