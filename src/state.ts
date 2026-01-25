@@ -275,6 +275,10 @@ export class GameState implements IGameState {
   }
 
   private checkCollisions(pacman: Entity): void {
+    if (pacman.type !== EntityType.Pacman) {
+      return;
+    }
+
     // Dead ghosts do not collide with Pacman as they return to spawn
     const ghosts = this.entities.filter(e => e.type === EntityType.Ghost && !e.isDead && !e.isRespawning);
     for (const ghost of ghosts) {
