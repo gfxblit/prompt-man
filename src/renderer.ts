@@ -400,6 +400,8 @@ export class Renderer implements IRenderer {
       }
 
       case EntityType.Ghost:
+        if (state.isDying()) return;
+
         if (this.spritesheet) {
           let dirKey: keyof typeof GHOST_ANIMATION_MAP = 'EAST';
           if (entity.direction) {
