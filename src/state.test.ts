@@ -4,6 +4,14 @@ import { Grid } from './grid.js';
 import { EntityType } from './types.js';
 import { PACMAN_SPEED, POWER_UP_DURATION, GHOST_EATEN_SCORE, POWER_PELLET_SCORE, ALIGNMENT_TOLERANCE, RESPAWN_INVULNERABILITY_DURATION } from './config.js';
 
+// Mock configuration to disable the "Ready" state delay for these tests. This allows tests to focus on core logic without waiting for the initial pause.
+vi.mock('./config.js', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('./config.js')>();
+  return {
+    ...mod,
+    READY_DURATION: 0,
+  };
+});
 
 describe('GameState', () => {
   let grid: Grid;

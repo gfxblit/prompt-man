@@ -69,6 +69,7 @@ describe('Renderer', () => {
       updateGhosts: vi.fn(),
       isGameOver: vi.fn().mockReturnValue(false),
       isDying: vi.fn().mockReturnValue(false),
+      isReady: vi.fn().mockReturnValue(false),
     };
   });
 

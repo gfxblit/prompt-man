@@ -2,9 +2,16 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { GameState } from './state.js';
 import { Grid } from './grid.js';
 import { EntityType } from './types.js';
-import { PACMAN_ANIMATION_SPEED } from './config.js';
+import { PACMAN_ANIMATION_SPEED, GHOST_ANIMATION_SPEED } from './config.js';
 
-const GHOST_ANIMATION_SPEED = 100;
+// Mock configuration to disable the "Ready" state delay for these tests. This allows tests to focus on core logic without waiting for the initial pause.
+vi.mock('./config.js', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('./config.js')>();
+  return {
+    ...mod,
+    READY_DURATION: 0,
+  };
+});
 
 describe('GameState Animation', () => {
   let grid: Grid;

@@ -17,7 +17,8 @@ import {
   PACMAN_ANIMATION_SPEED,
   PACMAN_DEATH_ANIMATION_SPEED,
   PACMAN_DEATH_ANIMATION_FRAMES,
-  GHOST_ANIMATION_SPEED
+  GHOST_ANIMATION_SPEED,
+  READY_DURATION
 } from './config.js';
 import { PACMAN_ANIMATION_SEQUENCE, GHOST_ANIMATION_SEQUENCE } from './sprites.js';
 import { GhostAI } from './ghost-ai.js';
@@ -32,6 +33,8 @@ export class GameState implements IGameState {
   private remainingPellets: number = 0;
   private eatenPellets: Set<string> = new Set();
   private powerUpTimer: number = 0; // New: Timer for power-up duration
+  private ready: boolean = true;
+  private readyTimer: number = READY_DURATION;
   private readonly HIGH_SCORE_KEY = 'prompt-man-high-score';
   private nextDirection: Direction | null = null;
   private readonly width: number;
@@ -64,6 +67,10 @@ export class GameState implements IGameState {
       this.entities.push(pacman);
       this.initialPositions.set(pacman, { x: spawn.x, y: spawn.y });
     }
+
+    // Initialize ready state
+    this.ready = READY_DURATION > 0;
+    this.readyTimer = READY_DURATION;
 
     // Find Ghost spawns
     const ghostSpawns = this.grid.findTiles(TileType.GhostSpawn);
@@ -120,6 +127,10 @@ export class GameState implements IGameState {
     return this.dying;
   }
 
+  isReady(): boolean {
+    return this.ready;
+  }
+
   isPelletEaten(x: number, y: number): boolean {
     return this.eatenPellets.has(`${x},${y}`);
   }
@@ -166,6 +177,16 @@ export class GameState implements IGameState {
   updatePacman(direction: Direction, deltaTime: number = 0): void {
     const pacman = this.entities.find(e => e.type === EntityType.Pacman);
     if (!pacman || this.gameOver) return;
+
+    if (this.ready) {
+      this.readyTimer -= deltaTime;
+      if (this.readyTimer <= 0) {
+        this.ready = false;
+        this.readyTimer = 0;
+      } else {
+        return; // Block movement while ready
+      }
+    }
 
     if (this.dying) {
       const currentDeathTimer = (pacman.deathTimer || 0) + deltaTime;
@@ -332,6 +353,8 @@ export class GameState implements IGameState {
       this.gameOver = true;
     } else {
       this.resetPositions();
+      this.ready = true;
+      this.readyTimer = READY_DURATION;
     }
   }
 
@@ -368,7 +391,7 @@ export class GameState implements IGameState {
   }
 
   updateGhosts(deltaTime: number): void {
-    if (this.gameOver || this.dying) return;
+    if (this.gameOver || this.dying || this.ready) return;
 
     if (this.powerUpTimer > 0) {
       this.powerUpTimer -= deltaTime;

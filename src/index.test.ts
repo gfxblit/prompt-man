@@ -26,6 +26,10 @@ describe('index', () => {
       stroke: vi.fn(),
       strokeStyle: '',
       lineWidth: 0,
+      fillText: vi.fn(),
+      font: '',
+      textAlign: '',
+      textBaseline: '',
     } as unknown as CanvasRenderingContext2D;
 
     // Mock canvas

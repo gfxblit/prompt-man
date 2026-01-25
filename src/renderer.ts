@@ -61,7 +61,22 @@ export class Renderer implements IRenderer {
 
     if (state.isGameOver()) {
       this.renderGameOver(grid);
+    } else if (state.isReady()) {
+      this.renderReady(grid);
     }
+  }
+
+  private renderReady(grid: IGrid): void {
+    const width = grid.getWidth() * TILE_SIZE;
+    const height = grid.getHeight() * TILE_SIZE;
+
+    this.ctx.fillStyle = COLORS.PACMAN; // Yellow
+    this.ctx.font = 'bold 24px monospace';
+    this.ctx.textAlign = 'center';
+    this.ctx.textBaseline = 'middle';
+
+    // Position comfortably below the ghost house.
+    this.ctx.fillText('READY!', width / 2, height / 2 + TILE_SIZE * 2);
   }
 
   private renderGameOver(grid: IGrid): void {
