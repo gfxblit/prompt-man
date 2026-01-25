@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { init } from './index.js';
-import { setupMockImage } from './test-utils.js';
+import { setupMockImage, setupMockAudio } from './test-utils.js';
 
 describe('Issue #42: iPhone portrait mode cropping', () => {
   let container: HTMLElement;
@@ -76,6 +76,7 @@ describe('Issue #42: iPhone portrait mode cropping', () => {
 
   it('should apply "game-canvas" class to canvas for responsive sizing', async () => {
     setupMockImage();
+    setupMockAudio();
     await init(container);
 
     // This checks if 'game-canvas' was ever passed to classList.add
@@ -92,6 +93,7 @@ describe('Issue #42: iPhone portrait mode cropping', () => {
 
   it('should apply responsive classes to the container for mobile centering', async () => {
     setupMockImage();
+    setupMockAudio();
     await init(container);
 
     const addSpy = container.classList.add as unknown as { mock: { calls: string[][] } };

@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { vi, type Mock } from 'vitest';
 
 export class MockImage {
   _src: string = '';
@@ -28,10 +28,81 @@ export class MockImage {
   }
 }
 
+export class MockAudio {
+  _src: string = '';
+  oncanplaythrough: (() => void) | null = null;
+  onerror: (() => void) | null = null;
+  static instances: MockAudio[] = [];
+  static shouldFail: boolean = false;
+
+  constructor() {
+    MockAudio.instances.push(this);
+  }
+
+  set src(value: string) {
+    this._src = value;
+    // Use a small delay to simulate async loading
+    setTimeout(() => {
+      if (MockAudio.shouldFail) {
+        if (this.onerror) this.onerror();
+      } else {
+        if (this.oncanplaythrough) this.oncanplaythrough();
+      }
+    }, 0);
+  }
+
+  get src() {
+    return this._src;
+  }
+
+  play: Mock<() => Promise<void>> = vi.fn().mockResolvedValue(undefined);
+  cloneNode: Mock<(deep?: boolean) => Node> = vi.fn().mockImplementation(() => {
+    const clone = new MockAudio();
+    clone.src = this.src;
+    return clone as unknown as Node;
+  });
+}
+
 export function setupMockImage() {
   MockImage.instances = [];
   vi.stubGlobal('Image', MockImage);
   return MockImage.instances;
+}
+
+export function setupMockAudio() {
+  MockAudio.instances = [];
+  vi.stubGlobal('Audio', MockAudio);
+  return MockAudio.instances;
+}
+
+export function mockAudioContext() {
+  const mockBuffer = {
+    duration: 1,
+    length: 44100,
+    numberOfChannels: 2,
+    sampleRate: 44100,
+    getChannelData: vi.fn(),
+    copyFromChannel: vi.fn(),
+    copyToChannel: vi.fn(),
+  } as unknown as AudioBuffer;
+
+  const mockSource = {
+    buffer: null,
+    connect: vi.fn(),
+    start: vi.fn(),
+    stop: vi.fn(),
+    onended: null,
+  } as unknown as AudioBufferSourceNode;
+
+  const context = {
+    state: 'suspended',
+    resume: vi.fn().mockResolvedValue(undefined),
+    decodeAudioData: vi.fn().mockResolvedValue(mockBuffer),
+    createBufferSource: vi.fn().mockReturnValue(mockSource),
+    destination: {} as AudioDestinationNode,
+  } as unknown as AudioContext;
+
+  return { context, mockBuffer, mockSource };
 }
 
 export function mock2dContext(): CanvasRenderingContext2D {

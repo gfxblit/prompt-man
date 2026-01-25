@@ -22,6 +22,7 @@ import {
 } from './config.js';
 import { PACMAN_ANIMATION_SEQUENCE, GHOST_ANIMATION_SEQUENCE } from './sprites.js';
 import { GhostAI } from './ghost-ai.js';
+import { AudioManager } from './audio-manager.js';
 
 export class GameState implements IGameState {
   private entities: Entity[] = [];
@@ -40,8 +41,10 @@ export class GameState implements IGameState {
   private readonly width: number;
   private readonly height: number;
   private initialPositions: Map<Entity, { x: number, y: number }> = new Map();
+  /** Callback fired when a pellet is consumed. */
+  public onPelletConsumed?: (tileType: TileType) => void;
 
-  constructor(private grid: IGrid) {
+  constructor(private grid: IGrid, private audioManager?: AudioManager) {
     this.width = grid.getWidth();
     this.height = grid.getHeight();
     this.initialize();
@@ -145,6 +148,17 @@ export class GameState implements IGameState {
       this.eatenPellets.add(`${x},${y}`);
       this.remainingPellets--;
       this.score += tile === TileType.Pellet ? PELLET_SCORE : POWER_PELLET_SCORE;
+
+      // Play sound effect
+      if (tile === TileType.Pellet) {
+        this.audioManager?.playPelletSound();
+      } else {
+        this.audioManager?.playPowerPelletSound();
+      }
+
+      if (this.onPelletConsumed) {
+        this.onPelletConsumed(tile);
+      }
 
       if (tile === TileType.PowerPellet) {
         this.powerUpTimer = POWER_UP_DURATION;

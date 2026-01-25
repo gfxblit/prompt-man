@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from 'vitest';
 import { init } from './index.js';
-import { setupMockImage, mock2dContext, MockImage } from './test-utils.js';
+import { setupMockImage, mock2dContext, MockImage, setupMockAudio } from './test-utils.js';
 
 describe('index robustness', () => {
   let container: HTMLElement;
@@ -126,6 +126,7 @@ describe('index robustness', () => {
     canvas.getContext = vi.fn(() => null);
 
     setupMockImage();
+    setupMockAudio();
     await init(container);
 
     expect(canvas.getContext).toHaveBeenCalledWith('2d');
@@ -134,6 +135,7 @@ describe('index robustness', () => {
 
   it('should render game and UI elements when a valid 2D context is available and update high score display', async () => {
     setupMockImage();
+    setupMockAudio();
     
     // Set up localStorage mock BEFORE init is called
     vi.spyOn(localStorage, 'getItem').mockReturnValue('100');
