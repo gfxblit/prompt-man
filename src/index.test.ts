@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { init } from './index.js';
-import { setupMockImage, MockImage } from './test-utils.js';
+import { setupMockImage, MockImage, setupMockAudio } from './test-utils.js';
 
 describe('index', () => {
   let container: HTMLElement;
@@ -107,6 +107,7 @@ describe('index', () => {
   it('should initialize the game and render to canvas', async () => {
     // Mock Image for AssetLoader
     setupMockImage();
+    setupMockAudio();
 
     await init(container);
 
@@ -162,6 +163,7 @@ describe('index', () => {
   it('should initialize with fallback when asset loading fails', async () => {
     // Mock Image for AssetLoader to fail
     setupMockImage();
+    setupMockAudio();
     MockImage.shouldFail = true;
 
     // Suppress console.error for this test

@@ -116,6 +116,8 @@ export interface IGameState {
   isDying(): boolean;
   /** Returns true if the game is in the "Ready" state (frozen before start). */
   isReady(): boolean;
+  /** Callback fired when a pellet is consumed. */
+  onPelletConsumed?: (tileType: TileType) => void;
 }
 
 /**

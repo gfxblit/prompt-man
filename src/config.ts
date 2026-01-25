@@ -6,7 +6,7 @@ export const PELLET_SCORE = 10;
 /** Points awarded for collecting a power pellet. */
 export const POWER_PELLET_SCORE = 50;
 /** Pacman speed in tiles per millisecond. */
-export const PACMAN_SPEED = 5 / 1000;
+export const PACMAN_SPEED = 6 / 1000;
 /** Ghost speed in tiles per millisecond. */
 export const GHOST_SPEED = 4 / 1000;
 /** Duration in milliseconds for how long power-up lasts. */
@@ -35,6 +35,16 @@ export const READY_DURATION = 2000;
  * Assets configuration
  */
 export const PALETTE_URL = 'art/palettes.png';
+/**
+ * Audio configuration
+ */
+export const AUDIO = {
+  PELLET_SOUNDS: [
+    'sfx/eat_dot_0.wav',
+    'sfx/eat_dot_1.wav'
+  ],
+  POWER_PELLET_SOUND: 'sfx/eat_fruit.wav', // Placeholder for future
+} as const;
 /** Global X offset (pixels) for the start of the tilemap in the palette sheet. */
 export const PALETTE_ORIGIN_X = 600;
 /** Global Y offset (pixels) for the start of the tilemap in the palette sheet. */
