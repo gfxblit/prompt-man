@@ -1,5 +1,5 @@
 import { TileType, EntityType } from './types.js';
-import type { Entity, IGrid, IGameState, Direction } from './types.js';
+import type { Entity, IGrid, IGameState, Direction, PointEffect } from './types.js';
 import {
   PELLET_SCORE,
   POWER_PELLET_SCORE,
@@ -9,6 +9,7 @@ import {
   SCARED_GHOST_SPEED_MULTIPLIER,
   DEAD_GHOST_SPEED_MULTIPLIER,
   GHOST_EATEN_SCORE,
+  GHOST_EATEN_PAUSE_DURATION,
   ALIGNMENT_TOLERANCE,
   COLLISION_THRESHOLD,
   GHOST_RESPAWN_THRESHOLD,
@@ -43,6 +44,9 @@ export class GameState implements IGameState {
   private readyTimer: number = READY_DURATION;
   private readonly HIGH_SCORE_KEY = 'prompt-man-high-score';
   private nextDirection: Direction | null = null;
+  private pointEffects: PointEffect[] = [];
+  private pauseTimer: number = 0;
+  private ghostsEatenCount: number = 0;
   private readonly width: number;
   private readonly height: number;
   private initialPositions: Map<Entity, { x: number, y: number }> = new Map();
@@ -53,6 +57,13 @@ export class GameState implements IGameState {
     this.width = grid.getWidth();
     this.height = grid.getHeight();
     this.initialize();
+  }
+
+  private updateHighScore(): void {
+    if (this.score > this.highScore) {
+      this.highScore = this.score;
+      localStorage.setItem(this.HIGH_SCORE_KEY, this.highScore.toString());
+    }
   }
 
   private initialize(): void {
@@ -123,6 +134,10 @@ export class GameState implements IGameState {
     return this.remainingPellets;
   }
 
+  getPointEffects(): PointEffect[] {
+    return this.pointEffects;
+  }
+
   getSpawnPosition(entity: Entity): { x: number, y: number } | undefined {
     return this.initialPositions.get(entity);
   }
@@ -191,10 +206,7 @@ export class GameState implements IGameState {
         });
       }
 
-      if (this.score > this.highScore) {
-        this.highScore = this.score;
-        localStorage.setItem(this.HIGH_SCORE_KEY, this.highScore.toString());
-      }
+      this.updateHighScore();
 
       if (this.remainingPellets === 0) {
         this.win = true;
@@ -217,6 +229,15 @@ export class GameState implements IGameState {
   updatePacman(direction: Direction, deltaTime: number = 0): void {
     const pacman = this.entities.find(e => e.type === EntityType.Pacman);
     if (!pacman || this.gameOver || this.win) return;
+
+    if (this.pauseTimer > 0) {
+      this.pauseTimer -= deltaTime;
+      if (this.pauseTimer <= 0) {
+        this.pauseTimer = 0;
+        this.pointEffects = [];
+      }
+      return;
+    }
 
     if (this.ready) {
       this.readyTimer -= deltaTime;
@@ -351,15 +372,22 @@ export class GameState implements IGameState {
       if (dist < COLLISION_THRESHOLD) {
         if (ghost.isScared) {
           // Ghost is eaten
-          this.score += GHOST_EATEN_SCORE;
+          const points = GHOST_EATEN_SCORE * Math.pow(2, this.ghostsEatenCount);
+          this.score += points;
+          this.pointEffects.push({ x: ghost.x, y: ghost.y, points });
+          this.pauseTimer = GHOST_EATEN_PAUSE_DURATION;
+          this.ghostsEatenCount++;
+
           ghost.isDead = true;
           ghost.isScared = false; // Un-scare the ghost
           this.chooseGhostDirection(ghost);
+
           // No life lost for Pacman
         } else {
           // Pacman hit a normal ghost, lose a life
           this.handleCollision();
         }
+        this.updateHighScore();
         break;
       }
     }
@@ -452,12 +480,13 @@ export class GameState implements IGameState {
       return;
     }
 
-    if (this.gameOver || this.dying || this.ready) return;
+    if (this.gameOver || this.dying || this.ready || this.pauseTimer > 0) return;
 
     if (this.powerUpTimer > 0) {
       this.powerUpTimer -= deltaTime;
       if (this.powerUpTimer <= 0) {
         this.powerUpTimer = 0;
+        this.ghostsEatenCount = 0;
         this.entities.filter(e => e.type === EntityType.Ghost).forEach(ghost => {
           ghost.isScared = false;
         });

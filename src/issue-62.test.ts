@@ -28,11 +28,13 @@ describe('Issue #62: Ghost Flashing when Power Pellet runs low', () => {
 
     const layout = `
 #######
-#P G o#
+#P.G o#
 #######
 `.trim();
     grid = Grid.fromString(layout);
     gameState = new GameState(grid);
+    // Ensure we are NOT in ready state for these tests
+    gameState.updatePacman({ dx: 0, dy: 0 }, 3000);
   });
 
   it('provides the current power-up timer', () => {

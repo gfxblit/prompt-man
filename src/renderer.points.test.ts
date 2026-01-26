@@ -3,8 +3,9 @@ import { Renderer } from './renderer.js';
 import { Grid } from './grid.js';
 import { EntityType } from './types.js';
 import type { IGameState } from './types.js';
+import { TILE_SIZE } from './config.js';
 
-describe('Issue 59: Ghost Rendering on Death', () => {
+describe('Renderer Point Effects', () => {
   let mockContext: {
     fillRect: ReturnType<typeof vi.fn>;
     beginPath: ReturnType<typeof vi.fn>;
@@ -68,47 +69,34 @@ describe('Issue 59: Ghost Rendering on Death', () => {
     };
   });
 
-  it('should NOT render ghosts when state.isDying() is true', () => {
-    const grid = new Grid(1, 1);
-    const entities = [{ type: EntityType.Ghost, x: 0, y: 0, color: 'red' }];
-    vi.mocked(mockState.getEntities).mockReturnValue(entities);
-    vi.mocked(mockState.isDying).mockReturnValue(true);
-
+  it('should render point effects', () => {
+    vi.mocked(mockState.getPointEffects).mockReturnValue([
+      { x: 5, y: 5, points: 200 }
+    ]);
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
+    const grid = new Grid(10, 10);
+
     renderer.render(grid, mockState);
 
-    // Ghost rendering calls (simple circle rendering without spritesheet)
-    expect(mockContext.arc).not.toHaveBeenCalled();
-    expect(mockContext.fill).not.toHaveBeenCalled();
-    expect(mockContext.drawImage).not.toHaveBeenCalled();
+    expect(mockContext.fillText).toHaveBeenCalledWith('200', 5 * TILE_SIZE + TILE_SIZE / 2, 5 * TILE_SIZE + TILE_SIZE / 2);
   });
 
-  it('should render ghosts when state.isDying() is false', () => {
-    const grid = new Grid(1, 1);
-    const entities = [{ type: EntityType.Ghost, x: 0, y: 0, color: 'red' }];
-    vi.mocked(mockState.getEntities).mockReturnValue(entities);
-    vi.mocked(mockState.isDying).mockReturnValue(false);
-
+  it('should skip rendering a ghost if a point effect is at its position', () => {
+    const ghost = { type: EntityType.Ghost, x: 5, y: 5, color: 'red' };
+    vi.mocked(mockState.getEntities).mockReturnValue([ghost]);
+    vi.mocked(mockState.getPointEffects).mockReturnValue([
+      { x: 5, y: 5, points: 200 }
+    ]);
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
+    const grid = new Grid(10, 10);
+
+    const fillStyleSetter = vi.spyOn(mockContext, 'fillStyle', 'set');
     renderer.render(grid, mockState);
 
-    // Should render ghost (fallback rendering)
-    expect(mockContext.fillStyle).toBe('red');
-    expect(mockContext.beginPath).toHaveBeenCalled();
-    expect(mockContext.arc).toHaveBeenCalled();
-    expect(mockContext.fill).toHaveBeenCalled();
-  });
-
-  it('should NOT render ghosts using spritesheet when state.isDying() is true', () => {
-    const mockSpritesheet = {} as HTMLImageElement;
-    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D, mockSpritesheet);
-    const grid = new Grid(1, 1);
-    const entities = [{ type: EntityType.Ghost, x: 0, y: 0, color: 'red', animationFrame: 0 }];
-    vi.mocked(mockState.getEntities).mockReturnValue(entities);
-    vi.mocked(mockState.isDying).mockReturnValue(true);
-
-    renderer.render(grid, mockState);
-
-    expect(mockContext.drawImage).not.toHaveBeenCalled();
+    // Should NOT call fillStyle with 'red' for the ghost
+    expect(fillStyleSetter).not.toHaveBeenCalledWith('red');
+    
+    // Should still draw the point effect
+    expect(mockContext.fillText).toHaveBeenCalledWith('200', 5 * TILE_SIZE + TILE_SIZE / 2, 5 * TILE_SIZE + TILE_SIZE / 2);
   });
 });
