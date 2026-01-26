@@ -32,9 +32,13 @@ describe('AudioManager', () => {
     await audioManager.initialize();
 
     expect(window.AudioContext).toHaveBeenCalled();
-    // Should load pellet sounds + power pellet + intro + fright
-    expect(assetLoader.loadAudio).toHaveBeenCalledTimes(AUDIO.PELLET_SOUNDS.length + 3);
+    // Should load pellet sounds + siren sounds + power pellet sound + intro sound + fright sound
+    const expectedCalls = AUDIO.PELLET_SOUNDS.length + AUDIO.SIRENS.length + 3;
+    expect(assetLoader.loadAudio).toHaveBeenCalledTimes(expectedCalls);
     AUDIO.PELLET_SOUNDS.forEach(url => {
+      expect(assetLoader.loadAudio).toHaveBeenCalledWith(url, mockCtx.context);
+    });
+    AUDIO.SIRENS.forEach(url => {
       expect(assetLoader.loadAudio).toHaveBeenCalledWith(url, mockCtx.context);
     });
     expect(assetLoader.loadAudio).toHaveBeenCalledWith(AUDIO.POWER_PELLET_SOUND, mockCtx.context);
@@ -74,16 +78,30 @@ describe('AudioManager', () => {
   it('should play alternating pellet sounds', async () => {
     const buffer0 = { duration: 1 } as AudioBuffer;
     const buffer1 = { duration: 2 } as AudioBuffer;
+    const sirenBuffer = { duration: 0.5 } as AudioBuffer;
     const powerBuffer = { duration: 3 } as AudioBuffer;
     const introBuffer = { duration: 3.5 } as AudioBuffer;
     const frightBuffer = { duration: 4 } as AudioBuffer;
 
-    vi.spyOn(assetLoader, 'loadAudio')
-      .mockResolvedValueOnce(buffer0)
-      .mockResolvedValueOnce(buffer1)
-      .mockResolvedValueOnce(powerBuffer)
-      .mockResolvedValueOnce(introBuffer)
-      .mockResolvedValueOnce(frightBuffer);
+    const mockLoad = vi.spyOn(assetLoader, 'loadAudio');
+
+    // PELLET_SOUNDS (2)
+    mockLoad.mockResolvedValueOnce(buffer0);
+    mockLoad.mockResolvedValueOnce(buffer1);
+
+    // SIRENS (4)
+    for (let i = 0; i < 4; i++) {
+      mockLoad.mockResolvedValueOnce(sirenBuffer);
+    }
+
+    // POWER_PELLET (1)
+    mockLoad.mockResolvedValueOnce(powerBuffer);
+
+    // INTRO (1)
+    mockLoad.mockResolvedValueOnce(introBuffer);
+
+    // FRIGHT (1)
+    mockLoad.mockResolvedValueOnce(frightBuffer);
 
     await audioManager.initialize();
 
@@ -106,15 +124,30 @@ describe('AudioManager', () => {
   it('should play power pellet sound and not affect pellet alternation', async () => {
     const buffer0 = { duration: 1 } as AudioBuffer;
     const buffer1 = { duration: 2 } as AudioBuffer;
+    const sirenBuffer = { duration: 0.5 } as AudioBuffer;
     const powerBuffer = { duration: 3 } as AudioBuffer;
     const introBuffer = { duration: 3.5 } as AudioBuffer;
     const frightBuffer = { duration: 4 } as AudioBuffer;
-    vi.spyOn(assetLoader, 'loadAudio')
-      .mockResolvedValueOnce(buffer0)
-      .mockResolvedValueOnce(buffer1)
-      .mockResolvedValueOnce(powerBuffer)
-      .mockResolvedValueOnce(introBuffer)
-      .mockResolvedValueOnce(frightBuffer);
+
+    const mockLoad = vi.spyOn(assetLoader, 'loadAudio');
+
+    // PELLET_SOUNDS (2)
+    mockLoad.mockResolvedValueOnce(buffer0);
+    mockLoad.mockResolvedValueOnce(buffer1);
+
+    // SIRENS (4)
+    for (let i = 0; i < 4; i++) {
+      mockLoad.mockResolvedValueOnce(sirenBuffer);
+    }
+
+    // POWER_PELLET (1)
+    mockLoad.mockResolvedValueOnce(powerBuffer);
+
+    // INTRO (1)
+    mockLoad.mockResolvedValueOnce(introBuffer);
+
+    // FRIGHT (1)
+    mockLoad.mockResolvedValueOnce(frightBuffer);
 
     await audioManager.initialize();
 

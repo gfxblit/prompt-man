@@ -6,6 +6,9 @@ export class AudioManager {
   private pelletBuffers: AudioBuffer[] = [];
   private powerPelletBuffer: AudioBuffer | null = null;
   private introBuffer: AudioBuffer | null = null;
+  private sirenBuffers: AudioBuffer[] = [];
+  private sirenSource: AudioBufferSourceNode | null = null;
+  private currentSirenIndex: number = -1;
   private pelletSoundIndex: number = 0;
   private frightBuffer: AudioBuffer | null = null;
   private frightSource: AudioBufferSourceNode | null = null;
@@ -30,6 +33,12 @@ export class AudioManager {
       );
 
       this.pelletBuffers = await Promise.all(loadPromises);
+
+      // Load siren sounds
+      const sirenLoadPromises = AUDIO.SIRENS.map(url =>
+        this.assetLoader.loadAudio(url, this.audioContext!)
+      );
+      this.sirenBuffers = await Promise.all(sirenLoadPromises);
 
       // Load power pellet sound
       try {
@@ -64,6 +73,10 @@ export class AudioManager {
     if (this.audioContext && this.audioContext.state === 'suspended') {
       await this.audioContext.resume();
     }
+    // If we have an active siren but it's not playing (state suspended), 
+    // resuming context will resume it.
+    // If we have a current siren index aimed to be playing but no source (e.g. stopped/never started), 
+    // we might need to restart it here, but typically playSiren handles that.
   }
 
   /**
@@ -125,6 +138,54 @@ export class AudioManager {
     }
 
     this.playSound(this.powerPelletBuffer);
+  }
+
+  /**
+   * Plays the siren at the given index, looping.
+   * If the requested siren is already playing, does nothing.
+   * Stops any currently playing siren before starting the new one.
+   */
+  playSiren(index: number): void {
+    if (!this.audioContext || this.sirenBuffers.length === 0) return;
+
+    if (index < 0 || index >= this.sirenBuffers.length) return;
+
+    // If the requested siren is already playing, do nothing
+    if (this.currentSirenIndex === index && this.sirenSource) {
+      return;
+    }
+
+    this.stopSiren();
+
+    if (this.audioContext.state === 'suspended') {
+      this.audioContext.resume().catch(console.error);
+    }
+
+    const buffer = this.sirenBuffers[index];
+    if (buffer) {
+      this.sirenSource = this.audioContext.createBufferSource();
+      this.sirenSource.buffer = buffer;
+      this.sirenSource.loop = true;
+      this.sirenSource.connect(this.audioContext.destination);
+      this.sirenSource.start(0);
+      this.currentSirenIndex = index;
+    }
+  }
+
+  /**
+   * Stops the currently playing siren.
+   */
+  stopSiren(): void {
+    if (this.sirenSource) {
+      try {
+        this.sirenSource.stop();
+      } catch {
+        // Ignore errors if already stopped
+      }
+      this.sirenSource.disconnect();
+      this.sirenSource = null;
+    }
+    this.currentSirenIndex = -1;
   }
 
   /**

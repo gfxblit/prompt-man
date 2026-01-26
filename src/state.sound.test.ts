@@ -25,7 +25,10 @@ describe('GameState Sound Events', () => {
     const assetLoader = new AssetLoader();
     audioManager = new AudioManager(assetLoader);
     vi.spyOn(audioManager, 'playPelletSound');
+    vi.spyOn(audioManager, 'playPelletSound');
     vi.spyOn(audioManager, 'playPowerPelletSound');
+    vi.spyOn(audioManager, 'playSiren');
+    vi.spyOn(audioManager, 'stopSiren');
     vi.spyOn(audioManager, 'startFrightSound');
     vi.spyOn(audioManager, 'stopFrightSound');
   });
@@ -80,5 +83,53 @@ describe('GameState Sound Events', () => {
     state.updateGhosts(10001);
 
     expect(audioManager.stopFrightSound).toHaveBeenCalled();
+  });
+
+  it('should call audioManager.playSiren when Ready state ends', () => {
+    const state = new GameState(grid, audioManager);
+    // Should NOT be called initially (during Ready state)
+    expect(audioManager.playSiren).not.toHaveBeenCalled();
+
+    // Advance Ready timer to start game and trigger initial siren
+    state.updatePacman({ dx: 0, dy: 0 }, 5000);
+
+    expect(audioManager.playSiren).toHaveBeenCalledWith(0);
+  });
+
+  it('should call audioManager.playSiren with higher index when pellets are consumed', () => {
+    // Create a grid with known number of pellets (2 in template: P at (1,1) and o at (3,1))
+    // Actually template is:
+    // #####
+    // #P.o#
+    // #####
+    // 
+    // P is PacmanSpawn (not pellet)
+    // . is Pellet
+    // o is PowerPellet
+    // So distinct pellets: 1 dot, 1 power pellet. Total 2.
+    // Thresholds: 0, 0.25, 0.50, 0.75
+    // 0 eaten: ratio 0 -> index 0 (Already tested in start)
+    // 1 eaten: ratio 0.5 -> index 2
+
+    const state = new GameState(grid, audioManager);
+    expect(audioManager.playSiren).not.toHaveBeenCalled();
+
+    // Advance Ready timer to start game and trigger initial siren
+    state.updatePacman({ dx: 0, dy: 0 }, 5000);
+    expect(audioManager.playSiren).toHaveBeenLastCalledWith(0);
+
+    state.consumePellet(2, 1); // Eat dot
+    // Remaining: 1, Eaten: 1. Ratio: 1/2 = 0.5.
+    // Thresholds: [0, 0.25, 0.50, 0.75]
+    // 0.5 >= 0.50 -> index 2
+    expect(audioManager.playSiren).toHaveBeenLastCalledWith(2);
+  });
+
+  it('should call audioManager.stopSiren on game over (dying)', () => {
+    const state = new GameState(grid, audioManager);
+    state.consumePellet(2, 1);
+    state.consumePellet(3, 1); // All eaten -> Win
+
+    expect(audioManager.stopSiren).toHaveBeenCalled();
   });
 });
