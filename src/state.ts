@@ -40,7 +40,8 @@ export class GameState implements IGameState {
   private remainingPellets: number = 0;
   private eatenPellets: Set<string> = new Set();
   private powerUpTimer: number = 0; // New: Timer for power-up duration
-  private ready: boolean = true;
+  private ready: boolean = READY_DURATION > 0;
+  private started: boolean = false;
   private readyTimer: number = READY_DURATION;
   private readonly HIGH_SCORE_KEY = 'prompt-man-high-score';
   private nextDirection: Direction | null = null;
@@ -53,9 +54,10 @@ export class GameState implements IGameState {
   /** Callback fired when a pellet is consumed. */
   public onPelletConsumed?: (tileType: TileType) => void;
 
-  constructor(private grid: IGrid, private audioManager?: AudioManager) {
+  constructor(private grid: IGrid, private audioManager?: AudioManager, startImmediately: boolean = true) {
     this.width = grid.getWidth();
     this.height = grid.getHeight();
+    this.started = startImmediately;
     this.initialize();
   }
 
@@ -162,6 +164,15 @@ export class GameState implements IGameState {
     return this.ready;
   }
 
+  /**
+   * Starts the game with a READY state of the given duration.
+   */
+  startReady(duration: number): void {
+    this.started = true;
+    this.ready = true;
+    this.readyTimer = duration;
+  }
+
   getPowerUpTimer(): number {
     return this.powerUpTimer;
   }
@@ -240,12 +251,16 @@ export class GameState implements IGameState {
     }
 
     if (this.ready) {
-      this.readyTimer -= deltaTime;
-      if (this.readyTimer <= 0) {
-        this.ready = false;
-        this.readyTimer = 0;
+      if (this.started) {
+        this.readyTimer -= deltaTime;
+        if (this.readyTimer <= 0) {
+          this.ready = false;
+          this.readyTimer = 0;
+        } else {
+          return; // Block movement while ready
+        }
       } else {
-        return; // Block movement while ready
+        return; // Block movement if not started
       }
     }
 
@@ -421,7 +436,7 @@ export class GameState implements IGameState {
       this.gameOver = true;
     } else {
       this.resetPositions();
-      this.ready = true;
+      this.ready = READY_DURATION > 0;
       this.readyTimer = READY_DURATION;
     }
   }
@@ -467,7 +482,7 @@ export class GameState implements IGameState {
     const powerPellets = this.grid.findTiles(TileType.PowerPellet);
     this.remainingPellets = pellets.length + powerPellets.length;
     this.resetPositions();
-    this.ready = true;
+    this.ready = READY_DURATION > 0;
     this.readyTimer = READY_DURATION;
   }
 

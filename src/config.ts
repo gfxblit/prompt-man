@@ -54,6 +54,7 @@ export const AUDIO = {
     'sfx/eat_dot_1.wav'
   ],
   POWER_PELLET_SOUND: 'sfx/eat_fruit.wav', // Placeholder for future
+  INTRO_SOUND: 'sfx/start.wav',
 } as const;
 /** Global X offset (pixels) for the start of the tilemap in the palette sheet. */
 export const PALETTE_ORIGIN_X = 600;

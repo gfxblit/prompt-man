@@ -5,6 +5,7 @@ export class AudioManager {
   private audioContext: AudioContext | null = null;
   private pelletBuffers: AudioBuffer[] = [];
   private powerPelletBuffer: AudioBuffer | null = null;
+  private introBuffer: AudioBuffer | null = null;
   private pelletSoundIndex: number = 0;
 
   constructor(private assetLoader: AssetLoader) {}
@@ -34,6 +35,13 @@ export class AudioManager {
       } catch (error) {
         console.warn('Failed to load power pellet sound:', error);
       }
+
+      // Load intro sound
+      try {
+        this.introBuffer = await this.assetLoader.loadAudio(AUDIO.INTRO_SOUND, this.audioContext);
+      } catch (error) {
+        console.warn('Failed to load intro sound:', error);
+      }
     } catch (error) {
       console.warn('AudioManager failed to initialize:', error);
       throw error;
@@ -47,6 +55,28 @@ export class AudioManager {
     if (this.audioContext && this.audioContext.state === 'suspended') {
       await this.audioContext.resume();
     }
+  }
+
+  /**
+   * Plays the intro music.
+   */
+  playIntroMusic(): void {
+    if (!this.audioContext || !this.introBuffer) {
+      return;
+    }
+
+    if (this.audioContext.state === 'suspended') {
+      this.audioContext.resume().catch(console.error);
+    }
+
+    this.playSound(this.introBuffer);
+  }
+
+  /**
+   * Returns the duration of the intro music in milliseconds.
+   */
+  getIntroDuration(): number {
+    return this.introBuffer ? this.introBuffer.duration * 1000 : 0;
   }
 
   /**
