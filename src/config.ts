@@ -26,7 +26,7 @@ export const GHOST_RESPAWN_THRESHOLD = 0.5;
 /** Score awarded for eating a scared ghost. */
 export const GHOST_EATEN_SCORE = 200;
 /** Duration in milliseconds to pause the game when a ghost is eaten. */
-export const GHOST_EATEN_PAUSE_DURATION = 1000;
+export const GHOST_EATEN_PAUSE_DURATION = 500;
 /** A small tolerance to check for grid alignment. */
 export const ALIGNMENT_TOLERANCE = 0.05;
 /** Collision threshold: roughly overlapping (less than 1 tile usually). */
