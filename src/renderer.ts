@@ -464,6 +464,12 @@ export class Renderer implements IRenderer {
           return;
         }
 
+        const powerUpTimer = state.getPowerUpTimer();
+        const isFlashing = entity.isScared &&
+          powerUpTimer > 0 &&
+          powerUpTimer <= POWER_UP_FLASH_THRESHOLD &&
+          Math.floor(powerUpTimer / POWER_UP_FLASH_RATE) % 2 === 0;
+
         if (this.spritesheet) {
           let dirKey: keyof typeof GHOST_ANIMATION_MAP = 'EAST';
           if (entity.direction) {

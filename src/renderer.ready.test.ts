@@ -49,6 +49,7 @@ describe('Renderer - Ready State', () => {
       isReady: vi.fn().mockReturnValue(false),
       getPowerUpTimer: vi.fn().mockReturnValue(0),
       getPointEffects: vi.fn().mockReturnValue([]),
+      getPowerUpTimer: vi.fn().mockReturnValue(0),
     };
 
     renderer = new Renderer(mockContext);
