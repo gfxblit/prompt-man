@@ -26,6 +26,8 @@ describe('GameState Sound Events', () => {
     audioManager = new AudioManager(assetLoader);
     vi.spyOn(audioManager, 'playPelletSound');
     vi.spyOn(audioManager, 'playPowerPelletSound');
+    vi.spyOn(audioManager, 'startFrightSound');
+    vi.spyOn(audioManager, 'stopFrightSound');
   });
 
   it('should call audioManager.playPelletSound when a regular pellet is eaten', () => {
@@ -56,5 +58,27 @@ describe('GameState Sound Events', () => {
 
     state.consumePellet(2, 1); // Regular pellet at (2,1)
     expect(onPelletConsumed).toHaveBeenCalledWith(TileType.Pellet);
+  });
+
+  it('should call audioManager.startFrightSound when a power pellet is eaten', () => {
+    const state = new GameState(grid, audioManager);
+    state.consumePellet(3, 1); // Power pellet at (3,1)
+    expect(audioManager.startFrightSound).toHaveBeenCalled();
+  });
+
+  it('should call audioManager.stopFrightSound when power up timer expires', () => {
+    const state = new GameState(grid, audioManager);
+
+    // Clear ready state first
+    state.updatePacman({ dx: 0, dy: 0 }, 2001); // READY_DURATION + 1
+
+    state.consumePellet(3, 1); // Power pellet
+
+    // Simulate time passing until timer expires
+    // POWER_UP_DURATION is 10000.
+    // updateGhosts checks timer.
+    state.updateGhosts(10001);
+
+    expect(audioManager.stopFrightSound).toHaveBeenCalled();
   });
 });

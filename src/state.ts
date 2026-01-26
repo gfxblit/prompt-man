@@ -215,7 +215,11 @@ export class GameState implements IGameState {
             };
           }
         });
+
+        // Start fright sound
+        this.audioManager?.startFrightSound();
       }
+
 
       this.updateHighScore();
 
@@ -439,6 +443,9 @@ export class GameState implements IGameState {
       this.ready = READY_DURATION > 0;
       this.readyTimer = READY_DURATION;
     }
+
+    // Stop fright sound on life loss/reset
+    this.audioManager?.stopFrightSound();
   }
 
   private respawnGhost(ghost: Entity): void {
@@ -484,6 +491,9 @@ export class GameState implements IGameState {
     this.resetPositions();
     this.ready = READY_DURATION > 0;
     this.readyTimer = READY_DURATION;
+
+    // Stop fright sound on level reset
+    this.audioManager?.stopFrightSound();
   }
 
   updateGhosts(deltaTime: number): void {
@@ -504,9 +514,13 @@ export class GameState implements IGameState {
       if (this.powerUpTimer <= 0) {
         this.powerUpTimer = 0;
         this.ghostsEatenCount = 0;
+        this.ghostsEatenCount = 0;
         this.entities.filter(e => e.type === EntityType.Ghost).forEach(ghost => {
           ghost.isScared = false;
         });
+
+        // Stop fright sound when time expires
+        this.audioManager?.stopFrightSound();
       }
     }
 
