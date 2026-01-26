@@ -45,6 +45,7 @@ describe('Renderer - Ready State', () => {
       isGameOver: vi.fn().mockReturnValue(false),
       isDying: vi.fn().mockReturnValue(false),
       isReady: vi.fn().mockReturnValue(false),
+      getPowerUpTimer: vi.fn().mockReturnValue(0),
     };
 
     renderer = new Renderer(mockContext);
