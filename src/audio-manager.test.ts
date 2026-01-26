@@ -12,10 +12,10 @@ describe('AudioManager', () => {
   beforeEach(() => {
     assetLoader = new AssetLoader();
     mockCtx = mockAudioContext();
-    
+
     // Mock AudioContext constructor using a regular function so it can be used with 'new'
     const mockContextValue = mockCtx.context;
-    const MockAudioContext = vi.fn(function() {
+    const MockAudioContext = vi.fn(function () {
       return mockContextValue;
     });
 
@@ -30,15 +30,16 @@ describe('AudioManager', () => {
 
   it('should initialize and load sounds', async () => {
     await audioManager.initialize();
-    
+
     expect(window.AudioContext).toHaveBeenCalled();
-    // Should load pellet sounds + power pellet sound + intro sound
-    expect(assetLoader.loadAudio).toHaveBeenCalledTimes(AUDIO.PELLET_SOUNDS.length + 2);
+    // Should load pellet sounds + power pellet + intro + fright
+    expect(assetLoader.loadAudio).toHaveBeenCalledTimes(AUDIO.PELLET_SOUNDS.length + 3);
     AUDIO.PELLET_SOUNDS.forEach(url => {
       expect(assetLoader.loadAudio).toHaveBeenCalledWith(url, mockCtx.context);
     });
     expect(assetLoader.loadAudio).toHaveBeenCalledWith(AUDIO.POWER_PELLET_SOUND, mockCtx.context);
     expect(assetLoader.loadAudio).toHaveBeenCalledWith(AUDIO.INTRO_SOUND, mockCtx.context);
+    expect(assetLoader.loadAudio).toHaveBeenCalledWith(AUDIO.FRIGHT_SOUND, mockCtx.context);
   });
 
   it('should return intro duration', async () => {
@@ -47,7 +48,8 @@ describe('AudioManager', () => {
       .mockResolvedValueOnce({} as AudioBuffer) // pellet 0
       .mockResolvedValueOnce({} as AudioBuffer) // pellet 1
       .mockResolvedValueOnce({} as AudioBuffer) // power pellet
-      .mockResolvedValueOnce(introBuffer); // intro
+      .mockResolvedValueOnce(introBuffer)      // intro
+      .mockResolvedValueOnce({} as AudioBuffer); // fright
 
     await audioManager.initialize();
     expect(audioManager.getIntroDuration()).toBe(4500);
@@ -59,11 +61,12 @@ describe('AudioManager', () => {
       .mockResolvedValueOnce({} as AudioBuffer)
       .mockResolvedValueOnce({} as AudioBuffer)
       .mockResolvedValueOnce({} as AudioBuffer)
-      .mockResolvedValueOnce(introBuffer);
+      .mockResolvedValueOnce(introBuffer)
+      .mockResolvedValueOnce({} as AudioBuffer);
 
     await audioManager.initialize();
     audioManager.playIntroMusic();
-    
+
     expect(mockCtx.context.createBufferSource).toHaveBeenCalled();
     expect(mockCtx.mockSource.buffer).toBe(introBuffer);
   });
@@ -72,13 +75,18 @@ describe('AudioManager', () => {
     const buffer0 = { duration: 1 } as AudioBuffer;
     const buffer1 = { duration: 2 } as AudioBuffer;
     const powerBuffer = { duration: 3 } as AudioBuffer;
+    const introBuffer = { duration: 3.5 } as AudioBuffer;
+    const frightBuffer = { duration: 4 } as AudioBuffer;
+
     vi.spyOn(assetLoader, 'loadAudio')
       .mockResolvedValueOnce(buffer0)
       .mockResolvedValueOnce(buffer1)
-      .mockResolvedValueOnce(powerBuffer);
+      .mockResolvedValueOnce(powerBuffer)
+      .mockResolvedValueOnce(introBuffer)
+      .mockResolvedValueOnce(frightBuffer);
 
     await audioManager.initialize();
-    
+
     // Play first pellet sound
     audioManager.playPelletSound();
     expect(mockCtx.context.createBufferSource).toHaveBeenCalledTimes(1);
@@ -99,13 +107,17 @@ describe('AudioManager', () => {
     const buffer0 = { duration: 1 } as AudioBuffer;
     const buffer1 = { duration: 2 } as AudioBuffer;
     const powerBuffer = { duration: 3 } as AudioBuffer;
+    const introBuffer = { duration: 3.5 } as AudioBuffer;
+    const frightBuffer = { duration: 4 } as AudioBuffer;
     vi.spyOn(assetLoader, 'loadAudio')
       .mockResolvedValueOnce(buffer0)
       .mockResolvedValueOnce(buffer1)
-      .mockResolvedValueOnce(powerBuffer);
+      .mockResolvedValueOnce(powerBuffer)
+      .mockResolvedValueOnce(introBuffer)
+      .mockResolvedValueOnce(frightBuffer);
 
     await audioManager.initialize();
-    
+
     // Regular pellet
     audioManager.playPelletSound();
     expect(mockCtx.mockSource.buffer).toBe(buffer0);
@@ -122,7 +134,7 @@ describe('AudioManager', () => {
   it('should resume audio context if suspended', async () => {
     await audioManager.initialize();
     vi.spyOn(mockCtx.context, 'state', 'get').mockReturnValue('suspended');
-    
+
     await audioManager.resumeIfNeeded();
     expect(mockCtx.context.resume).toHaveBeenCalled();
   });
@@ -130,14 +142,14 @@ describe('AudioManager', () => {
   it('should not resume if already running', async () => {
     await audioManager.initialize();
     vi.spyOn(mockCtx.context, 'state', 'get').mockReturnValue('running');
-    
+
     await audioManager.resumeIfNeeded();
     expect(mockCtx.context.resume).not.toHaveBeenCalled();
   });
 
   it('should handle initialization errors gracefully', async () => {
     vi.spyOn(assetLoader, 'loadAudio').mockRejectedValue(new Error('Load failed'));
-    
+
     await expect(audioManager.initialize()).rejects.toThrow('Load failed');
   });
 });

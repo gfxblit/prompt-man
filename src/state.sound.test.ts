@@ -68,6 +68,10 @@ describe('GameState Sound Events', () => {
 
   it('should call audioManager.stopFrightSound when power up timer expires', () => {
     const state = new GameState(grid, audioManager);
+
+    // Clear ready state first
+    state.updatePacman({ dx: 0, dy: 0 }, 2001); // READY_DURATION + 1
+
     state.consumePellet(3, 1); // Power pellet
 
     // Simulate time passing until timer expires
