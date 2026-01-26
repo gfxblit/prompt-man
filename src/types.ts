@@ -59,6 +59,18 @@ export interface Entity {
 }
 
 /**
+ * Represents a point effect shown when an entity (like a ghost) is eaten.
+ */
+export interface PointEffect {
+  /** Horizontal position in grid coordinates. */
+  x: number;
+  /** Vertical position in grid coordinates. */
+  y: number;
+  /** Number of points to display. */
+  points: number;
+}
+
+/**
  * Represents a movement direction vector.
  */
 export interface Direction {
@@ -100,6 +112,8 @@ export interface IGameState {
   getHighScore(): number;
   /** Returns the total number of pellets remaining in the grid. */
   getRemainingPellets(): number;
+  /** Returns the active point effects (e.g., scores from eating ghosts). */
+  getPointEffects(): PointEffect[];
   /** Returns the spawn position for a given entity. */
   getSpawnPosition(entity: Entity): { x: number; y: number } | undefined;
   /** Consumes a pellet at the specified coordinates and updates state. */

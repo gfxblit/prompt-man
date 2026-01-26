@@ -59,6 +59,7 @@ export class Renderer implements IRenderer {
     }
 
     this.renderEntities(state);
+    this.renderPointEffects(state);
     this.renderLives(grid, state.getLives());
 
     if (state.isGameOver()) {
@@ -111,6 +112,20 @@ export class Renderer implements IRenderer {
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
     this.ctx.fillText('GAME OVER', width / 2, height / 2);
+  }
+
+  private renderPointEffects(state: IGameState): void {
+    const effects = state.getPointEffects();
+    for (const effect of effects) {
+      const screenX = effect.x * TILE_SIZE + TILE_SIZE / 2;
+      const screenY = effect.y * TILE_SIZE + TILE_SIZE / 2;
+
+      this.ctx.fillStyle = '#00ffff'; // Cyan (standard for ghost points)
+      this.ctx.font = 'bold 12px monospace';
+      this.ctx.textAlign = 'center';
+      this.ctx.textBaseline = 'middle';
+      this.ctx.fillText(effect.points.toString(), screenX, screenY);
+    }
   }
 
   private renderLives(grid: IGrid, lives: number): void {
@@ -442,6 +457,12 @@ export class Renderer implements IRenderer {
           powerUpTimer > 0 &&
           powerUpTimer <= POWER_UP_FLASH_THRESHOLD &&
           Math.floor(powerUpTimer / POWER_UP_FLASH_RATE) % 2 === 0;
+
+        // Skip rendering the ghost if it was just eaten and we are showing points
+        const effects = state.getPointEffects();
+        if (effects.some(e => Math.abs(e.x - entity.x) < 0.1 && Math.abs(e.y - entity.y) < 0.1)) {
+          return;
+        }
 
         if (this.spritesheet) {
           let dirKey: keyof typeof GHOST_ANIMATION_MAP = 'EAST';
