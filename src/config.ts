@@ -11,6 +11,10 @@ export const PACMAN_SPEED = 6 / 1000;
 export const GHOST_SPEED = 4 / 1000;
 /** Duration in milliseconds for how long power-up lasts. */
 export const POWER_UP_DURATION = 10000; // 10 seconds
+/** Threshold in milliseconds when the power-up starts flashing. */
+export const POWER_UP_FLASH_THRESHOLD = 2000;
+/** Rate in milliseconds at which the power-up flashes. */
+export const POWER_UP_FLASH_RATE = 200;
 /** Speed of scared ghosts, as a fraction of their normal speed. */
 export const SCARED_GHOST_SPEED_MULTIPLIER = 0.5;
 /** Speed of dead ghosts returning to jail, as a fraction of their base speed. */
@@ -67,14 +71,15 @@ export const SOURCE_GHOST_SIZE = 17;
 
 export type SpriteOffset = { x: number; y: number };
 
-export const GHOST_OFFSETS: Record<string, SpriteOffset> = {
+export const GHOST_OFFSETS = {
   RED: { x: 0, y: 82 },
   PINK: { x: 200, y: 82 },
   CYAN: { x: 400, y: 82 },
   ORANGE: { x: 600, y: 82 },
   SCARED: { x: 200, y: 167 },
+  SCARED_FLASH: { x: 0, y: 353},
   EYES: { x: 200, y: 268 },
-};
+} as const satisfies Record<string, SpriteOffset>;
 
 /** Animation speed in milliseconds per frame. */
 export const PACMAN_ANIMATION_SPEED = 100;

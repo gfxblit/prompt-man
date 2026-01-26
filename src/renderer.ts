@@ -13,7 +13,9 @@ import {
   PACMAN_PALETTE_OFFSET_Y,
   PACMAN_DEATH_PALETTE_OFFSET_X,
   PACMAN_DEATH_PALETTE_OFFSET_Y,
-  PACMAN_DEATH_ANIMATION_FRAMES
+  PACMAN_DEATH_ANIMATION_FRAMES,
+  POWER_UP_FLASH_THRESHOLD,
+  POWER_UP_FLASH_RATE
 } from './config.js';
 import { getTileMask } from './autotile.js';
 import {
@@ -432,8 +434,14 @@ export class Renderer implements IRenderer {
         break;
       }
 
-      case EntityType.Ghost:
+      case EntityType.Ghost: {
         if (state.isDying()) return;
+
+        const powerUpTimer = state.getPowerUpTimer();
+        const isFlashing = entity.isScared &&
+          powerUpTimer > 0 &&
+          powerUpTimer <= POWER_UP_FLASH_THRESHOLD &&
+          Math.floor(powerUpTimer / POWER_UP_FLASH_RATE) % 2 === 0;
 
         if (this.spritesheet) {
           let dirKey: keyof typeof GHOST_ANIMATION_MAP = 'EAST';
@@ -449,7 +457,8 @@ export class Renderer implements IRenderer {
             dirKey,
             !!entity.isScared,
             entity.animationFrame || 0,
-            !!entity.isDead
+            !!entity.isDead,
+            isFlashing
           );
 
           this.ctx.save();
@@ -504,7 +513,11 @@ export class Renderer implements IRenderer {
           this.ctx.arc(screenX + TILE_SIZE / 6, screenY - TILE_SIZE / 8, TILE_SIZE / 16, 0, Math.PI * 2);
           this.ctx.fill();
         } else {
-          this.ctx.fillStyle = entity.isScared ? COLORS.SCARED_GHOST : (entity.color || COLORS.GHOST_DEFAULT);
+          let fillStyle = entity.isScared ? COLORS.SCARED_GHOST : (entity.color || COLORS.GHOST_DEFAULT);
+          if (isFlashing) {
+            fillStyle = 'white';
+          }
+          this.ctx.fillStyle = fillStyle;
           this.ctx.beginPath();
           this.ctx.arc(screenX, screenY, TILE_SIZE / 2 - 1, Math.PI, 0);
           this.ctx.lineTo(screenX + TILE_SIZE / 2 - 1, screenY + TILE_SIZE / 2 - 1);
@@ -513,6 +526,7 @@ export class Renderer implements IRenderer {
           this.ctx.fill();
         }
         break;
+      }
     }
   }
 }
