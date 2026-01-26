@@ -48,12 +48,27 @@ describe('AudioManager', () => {
 
   it('should return intro duration', async () => {
     const introBuffer = { duration: 4.5 } as AudioBuffer;
-    vi.spyOn(assetLoader, 'loadAudio')
-      .mockResolvedValueOnce({} as AudioBuffer) // pellet 0
-      .mockResolvedValueOnce({} as AudioBuffer) // pellet 1
-      .mockResolvedValueOnce({} as AudioBuffer) // power pellet
-      .mockResolvedValueOnce(introBuffer)      // intro
-      .mockResolvedValueOnce({} as AudioBuffer); // fright
+    const sirenBuffer = { duration: 0.5 } as AudioBuffer;
+
+    const mockLoad = vi.spyOn(assetLoader, 'loadAudio');
+
+    // PELLET_SOUNDS (2)
+    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
+    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
+
+    // SIRENS (4)
+    for (let i = 0; i < 4; i++) {
+      mockLoad.mockResolvedValueOnce(sirenBuffer);
+    }
+
+    // POWER_PELLET (1)
+    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
+
+    // INTRO (1)
+    mockLoad.mockResolvedValueOnce(introBuffer);
+
+    // FRIGHT (1)
+    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
 
     await audioManager.initialize();
     expect(audioManager.getIntroDuration()).toBe(4500);
@@ -61,12 +76,27 @@ describe('AudioManager', () => {
 
   it('should play intro music', async () => {
     const introBuffer = { duration: 4.5 } as AudioBuffer;
-    vi.spyOn(assetLoader, 'loadAudio')
-      .mockResolvedValueOnce({} as AudioBuffer)
-      .mockResolvedValueOnce({} as AudioBuffer)
-      .mockResolvedValueOnce({} as AudioBuffer)
-      .mockResolvedValueOnce(introBuffer)
-      .mockResolvedValueOnce({} as AudioBuffer);
+    const sirenBuffer = { duration: 0.5 } as AudioBuffer;
+
+    const mockLoad = vi.spyOn(assetLoader, 'loadAudio');
+
+    // PELLET_SOUNDS (2)
+    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
+    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
+
+    // SIRENS (4)
+    for (let i = 0; i < 4; i++) {
+      mockLoad.mockResolvedValueOnce(sirenBuffer);
+    }
+
+    // POWER_PELLET (1)
+    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
+
+    // INTRO (1)
+    mockLoad.mockResolvedValueOnce(introBuffer);
+
+    // FRIGHT (1)
+    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
 
     await audioManager.initialize();
     audioManager.playIntroMusic();
