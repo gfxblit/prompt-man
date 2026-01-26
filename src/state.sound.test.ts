@@ -63,7 +63,6 @@ describe('GameState Sound Events', () => {
     expect(onPelletConsumed).toHaveBeenCalledWith(TileType.Pellet);
   });
 
-<<<<<<< Updated upstream
   it('should call audioManager.startFrightSound when a power pellet is eaten', () => {
     const state = new GameState(grid, audioManager);
     state.consumePellet(3, 1); // Power pellet at (3,1)
@@ -87,9 +86,9 @@ describe('GameState Sound Events', () => {
   });
 
   it('should call audioManager.playSiren when Ready state ends', () => {
-    const state = new GameState(grid, audioManager);
     // Should NOT be called initially (during Ready state)
     expect(audioManager.playSiren).not.toHaveBeenCalled();
+  });
 
     // Advance Ready timer to start game and trigger initial siren
   it('should call audioManager.playSiren when Ready state ends', () => {
