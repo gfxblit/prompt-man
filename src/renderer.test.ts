@@ -75,6 +75,7 @@ describe('Renderer', () => {
       getPowerUpTimer: vi.fn().mockReturnValue(0),
       getPointEffects: vi.fn().mockReturnValue([]),
       getPowerUpTimer: vi.fn().mockReturnValue(0),
+      getPointEffects: vi.fn().mockReturnValue([]),
     };
   });
 
