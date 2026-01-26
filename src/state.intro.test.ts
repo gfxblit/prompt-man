@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { GameState } from './state.js';
 import { Grid } from './grid.js';
 import { EntityType } from './types.js';
-import { READY_DURATION, PACMAN_SPEED } from './config.js';
+import { PACMAN_SPEED } from './config.js';
 
 describe('GameState - Intro Sequence', () => {
   let grid: Grid;
@@ -29,17 +29,18 @@ describe('GameState - Intro Sequence', () => {
 
   it('should not be started initially', () => {
     const state = new GameState(grid, undefined, false);
-    // @ts-ignore - accessing private property for testing
+    // @ts-expect-error - accessing private property for testing
     expect(state.started).toBe(false);
   });
 
   it('should not decrement readyTimer when not started', () => {
     const state = new GameState(grid, undefined, false);
-    const initialTimer = (state as any).readyTimer;
+    const stateInternal = state as unknown as { readyTimer: number };
+    const initialTimer = stateInternal.readyTimer;
     
     state.updatePacman({ dx: 0, dy: 0 }, 1000);
     
-    expect((state as any).readyTimer).toBe(initialTimer);
+    expect(stateInternal.readyTimer).toBe(initialTimer);
     expect(state.isReady()).toBe(true);
   });
 
@@ -62,22 +63,22 @@ describe('GameState - Intro Sequence', () => {
     const state = new GameState(grid, undefined, false);
     const customDuration = 5000;
     
-    (state as any).startReady(customDuration);
+    state.startReady(customDuration);
     
-    // @ts-ignore
+    // @ts-expect-error - accessing private started property for testing
     expect(state.started).toBe(true);
     expect(state.isReady()).toBe(true);
-    expect((state as any).readyTimer).toBe(customDuration);
+    expect((state as unknown as { readyTimer: number }).readyTimer).toBe(customDuration);
   });
 
   it('should allow readyTimer to count down after started', () => {
     const state = new GameState(grid, undefined, false);
     const customDuration = 5000;
     
-    (state as any).startReady(customDuration);
+    state.startReady(customDuration);
     state.updatePacman({ dx: 0, dy: 0 }, 1000);
     
-    expect((state as any).readyTimer).toBe(4000);
+    expect((state as unknown as { readyTimer: number }).readyTimer).toBe(4000);
     expect(state.isReady()).toBe(true);
     
     state.updatePacman({ dx: 0, dy: 0 }, 4000);

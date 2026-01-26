@@ -487,6 +487,17 @@ export class GameState implements IGameState {
   }
 
   updateGhosts(deltaTime: number): void {
+    if (this.powerUpTimer > 0 && !this.gameOver && !this.dying) {
+      this.powerUpTimer -= deltaTime;
+      if (this.powerUpTimer <= 0) {
+        this.powerUpTimer = 0;
+        this.ghostsEatenCount = 0;
+        this.entities.filter(e => e.type === EntityType.Ghost).forEach(ghost => {
+          ghost.isScared = false;
+        });
+      }
+    }
+
     if (this.win) {
       this.winTimer -= deltaTime;
       if (this.winTimer <= 0) {
@@ -497,16 +508,6 @@ export class GameState implements IGameState {
 
     if (this.gameOver || this.dying || this.ready || this.pauseTimer > 0) return;
 
-    if (this.powerUpTimer > 0) {
-      this.powerUpTimer -= deltaTime;
-      if (this.powerUpTimer <= 0) {
-        this.powerUpTimer = 0;
-        this.ghostsEatenCount = 0;
-        this.entities.filter(e => e.type === EntityType.Ghost).forEach(ghost => {
-          ghost.isScared = false;
-        });
-      }
-    }
 
     const ghosts = this.entities.filter(e => e.type === EntityType.Ghost);
 
