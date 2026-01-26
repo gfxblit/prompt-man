@@ -66,6 +66,7 @@ describe('Renderer Point Effects', () => {
       isReady: vi.fn().mockReturnValue(false),
       getPowerUpTimer: vi.fn().mockReturnValue(0),
       getPointEffects: vi.fn().mockReturnValue([]),
+      startReady: vi.fn(),
     };
   });
 
@@ -95,7 +96,7 @@ describe('Renderer Point Effects', () => {
 
     // Should NOT call fillStyle with 'red' for the ghost
     expect(fillStyleSetter).not.toHaveBeenCalledWith('red');
-    
+
     // Should still draw the point effect
     expect(mockContext.fillText).toHaveBeenCalledWith('200', 5 * TILE_SIZE + TILE_SIZE / 2, 5 * TILE_SIZE + TILE_SIZE / 2);
   });

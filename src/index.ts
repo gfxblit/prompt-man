@@ -25,12 +25,14 @@ export async function init(container: HTMLElement): Promise<void> {
   }
 
   const grid = Grid.fromString(LEVEL_TEMPLATE);
-  const state = new GameState(grid, audioManager);
+  const state = new GameState(grid, audioManager, false);
   const inputHandler = InputHandler.getInstance();
 
   // Resume audio context on first interaction
   const resumeAudio = () => {
     audioManager.resumeIfNeeded();
+    audioManager.playIntroMusic();
+    state.startReady(audioManager.getIntroDuration());
     window.removeEventListener('keydown', resumeAudio);
     window.removeEventListener('mousedown', resumeAudio);
     window.removeEventListener('touchstart', resumeAudio);
