@@ -66,7 +66,6 @@ describe('Issue 59: Ghost Rendering on Death', () => {
       getPowerUpTimer: vi.fn().mockReturnValue(0),
       getPointEffects: vi.fn().mockReturnValue([]),
       getPowerUpTimer: vi.fn().mockReturnValue(0),
-      getPointEffects: vi.fn().mockReturnValue([]),
     };
   });
 
