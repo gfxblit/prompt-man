@@ -53,10 +53,19 @@ export const AUDIO = {
     'sfx/eat_dot_0.wav',
     'sfx/eat_dot_1.wav'
   ],
+  SIRENS: [
+    'sfx/siren1.wav',
+    'sfx/siren2.wav',
+    'sfx/siren3.wav',
+    'sfx/siren4.wav'
+  ],
   POWER_PELLET_SOUND: 'sfx/eat_fruit.wav', // Placeholder for future
   INTRO_SOUND: 'sfx/start.wav',
   FRIGHT_SOUND: 'sfx/fright.wav',
 } as const;
+
+/** Thresholds for siren changes based on pellets eaten ratio (0 to 1). */
+export const SIREN_THRESHOLDS = [0, 0.25, 0.50, 0.75]; // Start, 25%, 50%, 75% eaten
 /** Global X offset (pixels) for the start of the tilemap in the palette sheet. */
 export const PALETTE_ORIGIN_X = 600;
 /** Global Y offset (pixels) for the start of the tilemap in the palette sheet. */

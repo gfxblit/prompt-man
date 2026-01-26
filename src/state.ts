@@ -21,7 +21,8 @@ import {
   GHOST_ANIMATION_SPEED,
   READY_DURATION,
   WIN_DELAY,
-  GHOST_SPEED_LEVEL_MULTIPLIER
+  GHOST_SPEED_LEVEL_MULTIPLIER,
+  SIREN_THRESHOLDS
 } from './config.js';
 import { PACMAN_ANIMATION_SEQUENCE, GHOST_ANIMATION_SEQUENCE } from './sprites.js';
 import { GhostAI } from './ghost-ai.js';
@@ -38,6 +39,7 @@ export class GameState implements IGameState {
   private level: number = 1;
   private winTimer: number = 0;
   private remainingPellets: number = 0;
+  private initialPelletCount: number = 0;
   private eatenPellets: Set<string> = new Set();
   private powerUpTimer: number = 0; // New: Timer for power-up duration
   private ready: boolean = READY_DURATION > 0;
@@ -114,6 +116,8 @@ export class GameState implements IGameState {
     const pellets = this.grid.findTiles(TileType.Pellet);
     const powerPellets = this.grid.findTiles(TileType.PowerPellet);
     this.remainingPellets = pellets.length + powerPellets.length;
+    this.initialPelletCount = this.remainingPellets;
+
   }
 
   getEntities(): Entity[] {
@@ -223,6 +227,9 @@ export class GameState implements IGameState {
 
       this.updateHighScore();
 
+      // Update background sound based on progress
+      this.updateBackgroundSound();
+
       if (this.remainingPellets === 0) {
         this.win = true;
         this.winTimer = WIN_DELAY;
@@ -230,6 +237,7 @@ export class GameState implements IGameState {
         this.entities.forEach(e => {
           e.direction = { dx: 0, dy: 0 };
         });
+        this.audioManager?.stopSiren();
       }
     }
   }
@@ -260,6 +268,7 @@ export class GameState implements IGameState {
         if (this.readyTimer <= 0) {
           this.ready = false;
           this.readyTimer = 0;
+          this.updateBackgroundSound();
         } else {
           return; // Block movement while ready
         }
@@ -428,6 +437,7 @@ export class GameState implements IGameState {
   private finishDying(): void {
     this.dying = false;
     this.lives--;
+    this.audioManager?.stopSiren();
 
     const pacman = this.entities.find(e => e.type === EntityType.Pacman);
     if (pacman) {
@@ -491,9 +501,9 @@ export class GameState implements IGameState {
     this.resetPositions();
     this.ready = READY_DURATION > 0;
     this.readyTimer = READY_DURATION;
-
     // Stop fright sound on level reset
     this.audioManager?.stopFrightSound();
+    this.updateBackgroundSound(); // Restart siren for next level
   }
 
   updateGhosts(deltaTime: number): void {
@@ -710,5 +720,29 @@ export class GameState implements IGameState {
     }
 
     return { pos: this.getWrappedCoordinate(proposed, max), stopped: false };
+  }
+
+  private updateBackgroundSound(): void {
+    if (this.gameOver || this.win || this.dying) {
+      // Sound should be stopped elsewhere (finishDying, win check), but safe to ensuring here?
+      // Actually finishDying handles it.
+      return;
+    }
+
+    if (this.initialPelletCount === 0) return;
+
+    const eatenCount = this.initialPelletCount - this.remainingPellets;
+    const ratio = eatenCount / this.initialPelletCount;
+
+    // Find the highest threshold we've crossed
+    let sirenIndex = 0;
+    for (let i = SIREN_THRESHOLDS.length - 1; i >= 0; i--) {
+      if (ratio >= SIREN_THRESHOLDS[i]!) {
+        sirenIndex = i;
+        break;
+      }
+    }
+
+    this.audioManager?.playSiren(sirenIndex);
   }
 }
