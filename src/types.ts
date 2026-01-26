@@ -134,6 +134,11 @@ export interface IGameState {
   isDying(): boolean;
   /** Returns true if the game is in the "Ready" state (frozen before start). */
   isReady(): boolean;
+  /**
+   * Starts the game with a READY state of the given duration.
+   * @param duration Duration in milliseconds.
+   */
+  startReady(duration: number): void;
   /** Returns the current power-up timer in milliseconds. */
   getPowerUpTimer(): number;
   /** Callback fired when a pellet is consumed. */
