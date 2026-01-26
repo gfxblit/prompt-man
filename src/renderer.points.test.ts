@@ -60,8 +60,11 @@ describe('Renderer Point Effects', () => {
       updatePacman: vi.fn(),
       updateGhosts: vi.fn(),
       isGameOver: vi.fn().mockReturnValue(false),
+      isWin: vi.fn().mockReturnValue(false),
+      getLevel: vi.fn().mockReturnValue(1),
       isDying: vi.fn().mockReturnValue(false),
       isReady: vi.fn().mockReturnValue(false),
+      getPowerUpTimer: vi.fn().mockReturnValue(0),
       getPointEffects: vi.fn().mockReturnValue([]),
     };
   });
