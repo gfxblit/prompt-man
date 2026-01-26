@@ -171,4 +171,24 @@ describe('GameState Point Effects and Scoring', () => {
     // The plan says "In updateGhosts: ... Return early if pauseTimer > 0."
     // If I can't check visibility here, I'll test it when I get to the renderer.
   });
+
+  it('should update high score when a ghost is eaten', () => {
+    const state = new GameState(grid);
+    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+    const ghost = state.getEntities().find(e => e.type === EntityType.Ghost)!;
+
+    // Power up
+    state.consumePellet(1, 2); // Score: 50
+    
+    // Position ghost for collision
+    ghost.x = 1.1;
+    ghost.y = 1;
+    pacman.x = 1;
+    pacman.y = 1;
+
+    state.updatePacman({ dx: 0, dy: 0 }, 1); // Eat ghost, Score: 50 + 200 = 250
+
+    expect(state.getScore()).toBe(250);
+    expect(state.getHighScore()).toBe(250);
+  });
 });

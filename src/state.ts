@@ -59,6 +59,13 @@ export class GameState implements IGameState {
     this.initialize();
   }
 
+  private updateHighScore(): void {
+    if (this.score > this.highScore) {
+      this.highScore = this.score;
+      localStorage.setItem(this.HIGH_SCORE_KEY, this.highScore.toString());
+    }
+  }
+
   private initialize(): void {
     // Load high score
     const savedHighScore = localStorage.getItem(this.HIGH_SCORE_KEY);
@@ -199,10 +206,7 @@ export class GameState implements IGameState {
         });
       }
 
-      if (this.score > this.highScore) {
-        this.highScore = this.score;
-        localStorage.setItem(this.HIGH_SCORE_KEY, this.highScore.toString());
-      }
+      this.updateHighScore();
 
       if (this.remainingPellets === 0) {
         this.win = true;
@@ -378,15 +382,12 @@ export class GameState implements IGameState {
           ghost.isScared = false; // Un-scare the ghost
           this.chooseGhostDirection(ghost);
 
-          if (this.score > this.highScore) {
-            this.highScore = this.score;
-            localStorage.setItem(this.HIGH_SCORE_KEY, this.highScore.toString());
-          }
           // No life lost for Pacman
         } else {
           // Pacman hit a normal ghost, lose a life
           this.handleCollision();
         }
+        this.updateHighScore();
         break;
       }
     }
