@@ -50,8 +50,13 @@ export async function init(container: HTMLElement): Promise<void> {
   const highScoreEl = document.createElement('div');
   highScoreEl.id = 'highscore';
   highScoreEl.innerText = `High Score: ${state.getHighScore()}`;
+
+  const levelEl = document.createElement('div');
+  levelEl.id = 'level';
+  levelEl.innerText = `Level: ${state.getLevel()}`;
   
   scoreContainer.appendChild(scoreEl);
+  scoreContainer.appendChild(levelEl);
   scoreContainer.appendChild(highScoreEl);
   container.appendChild(scoreContainer);
 
@@ -70,6 +75,7 @@ export async function init(container: HTMLElement): Promise<void> {
   let lastTime = performance.now();
   let lastScore = state.getScore();
   let lastHighScore = state.getHighScore();
+  let lastLevel = state.getLevel();
 
   const loop = (time: number) => {
     const deltaTime = time - lastTime;
@@ -89,6 +95,12 @@ export async function init(container: HTMLElement): Promise<void> {
     if (currentHighScore !== lastHighScore) {
       highScoreEl.innerText = `High Score: ${currentHighScore}`;
       lastHighScore = currentHighScore;
+    }
+
+    const currentLevel = state.getLevel();
+    if (currentLevel !== lastLevel) {
+      levelEl.innerText = `Level: ${currentLevel}`;
+      lastLevel = currentLevel;
     }
 
     if (renderer && uiRenderer) {

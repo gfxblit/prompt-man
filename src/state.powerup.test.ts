@@ -30,9 +30,9 @@ describe('GameState Power Up Mechanics', () => {
     // #P G o#
     // #######
     const layout = `
-#######
-#P G o#
-#######
+#########
+#P G o..#
+#########
 `.trim();
     grid = Grid.fromString(layout);
     gameState = new GameState(grid);

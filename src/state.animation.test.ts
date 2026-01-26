@@ -16,9 +16,9 @@ vi.mock('./config.js', async (importOriginal) => {
 describe('GameState Animation', () => {
   let grid: Grid;
   const template = `
-#####
-#P..#
-#####
+##########
+#P.......#
+##########
   `.trim();
 
   beforeEach(() => {

@@ -4,6 +4,7 @@ import { AUDIO } from './config.js';
 export class AudioManager {
   private audioContext: AudioContext | null = null;
   private pelletBuffers: AudioBuffer[] = [];
+  private powerPelletBuffer: AudioBuffer | null = null;
   private pelletSoundIndex: number = 0;
 
   constructor(private assetLoader: AssetLoader) {}
@@ -26,6 +27,13 @@ export class AudioManager {
       );
 
       this.pelletBuffers = await Promise.all(loadPromises);
+
+      // Load power pellet sound
+      try {
+        this.powerPelletBuffer = await this.assetLoader.loadAudio(AUDIO.POWER_PELLET_SOUND, this.audioContext);
+      } catch (error) {
+        console.warn('Failed to load power pellet sound:', error);
+      }
     } catch (error) {
       console.warn('AudioManager failed to initialize:', error);
       throw error;
@@ -57,20 +65,37 @@ export class AudioManager {
 
     const buffer = this.pelletBuffers[this.pelletSoundIndex];
     if (buffer) {
-      const source = this.audioContext.createBufferSource();
-      source.buffer = buffer;
-      source.connect(this.audioContext.destination);
-      source.start(0);
+      this.playSound(buffer);
     }
 
     this.pelletSoundIndex = (this.pelletSoundIndex + 1) % this.pelletBuffers.length;
   }
 
   /**
-   * Future enhancement: play power pellet specific sound.
-   * For now, it uses the same alternating pellet sounds.
+   * Plays the specific power pellet consumption sound.
    */
   playPowerPelletSound(): void {
-    this.playPelletSound();
+    if (!this.audioContext || !this.powerPelletBuffer) {
+      // Fallback to regular pellet sound if power pellet sound is not available
+      this.playPelletSound();
+      return;
+    }
+
+    if (this.audioContext.state === 'suspended') {
+      this.audioContext.resume().catch(console.error);
+    }
+
+    this.playSound(this.powerPelletBuffer);
+  }
+
+  /**
+   * Internal helper to play an AudioBuffer.
+   */
+  private playSound(buffer: AudioBuffer): void {
+    if (!this.audioContext) return;
+    const source = this.audioContext.createBufferSource();
+    source.buffer = buffer;
+    source.connect(this.audioContext.destination);
+    source.start(0);
   }
 }

@@ -32,18 +32,22 @@ describe('AudioManager', () => {
     await audioManager.initialize();
     
     expect(window.AudioContext).toHaveBeenCalled();
-    expect(assetLoader.loadAudio).toHaveBeenCalledTimes(AUDIO.PELLET_SOUNDS.length);
+    // Should load pellet sounds + power pellet sound
+    expect(assetLoader.loadAudio).toHaveBeenCalledTimes(AUDIO.PELLET_SOUNDS.length + 1);
     AUDIO.PELLET_SOUNDS.forEach(url => {
       expect(assetLoader.loadAudio).toHaveBeenCalledWith(url, mockCtx.context);
     });
+    expect(assetLoader.loadAudio).toHaveBeenCalledWith(AUDIO.POWER_PELLET_SOUND, mockCtx.context);
   });
 
   it('should play alternating pellet sounds', async () => {
     const buffer0 = { duration: 1 } as AudioBuffer;
     const buffer1 = { duration: 2 } as AudioBuffer;
+    const powerBuffer = { duration: 3 } as AudioBuffer;
     vi.spyOn(assetLoader, 'loadAudio')
       .mockResolvedValueOnce(buffer0)
-      .mockResolvedValueOnce(buffer1);
+      .mockResolvedValueOnce(buffer1)
+      .mockResolvedValueOnce(powerBuffer);
 
     await audioManager.initialize();
     
@@ -63,12 +67,14 @@ describe('AudioManager', () => {
     expect(mockCtx.mockSource.buffer).toBe(buffer0);
   });
 
-  it('should play power pellet sound and alternate with regular pellets', async () => {
+  it('should play power pellet sound and not affect pellet alternation', async () => {
     const buffer0 = { duration: 1 } as AudioBuffer;
     const buffer1 = { duration: 2 } as AudioBuffer;
+    const powerBuffer = { duration: 3 } as AudioBuffer;
     vi.spyOn(assetLoader, 'loadAudio')
       .mockResolvedValueOnce(buffer0)
-      .mockResolvedValueOnce(buffer1);
+      .mockResolvedValueOnce(buffer1)
+      .mockResolvedValueOnce(powerBuffer);
 
     await audioManager.initialize();
     
@@ -78,11 +84,11 @@ describe('AudioManager', () => {
 
     // Power pellet
     audioManager.playPowerPelletSound();
-    expect(mockCtx.mockSource.buffer).toBe(buffer1);
+    expect(mockCtx.mockSource.buffer).toBe(powerBuffer);
 
-    // Regular pellet
+    // Regular pellet (should be the second one, not loop back yet)
     audioManager.playPelletSound();
-    expect(mockCtx.mockSource.buffer).toBe(buffer0);
+    expect(mockCtx.mockSource.buffer).toBe(buffer1);
   });
 
   it('should resume audio context if suspended', async () => {

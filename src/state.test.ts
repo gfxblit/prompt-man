@@ -16,20 +16,21 @@ vi.mock('./config.js', async (importOriginal) => {
 describe('GameState', () => {
   let grid: Grid;
   const template = `
-#####
-#P.G#
-#o..#
-#####
+##########
+#P.G#....#
+#o..#....#
+#####....#
+##########
   `.trim();
 
   const deltaTimeForOneTile = 1 / PACMAN_SPEED;
   const deltaTimeForHalfTile = 0.5 / PACMAN_SPEED;
 
   const powerPelletTemplate = `
-#######
-#P   G#
-#o    #
-#######
+#########
+#P   G#.#
+#o    #.#
+#########
   `.trim();
 
   beforeEach(() => {
@@ -64,9 +65,11 @@ describe('GameState', () => {
 
   it('should count initial pellets correctly', () => {
     const state = new GameState(grid);
-    // 1 pellet at (2,1), 2 pellets at (2,2) and (3,2). Total 3 pellets.
-    // Plus 1 power pellet at (1,2). Total 4.
-    expect(state.getRemainingPellets()).toBe(4);
+    // Row 1: (2,1), (5,1), (6,1), (7,1), (8,1) -> 5
+    // Row 2: (1,2) - power, (2,2), (3,2), (5,2), (6,2), (7,2), (8,2) -> 7
+    // Row 3: (5,3), (6,3), (7,3), (8,3) -> 4
+    // Total = 16
+    expect(state.getRemainingPellets()).toBe(16);
   });
 
   it('should initialize score to 0', () => {
@@ -78,12 +81,12 @@ describe('GameState', () => {
     const state = new GameState(grid);
 
     state.consumePellet(2, 1);
-    expect(state.getRemainingPellets()).toBe(3);
+    expect(state.getRemainingPellets()).toBe(15);
     expect(state.getScore()).toBe(10);
 
     // Consuming empty space should do nothing
     state.consumePellet(1, 1);
-    expect(state.getRemainingPellets()).toBe(3);
+    expect(state.getRemainingPellets()).toBe(15);
     expect(state.getScore()).toBe(10);
   });
 
@@ -91,7 +94,7 @@ describe('GameState', () => {
     const state = new GameState(grid);
 
     state.consumePellet(1, 2);
-    expect(state.getRemainingPellets()).toBe(3);
+    expect(state.getRemainingPellets()).toBe(15);
     expect(state.getScore()).toBe(50);
   });
 
@@ -105,7 +108,7 @@ describe('GameState', () => {
 
     expect(pacman.x).toBe(2);
     expect(pacman.y).toBe(1);
-    expect(state.getRemainingPellets()).toBe(3);
+    expect(state.getRemainingPellets()).toBe(15);
     expect(state.getScore()).toBe(10);
   });
 

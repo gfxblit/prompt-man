@@ -68,6 +68,8 @@ describe('Renderer', () => {
       updatePacman: vi.fn(),
       updateGhosts: vi.fn(),
       isGameOver: vi.fn().mockReturnValue(false),
+      isWin: vi.fn().mockReturnValue(false),
+      getLevel: vi.fn().mockReturnValue(1),
       isDying: vi.fn().mockReturnValue(false),
       isReady: vi.fn().mockReturnValue(false),
     };
@@ -510,9 +512,21 @@ describe('Renderer', () => {
 
     renderer.render(grid, mockState);
 
-    expect(mockContext.fillRect).toHaveBeenCalledWith(0, 0, 10 * TILE_SIZE, 10 * TILE_SIZE);
     expect(mockContext.fillStyle).toBe('#ff0000');
     expect(mockContext.fillText).toHaveBeenCalledWith('GAME OVER', (10 * TILE_SIZE) / 2, (10 * TILE_SIZE) / 2);
+  });
+
+  it('should render GOOD JOB! when state is win', () => {
+    vi.mocked(mockState.isWin).mockReturnValue(true);
+
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
+    const grid = new Grid(10, 10);
+
+    renderer.render(grid, mockState);
+
+    expect(mockContext.fillRect).toHaveBeenCalledWith(0, 0, 10 * TILE_SIZE, 10 * TILE_SIZE);
+    expect(mockContext.fillStyle).toBe('#00ff00');
+    expect(mockContext.fillText).toHaveBeenCalledWith('GOOD JOB!', (10 * TILE_SIZE) / 2, (10 * TILE_SIZE) / 2);
   });
 
   it('should render lives as Pacman icons', () => {
