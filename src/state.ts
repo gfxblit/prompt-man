@@ -118,8 +118,6 @@ export class GameState implements IGameState {
     this.remainingPellets = pellets.length + powerPellets.length;
     this.initialPelletCount = this.remainingPellets;
 
-    // Start ambient sound
-    this.updateBackgroundSound();
   }
 
   getEntities(): Entity[] {
@@ -270,6 +268,7 @@ export class GameState implements IGameState {
         if (this.readyTimer <= 0) {
           this.ready = false;
           this.readyTimer = 0;
+          this.updateBackgroundSound();
         } else {
           return; // Block movement while ready
         }
@@ -453,7 +452,6 @@ export class GameState implements IGameState {
       this.resetPositions();
       this.ready = READY_DURATION > 0;
       this.readyTimer = READY_DURATION;
-      this.updateBackgroundSound();
     }
 
     // Stop fright sound on life loss/reset
