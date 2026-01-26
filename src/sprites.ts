@@ -421,6 +421,7 @@ export const GHOST_ANIMATION_MAP = {
   NORTH: [6, 7],
   SOUTH: [2, 3],
   SCARED: [0, 1],
+  SCARED_FLASH: [2, 3],
 } as const;
 
 /** The sequence of animation frames for Ghosts. */
@@ -429,7 +430,14 @@ export const GHOST_ANIMATION_SEQUENCE = [0, 1] as const;
 /**
  * Calculates the source sprite coordinates for a ghost.
  */
-export function getGhostSpriteSource(color: string, direction: string, isScared: boolean, frameIndex: number = 0, isDead: boolean = false) {
+export function getGhostSpriteSource(
+  color: string,
+  direction: string,
+  isScared: boolean,
+  frameIndex: number = 0,
+  isDead: boolean = false,
+  isFlashing: boolean = false
+) {
   let resolvedColor = color;
   if (isDead) {
     resolvedColor = 'eyes';
@@ -447,7 +455,7 @@ export function getGhostSpriteSource(color: string, direction: string, isScared:
   }
 
   if (isScared) {
-    dirKey = 'SCARED';
+    dirKey = isFlashing ? 'SCARED_FLASH' : 'SCARED';
   }
 
   const frames = GHOST_ANIMATION_MAP[dirKey];

@@ -134,6 +134,10 @@ export class GameState implements IGameState {
     return this.ready;
   }
 
+  getPowerUpTimer(): number {
+    return this.powerUpTimer;
+  }
+
   isPelletEaten(x: number, y: number): boolean {
     return this.eatenPellets.has(`${x},${y}`);
   }

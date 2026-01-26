@@ -11,6 +11,10 @@ export const PACMAN_SPEED = 6 / 1000;
 export const GHOST_SPEED = 4 / 1000;
 /** Duration in milliseconds for how long power-up lasts. */
 export const POWER_UP_DURATION = 10000; // 10 seconds
+/** Threshold in milliseconds when the power-up starts flashing. */
+export const POWER_UP_FLASH_THRESHOLD = 2000;
+/** Rate in milliseconds at which the power-up flashes. */
+export const POWER_UP_FLASH_RATE = 200;
 /** Speed of scared ghosts, as a fraction of their normal speed. */
 export const SCARED_GHOST_SPEED_MULTIPLIER = 0.5;
 /** Speed of dead ghosts returning to jail, as a fraction of their base speed. */

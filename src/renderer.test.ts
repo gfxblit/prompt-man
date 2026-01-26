@@ -70,6 +70,7 @@ describe('Renderer', () => {
       isGameOver: vi.fn().mockReturnValue(false),
       isDying: vi.fn().mockReturnValue(false),
       isReady: vi.fn().mockReturnValue(false),
+      getPowerUpTimer: vi.fn().mockReturnValue(0),
     };
   });
 
