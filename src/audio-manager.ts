@@ -7,8 +7,10 @@ export class AudioManager {
   private powerPelletBuffer: AudioBuffer | null = null;
   private introBuffer: AudioBuffer | null = null;
   private pelletSoundIndex: number = 0;
+  private frightBuffer: AudioBuffer | null = null;
+  private frightSource: AudioBufferSourceNode | null = null;
 
-  constructor(private assetLoader: AssetLoader) {}
+  constructor(private assetLoader: AssetLoader) { }
 
   /**
    * Initializes the AudioContext and loads required sound assets.
@@ -16,7 +18,7 @@ export class AudioManager {
   async initialize(): Promise<void> {
     try {
       const AudioContextClass = window.AudioContext || (window as unknown as Window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      
+
       if (!AudioContextClass) {
         return;
       }
@@ -41,6 +43,13 @@ export class AudioManager {
         this.introBuffer = await this.assetLoader.loadAudio(AUDIO.INTRO_SOUND, this.audioContext);
       } catch (error) {
         console.warn('Failed to load intro sound:', error);
+      }
+
+      // Load fright sound
+      try {
+        this.frightBuffer = await this.assetLoader.loadAudio(AUDIO.FRIGHT_SOUND, this.audioContext);
+      } catch (error) {
+        console.warn('Failed to load fright sound:', error);
       }
     } catch (error) {
       console.warn('AudioManager failed to initialize:', error);
@@ -127,5 +136,45 @@ export class AudioManager {
     source.buffer = buffer;
     source.connect(this.audioContext.destination);
     source.start(0);
+  }
+
+  /**
+   * Starts the fright sound loop if not already playing.
+   */
+  startFrightSound(): void {
+    if (!this.audioContext || !this.frightBuffer) return;
+
+    // Resume context if needed
+    if (this.audioContext.state === 'suspended') {
+      this.audioContext.resume().catch(console.error);
+    }
+
+    // Don't restart if already playing
+    if (this.frightSource) return;
+
+    try {
+      this.frightSource = this.audioContext.createBufferSource();
+      this.frightSource.buffer = this.frightBuffer;
+      this.frightSource.loop = true;
+      this.frightSource.connect(this.audioContext.destination);
+      this.frightSource.start(0);
+    } catch (e) {
+      console.error('Error starting fright sound:', e);
+      this.frightSource = null;
+    }
+  }
+
+  /**
+   * Stops the fright sound loop.
+   */
+  stopFrightSound(): void {
+    if (this.frightSource) {
+      try {
+        this.frightSource.stop();
+      } catch {
+        // Ignore errors on stop (e.g. if already stopped or invalid state)
+      }
+      this.frightSource = null;
+    }
   }
 }
