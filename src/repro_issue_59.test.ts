@@ -59,6 +59,8 @@ describe('Issue 59: Ghost Rendering on Death', () => {
       updatePacman: vi.fn(),
       updateGhosts: vi.fn(),
       isGameOver: vi.fn().mockReturnValue(false),
+      isWin: vi.fn().mockReturnValue(false),
+      getLevel: vi.fn().mockReturnValue(1),
       isDying: vi.fn().mockReturnValue(false),
       isReady: vi.fn().mockReturnValue(false),
     };

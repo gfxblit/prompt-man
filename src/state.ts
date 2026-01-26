@@ -435,11 +435,11 @@ export class GameState implements IGameState {
     const powerPellets = this.grid.findTiles(TileType.PowerPellet);
     this.remainingPellets = pellets.length + powerPellets.length;
     this.resetPositions();
+    this.ready = true;
+    this.readyTimer = READY_DURATION;
   }
 
   updateGhosts(deltaTime: number): void {
-    if (this.gameOver || this.dying || this.ready) return;
-
     if (this.win) {
       this.winTimer -= deltaTime;
       if (this.winTimer <= 0) {
@@ -447,6 +447,8 @@ export class GameState implements IGameState {
       }
       return;
     }
+
+    if (this.gameOver || this.dying || this.ready) return;
 
     if (this.powerUpTimer > 0) {
       this.powerUpTimer -= deltaTime;
