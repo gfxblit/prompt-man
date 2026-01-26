@@ -17,7 +17,7 @@ describe('getGhostSpriteSource', () => {
 
   it('returns scared flashing ghost sprite coordinates', () => {
     const source = getGhostSpriteSource('red', 'EAST', true, 0, false, true);
-    const expectedX = GHOST_OFFSETS.SCARED!.x + (2 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X;
+    const expectedX = GHOST_OFFSETS.SCARED_FLASH!.x + (0 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X;
     expect(source.x).toBe(expectedX);
   });
 });

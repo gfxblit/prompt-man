@@ -73,6 +73,7 @@ export const GHOST_OFFSETS = {
   CYAN: { x: 400, y: 82 },
   ORANGE: { x: 600, y: 82 },
   SCARED: { x: 200, y: 167 },
+  SCARED_FLASH: { x: 0, y: 353},
   EYES: { x: 200, y: 268 },
 } as const satisfies Record<string, SpriteOffset>;
 

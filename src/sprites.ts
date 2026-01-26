@@ -408,6 +408,7 @@ export const GHOST_PALETTE_OFFSETS: Record<string, SpriteOffset> = {
   cyan: GHOST_OFFSETS.CYAN!,
   orange: GHOST_OFFSETS.ORANGE!,
   scared: GHOST_OFFSETS.SCARED!,
+  scared_flash: GHOST_OFFSETS.SCARED_FLASH!,
   eyes: GHOST_OFFSETS.EYES!,
 };
 
@@ -421,7 +422,7 @@ export const GHOST_ANIMATION_MAP = {
   NORTH: [6, 7],
   SOUTH: [2, 3],
   SCARED: [0, 1],
-  SCARED_FLASH: [2, 3],
+  SCARED_FLASH: [0, 1],
 } as const;
 
 /** The sequence of animation frames for Ghosts. */
@@ -442,7 +443,7 @@ export function getGhostSpriteSource(
   if (isDead) {
     resolvedColor = 'eyes';
   } else if (isScared) {
-    resolvedColor = 'scared';
+    resolvedColor = isFlashing ? 'scared_flash' : 'scared';
   } else if (!GHOST_PALETTE_OFFSETS[color]) {
     resolvedColor = COLORS.GHOST_DEFAULT;
   }

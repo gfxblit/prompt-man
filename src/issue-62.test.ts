@@ -82,8 +82,8 @@ describe('Issue #62: Ghost Flashing when Power Pellet runs low', () => {
     
     const scaredX0 = GHOST_OFFSETS.SCARED.x + (0 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X;
     const scaredX1 = GHOST_OFFSETS.SCARED.x + (1 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X;
-    const flashX0 = GHOST_OFFSETS.SCARED.x + (2 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X;
-    const flashX1 = GHOST_OFFSETS.SCARED.x + (3 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X;
+    const flashX0 = GHOST_OFFSETS.SCARED_FLASH.x + (0 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X;
+    const flashX1 = GHOST_OFFSETS.SCARED_FLASH.x + (1 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X;
 
     const isScaredX = (x: number) => x === scaredX0 || x === scaredX1;
     const isFlashX = (x: number) => x === flashX0 || x === flashX1;
