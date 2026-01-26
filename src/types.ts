@@ -112,6 +112,10 @@ export interface IGameState {
   updateGhosts(deltaTime: number): void;
   /** Returns true if the game is over. */
   isGameOver(): boolean;
+  /** Returns true if the player has won the current level. */
+  isWin(): boolean;
+  /** Returns the current level number. */
+  getLevel(): number;
   /** Returns true if Pacman is currently in the death animation. */
   isDying(): boolean;
   /** Returns true if the game is in the "Ready" state (frozen before start). */

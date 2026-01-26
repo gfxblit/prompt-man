@@ -18,7 +18,9 @@ import {
   PACMAN_DEATH_ANIMATION_SPEED,
   PACMAN_DEATH_ANIMATION_FRAMES,
   GHOST_ANIMATION_SPEED,
-  READY_DURATION
+  READY_DURATION,
+  WIN_DELAY,
+  GHOST_SPEED_LEVEL_MULTIPLIER
 } from './config.js';
 import { PACMAN_ANIMATION_SEQUENCE, GHOST_ANIMATION_SEQUENCE } from './sprites.js';
 import { GhostAI } from './ghost-ai.js';
@@ -31,6 +33,9 @@ export class GameState implements IGameState {
   private lives: number = 2;
   private gameOver: boolean = false;
   private dying: boolean = false;
+  private win: boolean = false;
+  private level: number = 1;
+  private winTimer: number = 0;
   private remainingPellets: number = 0;
   private eatenPellets: Set<string> = new Set();
   private powerUpTimer: number = 0; // New: Timer for power-up duration
@@ -126,6 +131,14 @@ export class GameState implements IGameState {
     return this.gameOver;
   }
 
+  isWin(): boolean {
+    return this.win;
+  }
+
+  getLevel(): number {
+    return this.level;
+  }
+
   isDying(): boolean {
     return this.dying;
   }
@@ -178,6 +191,15 @@ export class GameState implements IGameState {
         this.highScore = this.score;
         localStorage.setItem(this.HIGH_SCORE_KEY, this.highScore.toString());
       }
+
+      if (this.remainingPellets === 0) {
+        this.win = true;
+        this.winTimer = WIN_DELAY;
+        // Stop all movement immediately on win
+        this.entities.forEach(e => {
+          e.direction = { dx: 0, dy: 0 };
+        });
+      }
     }
   }
 
@@ -190,7 +212,7 @@ export class GameState implements IGameState {
 
   updatePacman(direction: Direction, deltaTime: number = 0): void {
     const pacman = this.entities.find(e => e.type === EntityType.Pacman);
-    if (!pacman || this.gameOver) return;
+    if (!pacman || this.gameOver || this.win) return;
 
     if (this.ready) {
       this.readyTimer -= deltaTime;
@@ -404,8 +426,27 @@ export class GameState implements IGameState {
     this.nextDirection = null;
   }
 
+  private resetLevel(): void {
+    this.win = false;
+    this.winTimer = 0;
+    this.level++;
+    this.eatenPellets.clear();
+    const pellets = this.grid.findTiles(TileType.Pellet);
+    const powerPellets = this.grid.findTiles(TileType.PowerPellet);
+    this.remainingPellets = pellets.length + powerPellets.length;
+    this.resetPositions();
+  }
+
   updateGhosts(deltaTime: number): void {
     if (this.gameOver || this.dying || this.ready) return;
+
+    if (this.win) {
+      this.winTimer -= deltaTime;
+      if (this.winTimer <= 0) {
+        this.resetLevel();
+      }
+      return;
+    }
 
     if (this.powerUpTimer > 0) {
       this.powerUpTimer -= deltaTime;
@@ -440,9 +481,12 @@ export class GameState implements IGameState {
         }
       }
 
-      let speed = ghost.isScared ? GHOST_SPEED * SCARED_GHOST_SPEED_MULTIPLIER : GHOST_SPEED;
+      const levelMultiplier = Math.pow(GHOST_SPEED_LEVEL_MULTIPLIER, this.level - 1);
+      const baseSpeed = GHOST_SPEED * levelMultiplier;
+
+      let speed = ghost.isScared ? baseSpeed * SCARED_GHOST_SPEED_MULTIPLIER : baseSpeed;
       if (ghost.isDead) {
-        speed = GHOST_SPEED * DEAD_GHOST_SPEED_MULTIPLIER;
+        speed = baseSpeed * DEAD_GHOST_SPEED_MULTIPLIER;
       }
       const distance = speed * deltaTime;
 

@@ -30,6 +30,10 @@ export const COLLISION_THRESHOLD = 0.5;
  * 2000ms matches the typical delay in original arcade Pac-Man.
  */
 export const READY_DURATION = 2000;
+/** Delay in milliseconds before transitioning to the next level after winning. */
+export const WIN_DELAY = 3000;
+/** Multiplier for ghost speed for each level gained. */
+export const GHOST_SPEED_LEVEL_MULTIPLIER = 1.1;
 
 /**
  * Assets configuration

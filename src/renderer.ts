@@ -64,6 +64,24 @@ export class Renderer implements IRenderer {
     } else if (state.isReady()) {
       this.renderReady(grid);
     }
+
+    if (state.isWin()) {
+      this.renderWin(grid);
+    }
+  }
+
+  private renderWin(grid: IGrid): void {
+    const width = grid.getWidth() * TILE_SIZE;
+    const height = grid.getHeight() * TILE_SIZE;
+
+    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+    this.ctx.fillRect(0, 0, width, height);
+
+    this.ctx.fillStyle = '#00ff00';
+    this.ctx.font = 'bold 32px monospace';
+    this.ctx.textAlign = 'center';
+    this.ctx.textBaseline = 'middle';
+    this.ctx.fillText('GOOD JOB!', width / 2, height / 2);
   }
 
   private renderReady(grid: IGrid): void {
