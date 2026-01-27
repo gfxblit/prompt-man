@@ -414,6 +414,45 @@ describe('AudioManager', () => {
     expect(mockCtx.mockSource.stop).toHaveBeenCalled();
   });
 
+  it('should stop intro music', async () => {
+    await audioManager.initialize();
+    audioManager.playIntroMusic();
+    
+    // @ts-expect-error - accessing private for testing
+    expect(audioManager.introSource).toBeDefined();
+    
+    audioManager.stopIntroMusic();
+    expect(mockCtx.mockSource.stop).toHaveBeenCalled();
+    // @ts-expect-error - accessing private for testing
+    expect(audioManager.introSource).toBeNull();
+  });
+
+  it('should stop all background sounds', async () => {
+    await audioManager.initialize();
+    
+    audioManager.playIntroMusic();
+    audioManager.playSiren(0);
+    audioManager.startFrightSound();
+    
+    vi.clearAllMocks();
+    
+    audioManager.stopAll();
+    
+    // Should stop siren, fright, and intro
+    // In our mock setup, they all share the same mockSource, so stop should be called 3 times
+    expect(mockCtx.mockSource.stop).toHaveBeenCalledTimes(3);
+  });
+
+  it('should stop all sounds when starting death sequence', async () => {
+    await audioManager.initialize();
+    
+    const stopAllSpy = vi.spyOn(audioManager, 'stopAll');
+    
+    audioManager.playDeathSequence();
+    
+    expect(stopAllSpy).toHaveBeenCalled();
+  });
+
   it('should ignore invalid siren index', async () => {
     await audioManager.initialize();
     vi.clearAllMocks();

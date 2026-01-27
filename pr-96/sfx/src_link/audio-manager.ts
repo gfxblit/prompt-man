@@ -12,6 +12,7 @@ export class AudioManager {
   private pelletSoundIndex: number = 0;
   private frightBuffer: AudioBuffer | null = null;
   private frightSource: AudioBufferSourceNode | null = null;
+  private introSource: AudioBufferSourceNode | null = null;
   private eatGhostBuffer: AudioBuffer | null = null;
   private deathBuffers: AudioBuffer[] = [];
 
@@ -88,10 +89,6 @@ export class AudioManager {
     if (this.audioContext && this.audioContext.state === 'suspended') {
       await this.audioContext.resume();
     }
-    // If we have an active siren but it's not playing (state suspended), 
-    // resuming context will resume it.
-    // If we have a current siren index aimed to be playing but no source (e.g. stopped/never started), 
-    // we might need to restart it here, but typically playSiren handles that.
   }
 
   /**
@@ -106,7 +103,37 @@ export class AudioManager {
       this.audioContext.resume().catch(console.error);
     }
 
-    this.playSound(this.introBuffer);
+    this.introSource = this.audioContext.createBufferSource();
+    this.introSource.buffer = this.introBuffer;
+    this.introSource.connect(this.audioContext.destination);
+    this.introSource.onended = () => {
+      this.introSource = null;
+    };
+    this.introSource.start(this.audioContext.currentTime);
+  }
+
+  /**
+   * Stops the intro music.
+   */
+  stopIntroMusic(): void {
+    if (this.introSource) {
+      try {
+        this.introSource.stop();
+      } catch {
+        // Ignore errors
+      }
+      this.introSource.disconnect();
+      this.introSource = null;
+    }
+  }
+
+  /**
+   * Stops all background sounds (siren, fright sound, intro music).
+   */
+  stopAll(): void {
+    this.stopSiren();
+    this.stopFrightSound();
+    this.stopIntroMusic();
   }
 
   /**
@@ -124,8 +151,6 @@ export class AudioManager {
       return;
     }
 
-    // Modern browsers might suspend the context until user interaction.
-    // We try to resume it just in case, though it's better handled at input level.
     if (this.audioContext.state === 'suspended') {
       this.audioContext.resume().catch(console.error);
     }
@@ -197,7 +222,7 @@ export class AudioManager {
       this.sirenSource.buffer = buffer;
       this.sirenSource.loop = true;
       this.sirenSource.connect(this.audioContext.destination);
-      this.sirenSource.start(0);
+      this.sirenSource.start(this.audioContext.currentTime);
       this.currentSirenIndex = index;
     }
   }
@@ -226,7 +251,7 @@ export class AudioManager {
     const source = this.audioContext.createBufferSource();
     source.buffer = buffer;
     source.connect(this.audioContext.destination);
-    source.start(0);
+    source.start(this.audioContext.currentTime);
   }
 
   /**
@@ -248,7 +273,7 @@ export class AudioManager {
       this.frightSource.buffer = this.frightBuffer;
       this.frightSource.loop = true;
       this.frightSource.connect(this.audioContext.destination);
-      this.frightSource.start(0);
+      this.frightSource.start(this.audioContext.currentTime);
     } catch (e) {
       console.error('Error starting fright sound:', e);
       this.frightSource = null;
@@ -274,6 +299,8 @@ export class AudioManager {
    */
   playDeathSequence(): void {
     if (!this.audioContext || this.deathBuffers.length === 0) return;
+
+    this.stopAll();
 
     if (this.audioContext.state === 'suspended') {
       this.audioContext.resume().catch(console.error);

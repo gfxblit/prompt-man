@@ -427,17 +427,16 @@ export class GameState implements IGameState {
     if (this.gameOver || this.dying) return;
 
     this.dying = true;
-    this.audioManager?.playDeathSequence();
 
     const pacman = this.entities.find(e => e.type === EntityType.Pacman);
     if (pacman) {
       pacman.deathTimer = 0;
       pacman.animationFrame = 0;
       pacman.direction = { dx: 0, dy: 0 };
-
-      this.audioManager?.stopSiren();
-      this.audioManager?.playDeathSequence();
     }
+    
+    this.audioManager?.stopAll();
+    this.audioManager?.playDeathSequence();
   }
 
   private finishDying(): void {
