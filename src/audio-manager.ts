@@ -44,7 +44,7 @@ export class AudioManager {
     }
   }
 
-  private async loadAudioBuffers(urls: string[]): Promise<AudioBuffer[]> {
+  private async loadAudioBuffers(urls: readonly string[]): Promise<AudioBuffer[]> {
     return await Promise.all(urls.map(url =>
       this.assetLoader.loadAudio(url, this.audioContext!)
     ));
