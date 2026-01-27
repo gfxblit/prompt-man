@@ -81,10 +81,6 @@ export class AudioManager {
     if (this.audioContext && this.audioContext.state === 'suspended') {
       await this.audioContext.resume();
     }
-    // If we have an active siren but it's not playing (state suspended), 
-    // resuming context will resume it.
-    // If we have a current siren index aimed to be playing but no source (e.g. stopped/never started), 
-    // we might need to restart it here, but typically playSiren handles that.
   }
 
   /**
@@ -105,7 +101,7 @@ export class AudioManager {
     this.introSource.onended = () => {
       this.introSource = null;
     };
-    this.introSource.start(0);
+    this.introSource.start(this.audioContext.currentTime);
   }
 
   /**
@@ -147,8 +143,6 @@ export class AudioManager {
       return;
     }
 
-    // Modern browsers might suspend the context until user interaction.
-    // We try to resume it just in case, though it's better handled at input level.
     if (this.audioContext.state === 'suspended') {
       this.audioContext.resume().catch(console.error);
     }
@@ -205,7 +199,7 @@ export class AudioManager {
       this.sirenSource.buffer = buffer;
       this.sirenSource.loop = true;
       this.sirenSource.connect(this.audioContext.destination);
-      this.sirenSource.start(0);
+      this.sirenSource.start(this.audioContext.currentTime);
       this.currentSirenIndex = index;
     }
   }
@@ -234,7 +228,7 @@ export class AudioManager {
     const source = this.audioContext.createBufferSource();
     source.buffer = buffer;
     source.connect(this.audioContext.destination);
-    source.start(0);
+    source.start(this.audioContext.currentTime);
   }
 
   /**
@@ -256,7 +250,7 @@ export class AudioManager {
       this.frightSource.buffer = this.frightBuffer;
       this.frightSource.loop = true;
       this.frightSource.connect(this.audioContext.destination);
-      this.frightSource.start(0);
+      this.frightSource.start(this.audioContext.currentTime);
     } catch (e) {
       console.error('Error starting fright sound:', e);
       this.frightSource = null;
