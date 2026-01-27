@@ -73,7 +73,7 @@ describe('AudioManager', () => {
     // FRIGHT (1)
     mockLoad.mockResolvedValueOnce({} as AudioBuffer);
 
-    // DEATH (2) - Fallback to default mock or we can explicit them
+    // DEATH (2)
     mockLoad.mockResolvedValueOnce({} as AudioBuffer);
     mockLoad.mockResolvedValueOnce({} as AudioBuffer);
 
@@ -148,6 +148,10 @@ describe('AudioManager', () => {
     mockLoad.mockResolvedValueOnce({} as AudioBuffer);
     mockLoad.mockResolvedValueOnce({} as AudioBuffer);
 
+    // DEATH (2)
+    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
+    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
+
     await audioManager.initialize();
 
     // Play first pellet sound
@@ -212,6 +216,8 @@ describe('AudioManager', () => {
     audioManager.playPelletSound();
     expect(mockCtx.mockSource.buffer).toBe(buffer1);
   });
+
+
 
   it('should resume audio context if suspended', async () => {
     await audioManager.initialize();

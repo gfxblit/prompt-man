@@ -196,4 +196,24 @@ describe('GameState Death Logic', () => {
     expect(ghost.isScared).toBe(false);
     expect(ghost.isDead).toBe(false);
   });
+
+  it('should play death sound sequence when collision occurs', () => {
+    const mockPlayDeathSequence = vi.fn();
+    const mockAudioManager = {
+      playDeathSequence: mockPlayDeathSequence,
+      stopSiren: vi.fn(),
+      stopFrightSound: vi.fn(),
+    } as unknown as AudioManager;
+
+    const state = new GameState(grid, mockAudioManager);
+    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+    const ghost = state.getEntities().find(e => e.type === EntityType.Ghost)!;
+
+    // Trigger collision
+    pacman.x = ghost.x - 0.4;
+    state.updatePacman({ dx: 0, dy: 0 }, 0);
+
+    expect(state.isDying()).toBe(true);
+    expect(mockPlayDeathSequence).toHaveBeenCalled();
+  });
 });
