@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { AudioManager } from './audio-manager.js';
 import { AssetLoader } from './assets.js';
 import { mockAudioContext } from './test-utils.js';
@@ -270,8 +270,14 @@ describe('AudioManager', () => {
     vi.clearAllMocks();
     
     // Re-setup the createBufferSource mock to capture the sources returned
-    const sources: any[] = [];
-    (mockCtx.context.createBufferSource as any).mockImplementation(() => {
+    const sources: {
+      buffer: AudioBuffer | null;
+      connect: Mock;
+      start: Mock;
+      stop: Mock;
+      disconnect: Mock;
+    }[] = [];
+    (mockCtx.context.createBufferSource as Mock).mockImplementation(() => {
         const source = {
             buffer: null,
             connect: vi.fn(),
@@ -294,8 +300,6 @@ describe('AudioManager', () => {
   });
 
   it('should start and stop fright sound', async () => {
-    const frightBuffer = { duration: 4 } as AudioBuffer;
-    
     const mockLoad = vi.spyOn(assetLoader, 'loadAudio');
     
     // PELLET_SOUNDS (2)
