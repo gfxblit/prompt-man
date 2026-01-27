@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { EventBus } from './event-bus';
-import { GameEvent } from './types';
+import { EventBus } from './event-bus.js';
+import { GameEvent } from './types.js';
 
 describe('EventBus', () => {
   it('should allow subscribing to and emitting events', () => {

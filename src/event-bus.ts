@@ -1,4 +1,4 @@
-import { GameEvent } from './types';
+import { GameEvent } from './types.js';
 
 type Callback = (data?: unknown) => void;
 
