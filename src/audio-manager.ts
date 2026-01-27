@@ -14,6 +14,8 @@ export class AudioManager {
   private frightSource: AudioBufferSourceNode | null = null;
   private introSource: AudioBufferSourceNode | null = null;
   private eatGhostBuffer: AudioBuffer | null = null;
+  private eyesBuffer: AudioBuffer | null = null;
+  private eyesSource: AudioBufferSourceNode | null = null;
   private deathBuffers: AudioBuffer[] = [];
 
   constructor(private assetLoader: AssetLoader) { }
@@ -37,6 +39,7 @@ export class AudioManager {
       this.introBuffer = await this.loadSingleAudio(AUDIO.INTRO_SOUND, 'intro');
       this.frightBuffer = await this.loadSingleAudio(AUDIO.FRIGHT_SOUND, 'fright');
       this.eatGhostBuffer = await this.loadSingleAudio(AUDIO.GHOST_EATEN_SOUND, 'ghost eaten');
+      this.eyesBuffer = await this.loadSingleAudio(AUDIO.EYES_SOUND, 'eyes');
       this.deathBuffers = await this.loadAudioBuffers(AUDIO.DEATH_SOUNDS);
     } catch (error) {
       console.warn('AudioManager failed to initialize:', error);
@@ -109,6 +112,7 @@ export class AudioManager {
     this.stopSiren();
     this.stopFrightSound();
     this.stopIntroMusic();
+    this.stopEyesSound();
   }
 
   /**
@@ -267,6 +271,45 @@ export class AudioManager {
       this.frightSource = null;
     }
   }
+
+  /**
+   * Starts the eyes sound loop if not already playing.
+   */
+  startEyesSound(): void {
+    if (!this.audioContext || !this.eyesBuffer) return;
+
+    // Resume context if needed
+    this.resumeContextIfNeeded();
+
+    // Don't restart if already playing
+    if (this.eyesSource) return;
+
+    try {
+      this.eyesSource = this.audioContext.createBufferSource();
+      this.eyesSource.buffer = this.eyesBuffer;
+      this.eyesSource.loop = true;
+      this.eyesSource.connect(this.audioContext.destination);
+      this.eyesSource.start(this.audioContext.currentTime);
+    } catch (e) {
+      console.error('Error starting eyes sound:', e);
+      this.eyesSource = null;
+    }
+  }
+
+  /**
+   * Stops the eyes sound loop.
+   */
+  stopEyesSound(): void {
+    if (this.eyesSource) {
+      try {
+        this.eyesSource.stop();
+      } catch {
+        // Ignore errors on stop (e.g. if already stopped or invalid state)
+      }
+      this.eyesSource = null;
+    }
+  }
+
 
   /**
    * Plays the death sound sequence.

@@ -38,6 +38,7 @@ describe('AudioManager', () => {
       AUDIO.INTRO_SOUND,
       AUDIO.FRIGHT_SOUND,
       AUDIO.GHOST_EATEN_SOUND,
+      AUDIO.EYES_SOUND,
     ];
     const expectedCalls = AUDIO.PELLET_SOUNDS.length + AUDIO.SIRENS.length + singleSounds.length + AUDIO.DEATH_SOUNDS.length;
     expect(assetLoader.loadAudio).toHaveBeenCalledTimes(expectedCalls);
@@ -63,6 +64,7 @@ describe('AudioManager', () => {
       AUDIO.INTRO_SOUND,
       AUDIO.FRIGHT_SOUND,
       AUDIO.GHOST_EATEN_SOUND,
+      AUDIO.EYES_SOUND,
       ...AUDIO.DEATH_SOUNDS,
     ];
 
@@ -236,24 +238,7 @@ describe('AudioManager', () => {
   });
 
   it('should start and stop fright sound', async () => {
-    const mockLoad = vi.spyOn(assetLoader, 'loadAudio');
-    
-    // PELLET_SOUNDS (2)
-    mockLoad.mockResolvedValue({} as AudioBuffer);
-
-    // Override specific calls if needed, but here we just need to ensure frightBuffer ends up in the manager
-    // The current mock setup in beforeEach uses mockCtx.mockBuffer for everything unless overridden.
-    // We can rely on that or be specific.
-    
-    // Let's just let it load default mocks, but we need to know WHICH one is fright.
-    // Actually, initialize loads them in order.
-    // We can just spy on createBufferSource to see what buffer is passed.
-    
     await audioManager.initialize();
-    
-    // Manually inject the buffer into the private field if we can't easily control which one is which via mocks
-    // OR, better, just rely on the fact that we can call startFrightSound and it should do something.
-    // But we need the buffer to be non-null. It will be mockBuffer.
     
     audioManager.startFrightSound();
     
@@ -273,21 +258,10 @@ describe('AudioManager', () => {
     
     // Reset mocks to track new calls
     vi.clearAllMocks();
-    // We need to ensure the next call creates a NEW source, which our mock does
     
     // Switch siren
     audioManager.playSiren(1);
     expect(mockCtx.context.createBufferSource).toHaveBeenCalled();
-    // It should stop the previous one (we can't easily check previous instance with single mockSource object unless we captured it, but we can check if stop was called at least once if we didn't clear mocks, or if we rely on the fact that stopSiren calls stop)
-    // Actually, since we cleared mocks, if stop is called it must be on the OLD source (which was mockSource).
-    // But wait, if we cleared mocks, the old mockSource spy history is gone.
-    // However, the audioManager holds a reference to the OLD source.
-    // That old source is the SAME OBJECT `mockCtx.mockSource` because our mock factory returns the same object or we rely on the mock implementation in `beforeEach` which returns `mockCtx.mockSource`.
-    // Wait, `test-utils` mockAudioContext returns a `mockSource` object.
-    // `createBufferSource` mock returns `mockSource`.
-    // So all sources are the same object.
-    // So if we call stop() on it, we can spy it.
-    
     expect(mockCtx.mockSource.stop).toHaveBeenCalled();
   });
 
@@ -310,14 +284,15 @@ describe('AudioManager', () => {
     audioManager.playIntroMusic();
     audioManager.playSiren(0);
     audioManager.startFrightSound();
+    audioManager.startEyesSound();
     
     vi.clearAllMocks();
     
     audioManager.stopAll();
     
-    // Should stop siren, fright, and intro
-    // In our mock setup, they all share the same mockSource, so stop should be called 3 times
-    expect(mockCtx.mockSource.stop).toHaveBeenCalledTimes(3);
+    // Should stop siren, fright, intro, and eyes
+    // In our mock setup, they all share the same mockSource, so stop should be called 4 times
+    expect(mockCtx.mockSource.stop).toHaveBeenCalledTimes(4);
   });
 
   it('should stop all sounds when starting death sequence', async () => {
@@ -338,5 +313,18 @@ describe('AudioManager', () => {
     audioManager.playSiren(99);
     
     expect(mockCtx.context.createBufferSource).not.toHaveBeenCalled();
+  });
+
+  it('should start and stop eyes sound', async () => {
+    await audioManager.initialize();
+    
+    audioManager.startEyesSound();
+    
+    expect(mockCtx.context.createBufferSource).toHaveBeenCalled();
+    expect(mockCtx.mockSource.loop).toBe(true);
+    expect(mockCtx.mockSource.start).toHaveBeenCalled();
+    
+    audioManager.stopEyesSound();
+    expect(mockCtx.mockSource.stop).toHaveBeenCalled();
   });
 });

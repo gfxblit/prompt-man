@@ -10,7 +10,7 @@ describe('GameState Sound Events', () => {
   let audioManager: AudioManager;
   const template = `
 #####
-#P.o#
+#P.oG#
 #####
   `.trim();
 
@@ -212,5 +212,97 @@ describe('GameState Sound Events', () => {
     state.updatePacman({ dx: 1, dy: 0 }, 300); 
     
     expect(audioManager.stopAll).toHaveBeenCalled();
+  });
+
+  describe('Sound Priority (Eyes > Fright > Siren)', () => {
+    beforeEach(() => {
+      vi.spyOn(audioManager, 'startEyesSound');
+      vi.spyOn(audioManager, 'stopEyesSound');
+    });
+
+    it('should play Eyes sound and stop others when a ghost is dead', () => {
+      const state = new GameState(grid, audioManager);
+      state.updatePacman({ dx: 0, dy: 0 }, 5000); // End Ready state
+      
+      // Trigger ghost eat via collision
+      const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+      const ghost = state.getEntities().find(e => e.type === EntityType.Ghost)!;
+      ghost.isScared = true;
+      pacman.x = ghost.x;
+      pacman.y = ghost.y;
+      
+      // updatePacman calls checkCollisions
+      state.updatePacman({ dx: 0, dy: 0 }, 16);
+      
+      expect(audioManager.startEyesSound).toHaveBeenCalled();
+      expect(audioManager.stopSiren).toHaveBeenCalled();
+      expect(audioManager.stopFrightSound).toHaveBeenCalled();
+    });
+
+    it('should play Fright sound and stop others when power up is active and no ghost is dead', () => {
+      const state = new GameState(grid, audioManager);
+      state.updatePacman({ dx: 0, dy: 0 }, 5000); // End Ready state
+      
+      state.consumePellet(3, 1); // Power pellet at (3,1)
+      
+      expect(audioManager.startFrightSound).toHaveBeenCalled();
+      expect(audioManager.stopSiren).toHaveBeenCalled();
+      expect(audioManager.stopEyesSound).toHaveBeenCalled();
+    });
+
+    it('should play Siren sound and stop others when neither Eyes nor Fright is active', () => {
+      const state = new GameState(grid, audioManager);
+      state.updatePacman({ dx: 0, dy: 0 }, 5000); // End Ready state
+      
+      // Initially it should be Siren
+      expect(audioManager.playSiren).toHaveBeenCalled();
+      expect(audioManager.stopEyesSound).toHaveBeenCalled();
+      expect(audioManager.stopFrightSound).toHaveBeenCalled();
+    });
+
+    it('should prioritize Eyes over Fright', () => {
+      const state = new GameState(grid, audioManager);
+      state.updatePacman({ dx: 0, dy: 0 }, 5000); // End Ready state
+      
+      state.consumePellet(3, 1); // Power pellet -> Fright
+      expect(audioManager.startFrightSound).toHaveBeenCalled();
+
+      // Trigger ghost eat
+      const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+      const ghost = state.getEntities().find(e => e.type === EntityType.Ghost)!;
+      ghost.isScared = true;
+      pacman.x = ghost.x;
+      pacman.y = ghost.y;
+      state.updatePacman({ dx: 0, dy: 0 }, 16);
+
+      expect(audioManager.startEyesSound).toHaveBeenCalled();
+      expect(audioManager.stopFrightSound).toHaveBeenCalled();
+    });
+
+    it('should resume Fright if eyes ghost respawns and power up is still active', () => {
+      const state = new GameState(grid, audioManager);
+      state.updatePacman({ dx: 0, dy: 0 }, 5000); // End Ready state
+      
+      state.consumePellet(3, 1); // Power pellet -> Fright
+      
+      // Trigger ghost eat
+      const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+      const ghost = state.getEntities().find(e => e.type === EntityType.Ghost)!;
+      ghost.isScared = true;
+      pacman.x = ghost.x;
+      pacman.y = ghost.y;
+      state.updatePacman({ dx: 0, dy: 0 }, 16); // -> Eyes
+      
+      expect(audioManager.startEyesSound).toHaveBeenCalled();
+      
+      // Respawn ghost
+      const spawn = state.getSpawnPosition(ghost)!;
+      ghost.x = spawn.x;
+      ghost.y = spawn.y;
+      state.updateGhosts(16); // -> should go back to Fright
+      
+      expect(audioManager.stopEyesSound).toHaveBeenCalled();
+      expect(audioManager.startFrightSound).toHaveBeenCalledTimes(2); // Once for pellet, once for return
+    });
   });
 });
