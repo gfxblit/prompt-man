@@ -42,8 +42,7 @@ describe('GameState Sound Events', () => {
     // P is Pacman at (1,1)
     
     // We need a ghost that is scared.
-    // GameState initialization adds ghosts if there are GhostSpawn tiles.
-    // Our template doesn't have them. Let's use a different template or inject a ghost.
+    // The template includes a GhostSpawn 'G' tile, so a ghost will be created by the GameState constructor.
     
     const templateWithGhost = `
 #######

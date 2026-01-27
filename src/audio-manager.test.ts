@@ -32,8 +32,14 @@ describe('AudioManager', () => {
     await audioManager.initialize();
 
     expect(window.AudioContext).toHaveBeenCalled();
-    // Should load pellet sounds + siren sounds + power pellet sound + intro sound + fright sound + ghost eaten sound + death sounds
-    const expectedCalls = AUDIO.PELLET_SOUNDS.length + AUDIO.SIRENS.length + 4 + AUDIO.DEATH_SOUNDS.length;
+    // Should load pellet sounds + siren sounds + single sounds + death sounds
+    const singleSounds = [
+      AUDIO.POWER_PELLET_SOUND,
+      AUDIO.INTRO_SOUND,
+      AUDIO.FRIGHT_SOUND,
+      AUDIO.GHOST_EATEN_SOUND,
+    ];
+    const expectedCalls = AUDIO.PELLET_SOUNDS.length + AUDIO.SIRENS.length + singleSounds.length + AUDIO.DEATH_SOUNDS.length;
     expect(assetLoader.loadAudio).toHaveBeenCalledTimes(expectedCalls);
     AUDIO.PELLET_SOUNDS.forEach(url => {
       expect(assetLoader.loadAudio).toHaveBeenCalledWith(url, mockCtx.context);
@@ -41,43 +47,35 @@ describe('AudioManager', () => {
     AUDIO.SIRENS.forEach(url => {
       expect(assetLoader.loadAudio).toHaveBeenCalledWith(url, mockCtx.context);
     });
-    expect(assetLoader.loadAudio).toHaveBeenCalledWith(AUDIO.POWER_PELLET_SOUND, mockCtx.context);
-    expect(assetLoader.loadAudio).toHaveBeenCalledWith(AUDIO.INTRO_SOUND, mockCtx.context);
-    expect(assetLoader.loadAudio).toHaveBeenCalledWith(AUDIO.FRIGHT_SOUND, mockCtx.context);
-    expect(assetLoader.loadAudio).toHaveBeenCalledWith(AUDIO.GHOST_EATEN_SOUND, mockCtx.context);
+    singleSounds.forEach(url => {
+      expect(assetLoader.loadAudio).toHaveBeenCalledWith(url, mockCtx.context);
+    });
     AUDIO.DEATH_SOUNDS.forEach(url => {
       expect(assetLoader.loadAudio).toHaveBeenCalledWith(url, mockCtx.context);
     });
   });
 
+  function mockAudioLoads(mockLoad: Mock, specificBuffers: Record<string, AudioBuffer> = {}) {
+    const audioUrls = [
+      ...AUDIO.PELLET_SOUNDS,
+      ...AUDIO.SIRENS,
+      AUDIO.POWER_PELLET_SOUND,
+      AUDIO.INTRO_SOUND,
+      AUDIO.FRIGHT_SOUND,
+      AUDIO.GHOST_EATEN_SOUND,
+      ...AUDIO.DEATH_SOUNDS,
+    ];
+
+    for (const url of audioUrls) {
+      mockLoad.mockResolvedValueOnce(specificBuffers[url] || ({} as AudioBuffer));
+    }
+  }
+
   it('should play ghost eaten sound', async () => {
     const eatGhostBuffer = { duration: 0.5 } as AudioBuffer;
-    const mockLoad = vi.spyOn(assetLoader, 'loadAudio');
+    const mockLoad = vi.spyOn(assetLoader, 'loadAudio') as Mock;
 
-    // PELLET_SOUNDS (2)
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
-
-    // SIRENS (4)
-    for (let i = 0; i < 4; i++) {
-      mockLoad.mockResolvedValueOnce({} as AudioBuffer);
-    }
-
-    // POWER_PELLET (1)
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
-
-    // INTRO (1)
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
-
-    // FRIGHT (1)
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
-
-    // GHOST_EATEN (1)
-    mockLoad.mockResolvedValueOnce(eatGhostBuffer);
-
-    // DEATH (2)
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
+    mockAudioLoads(mockLoad, { [AUDIO.GHOST_EATEN_SOUND]: eatGhostBuffer });
 
     await audioManager.initialize();
     audioManager.playEatGhostSound();
@@ -88,34 +86,9 @@ describe('AudioManager', () => {
 
   it('should return intro duration', async () => {
     const introBuffer = { duration: 4.5 } as AudioBuffer;
-    const sirenBuffer = { duration: 0.5 } as AudioBuffer;
+    const mockLoad = vi.spyOn(assetLoader, 'loadAudio') as Mock;
 
-    const mockLoad = vi.spyOn(assetLoader, 'loadAudio');
-
-    // PELLET_SOUNDS (2)
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
-
-    // SIRENS (4)
-    for (let i = 0; i < 4; i++) {
-      mockLoad.mockResolvedValueOnce(sirenBuffer);
-    }
-
-    // POWER_PELLET (1)
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
-
-    // INTRO (1)
-    mockLoad.mockResolvedValueOnce(introBuffer);
-
-    // FRIGHT (1)
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
-
-    // GHOST_EATEN (1)
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
-
-    // DEATH (2)
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
+    mockAudioLoads(mockLoad, { [AUDIO.INTRO_SOUND]: introBuffer });
 
     await audioManager.initialize();
     expect(audioManager.getIntroDuration()).toBe(4500);
@@ -123,34 +96,9 @@ describe('AudioManager', () => {
 
   it('should play intro music', async () => {
     const introBuffer = { duration: 4.5 } as AudioBuffer;
-    const sirenBuffer = { duration: 0.5 } as AudioBuffer;
+    const mockLoad = vi.spyOn(assetLoader, 'loadAudio') as Mock;
 
-    const mockLoad = vi.spyOn(assetLoader, 'loadAudio');
-
-    // PELLET_SOUNDS (2)
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
-
-    // SIRENS (4)
-    for (let i = 0; i < 4; i++) {
-      mockLoad.mockResolvedValueOnce(sirenBuffer);
-    }
-
-    // POWER_PELLET (1)
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
-
-    // INTRO (1)
-    mockLoad.mockResolvedValueOnce(introBuffer);
-
-    // FRIGHT (1)
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
-
-    // GHOST_EATEN (1)
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
-
-    // DEATH (2)
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
+    mockAudioLoads(mockLoad, { [AUDIO.INTRO_SOUND]: introBuffer });
 
     await audioManager.initialize();
     audioManager.playIntroMusic();
@@ -162,41 +110,13 @@ describe('AudioManager', () => {
   it('should play alternating pellet sounds', async () => {
     const buffer0 = { duration: 1 } as AudioBuffer;
     const buffer1 = { duration: 2 } as AudioBuffer;
-    const sirenBuffer = { duration: 0.5 } as AudioBuffer;
-    const powerBuffer = { duration: 3 } as AudioBuffer;
-    const introBuffer = { duration: 3.5 } as AudioBuffer;
-    const frightBuffer = { duration: 4 } as AudioBuffer;
 
-    const mockLoad = vi.spyOn(assetLoader, 'loadAudio');
+    const mockLoad = vi.spyOn(assetLoader, 'loadAudio') as Mock;
 
-    // PELLET_SOUNDS (2)
-    mockLoad.mockResolvedValueOnce(buffer0);
-    mockLoad.mockResolvedValueOnce(buffer1);
-
-    // SIRENS (4)
-    for (let i = 0; i < 4; i++) {
-      mockLoad.mockResolvedValueOnce(sirenBuffer);
-    }
-
-    // POWER_PELLET (1)
-    mockLoad.mockResolvedValueOnce(powerBuffer);
-
-    // INTRO (1)
-    mockLoad.mockResolvedValueOnce(introBuffer);
-
-    // FRIGHT (1)
-    mockLoad.mockResolvedValueOnce(frightBuffer);
-    
-    // GHOST_EATEN (1)
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
-
-    // DEATH (2)
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
-
-    // DEATH (2)
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
+    mockAudioLoads(mockLoad, {
+      [AUDIO.PELLET_SOUNDS[0]]: buffer0,
+      [AUDIO.PELLET_SOUNDS[1]]: buffer1,
+    });
 
     await audioManager.initialize();
 
@@ -219,37 +139,15 @@ describe('AudioManager', () => {
   it('should play power pellet sound and not affect pellet alternation', async () => {
     const buffer0 = { duration: 1 } as AudioBuffer;
     const buffer1 = { duration: 2 } as AudioBuffer;
-    const sirenBuffer = { duration: 0.5 } as AudioBuffer;
     const powerBuffer = { duration: 3 } as AudioBuffer;
-    const introBuffer = { duration: 3.5 } as AudioBuffer;
-    const frightBuffer = { duration: 4 } as AudioBuffer;
 
-    const mockLoad = vi.spyOn(assetLoader, 'loadAudio');
+    const mockLoad = vi.spyOn(assetLoader, 'loadAudio') as Mock;
 
-    // PELLET_SOUNDS (2)
-    mockLoad.mockResolvedValueOnce(buffer0);
-    mockLoad.mockResolvedValueOnce(buffer1);
-
-    // SIRENS (4)
-    for (let i = 0; i < 4; i++) {
-      mockLoad.mockResolvedValueOnce(sirenBuffer);
-    }
-
-    // POWER_PELLET (1)
-    mockLoad.mockResolvedValueOnce(powerBuffer);
-
-    // INTRO (1)
-    mockLoad.mockResolvedValueOnce(introBuffer);
-
-    // FRIGHT (1)
-    mockLoad.mockResolvedValueOnce(frightBuffer);
-
-    // GHOST_EATEN (1)
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
-
-    // DEATH (2)
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
+    mockAudioLoads(mockLoad, {
+      [AUDIO.PELLET_SOUNDS[0]]: buffer0,
+      [AUDIO.PELLET_SOUNDS[1]]: buffer1,
+      [AUDIO.POWER_PELLET_SOUND]: powerBuffer,
+    });
 
     await audioManager.initialize();
 
@@ -294,40 +192,19 @@ describe('AudioManager', () => {
   it('should play death sequence', async () => {
     const deathBuffer0 = { duration: 1.5 } as AudioBuffer;
     const deathBuffer1 = { duration: 2.5 } as AudioBuffer;
-    
-    const mockLoad = vi.spyOn(assetLoader, 'loadAudio');
-    
-    // We need to provide return values for all calls to loadAudio up to the death sounds
-    // PELLET_SOUNDS (2)
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
 
-    // SIRENS (4)
-    for (let i = 0; i < 4; i++) {
-      mockLoad.mockResolvedValueOnce({} as AudioBuffer);
-    }
+    const mockLoad = vi.spyOn(assetLoader, 'loadAudio') as Mock;
 
-    // POWER_PELLET (1)
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
+    mockAudioLoads(mockLoad, {
+      [AUDIO.DEATH_SOUNDS[0]]: deathBuffer0,
+      [AUDIO.DEATH_SOUNDS[1]]: deathBuffer1,
+    });
 
-    // INTRO (1)
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
-
-    // FRIGHT (1)
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
-
-    // GHOST_EATEN (1)
-    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
-    
-    // DEATH (2)
-    mockLoad.mockResolvedValueOnce(deathBuffer0);
-    mockLoad.mockResolvedValueOnce(deathBuffer1);
-    
     await audioManager.initialize();
-    
+
     // Reset mockSource to clear previous calls (though createBufferSource creates new ones)
     vi.clearAllMocks();
-    
+
     // Re-setup the createBufferSource mock to capture the sources returned
     const sources: {
       buffer: AudioBuffer | null;
@@ -337,23 +214,23 @@ describe('AudioManager', () => {
       disconnect: Mock;
     }[] = [];
     (mockCtx.context.createBufferSource as Mock).mockImplementation(() => {
-        const source = {
-            buffer: null,
-            connect: vi.fn(),
-            start: vi.fn(),
-            stop: vi.fn(),
-            disconnect: vi.fn()
-        };
-        sources.push(source);
-        return source;
+      const source = {
+        buffer: null,
+        connect: vi.fn(),
+        start: vi.fn(),
+        stop: vi.fn(),
+        disconnect: vi.fn()
+      };
+      sources.push(source);
+      return source;
     });
-    
+
     audioManager.playDeathSequence();
-    
+
     expect(sources.length).toBe(2);
     expect(sources[0]!.buffer).toBe(deathBuffer0);
     expect(sources[1]!.buffer).toBe(deathBuffer1);
-    
+
     expect(sources[0]!.start).toHaveBeenCalledWith(mockCtx.context.currentTime);
     expect(sources[1]!.start).toHaveBeenCalledWith(mockCtx.context.currentTime + deathBuffer0.duration);
   });
