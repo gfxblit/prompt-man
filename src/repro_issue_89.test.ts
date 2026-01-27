@@ -72,10 +72,10 @@ describe('Issue 89: Hide Pacman During Ghost Bonus Score', () => {
     };
   });
 
-  it('should skip rendering Pacman if a point effect is at its position', () => {
+  it('should skip rendering Pacman if a point effect is near its position (within collision threshold)', () => {
     const pacman: Entity = { 
       type: EntityType.Pacman, 
-      x: 5, 
+      x: 5.3, 
       y: 5, 
       direction: { dx: 1, dy: 0 },
       animationFrame: 0
@@ -97,10 +97,10 @@ describe('Issue 89: Hide Pacman During Ghost Bonus Score', () => {
     expect(mockContext.fillText).toHaveBeenCalledWith('200', 5 * TILE_SIZE + TILE_SIZE / 2, 5 * TILE_SIZE + TILE_SIZE / 2);
   });
 
-  it('should skip rendering Pacman (spritesheet) if a point effect is at its position', () => {
+  it('should skip rendering Pacman (spritesheet) if a point effect is near its position', () => {
     const pacman: Entity = { 
       type: EntityType.Pacman, 
-      x: 5, 
+      x: 5.3, 
       y: 5, 
       direction: { dx: 1, dy: 0 },
       animationFrame: 0

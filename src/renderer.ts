@@ -15,7 +15,8 @@ import {
   PACMAN_DEATH_PALETTE_OFFSET_Y,
   PACMAN_DEATH_ANIMATION_FRAMES,
   POWER_UP_FLASH_THRESHOLD,
-  POWER_UP_FLASH_RATE
+  POWER_UP_FLASH_RATE,
+  COLLISION_THRESHOLD
 } from './config.js';
 import { getTileMask } from './autotile.js';
 import {
@@ -385,7 +386,7 @@ export class Renderer implements IRenderer {
 
         // Skip rendering Pacman if we are showing points at this position
         const effects = state.getPointEffects();
-        if (effects.some(e => Math.abs(e.x - entity.x) < 0.1 && Math.abs(e.y - entity.y) < 0.1)) {
+        if (effects.some(e => Math.abs(e.x - entity.x) < COLLISION_THRESHOLD && Math.abs(e.y - entity.y) < COLLISION_THRESHOLD)) {
           return;
         }
 
@@ -466,7 +467,7 @@ export class Renderer implements IRenderer {
 
         // Skip rendering the ghost if it was just eaten and we are showing points
         const effects = state.getPointEffects();
-        if (effects.some(e => Math.abs(e.x - entity.x) < 0.1 && Math.abs(e.y - entity.y) < 0.1)) {
+        if (effects.some(e => Math.abs(e.x - entity.x) < COLLISION_THRESHOLD && Math.abs(e.y - entity.y) < COLLISION_THRESHOLD)) {
           return;
         }
 
