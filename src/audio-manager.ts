@@ -12,6 +12,7 @@ export class AudioManager {
   private pelletSoundIndex: number = 0;
   private frightBuffer: AudioBuffer | null = null;
   private frightSource: AudioBufferSourceNode | null = null;
+  private introSource: AudioBufferSourceNode | null = null;
   private deathBuffers: AudioBuffer[] = [];
 
   constructor(private assetLoader: AssetLoader) { }
@@ -98,7 +99,37 @@ export class AudioManager {
       this.audioContext.resume().catch(console.error);
     }
 
-    this.playSound(this.introBuffer);
+    this.introSource = this.audioContext.createBufferSource();
+    this.introSource.buffer = this.introBuffer;
+    this.introSource.connect(this.audioContext.destination);
+    this.introSource.onended = () => {
+      this.introSource = null;
+    };
+    this.introSource.start(0);
+  }
+
+  /**
+   * Stops the intro music.
+   */
+  stopIntroMusic(): void {
+    if (this.introSource) {
+      try {
+        this.introSource.stop();
+      } catch {
+        // Ignore errors
+      }
+      this.introSource.disconnect();
+      this.introSource = null;
+    }
+  }
+
+  /**
+   * Stops all background sounds (siren, fright sound, intro music).
+   */
+  stopAll(): void {
+    this.stopSiren();
+    this.stopFrightSound();
+    this.stopIntroMusic();
   }
 
   /**
@@ -129,8 +160,6 @@ export class AudioManager {
 
     this.pelletSoundIndex = (this.pelletSoundIndex + 1) % this.pelletBuffers.length;
   }
-
-
 
   /**
    * Plays the specific power pellet consumption sound.
@@ -253,6 +282,8 @@ export class AudioManager {
    */
   playDeathSequence(): void {
     if (!this.audioContext || this.deathBuffers.length === 0) return;
+
+    this.stopAll();
 
     if (this.audioContext.state === 'suspended') {
       this.audioContext.resume().catch(console.error);

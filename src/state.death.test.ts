@@ -42,6 +42,7 @@ describe('GameState Death Logic', () => {
       playDeathSequence: vi.fn(),
       stopSiren: vi.fn(),
       stopFrightSound: vi.fn(),
+      stopAll: vi.fn(),
       playSiren: vi.fn(),
     } as unknown as AudioManager;
     
@@ -54,7 +55,7 @@ describe('GameState Death Logic', () => {
     state.updatePacman({ dx: 0, dy: 0 }, 0);
 
     expect(state.isDying()).toBe(true);
-    expect(mockAudioManager.stopSiren).toHaveBeenCalled();
+    expect(mockAudioManager.stopAll).toHaveBeenCalled();
     expect(mockAudioManager.playDeathSequence).toHaveBeenCalled();
   });
 
