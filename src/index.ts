@@ -29,13 +29,14 @@ export async function init(container: HTMLElement): Promise<void> {
   const inputHandler = InputHandler.getInstance();
 
   // Resume audio context on first interaction
-  const resumeAudio = () => {
-    audioManager.resumeIfNeeded();
-    audioManager.playIntroMusic();
-    state.startReady(audioManager.getIntroDuration());
+  const resumeAudio = async () => {
     window.removeEventListener('keydown', resumeAudio);
     window.removeEventListener('mousedown', resumeAudio);
     window.removeEventListener('touchstart', resumeAudio);
+
+    await audioManager.resumeIfNeeded();
+    audioManager.playIntroMusic();
+    state.startReady(audioManager.getIntroDuration());
   };
   window.addEventListener('keydown', resumeAudio);
   window.addEventListener('mousedown', resumeAudio);
