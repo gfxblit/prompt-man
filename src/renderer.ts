@@ -383,6 +383,12 @@ export class Renderer implements IRenderer {
           return;
         }
 
+        // Skip rendering Pacman if we are showing points at this position
+        const effects = state.getPointEffects();
+        if (effects.some(e => Math.abs(e.x - entity.x) < 0.1 && Math.abs(e.y - entity.y) < 0.1)) {
+          return;
+        }
+
         if (this.spritesheet) {
           const rotation = entity.rotation ?? 0;
           let dirKey: keyof typeof PACMAN_ANIMATION_MAP = 'EAST';
