@@ -268,6 +268,7 @@ export class AudioManager {
       } catch {
         // Ignore errors on stop (e.g. if already stopped or invalid state)
       }
+      this.frightSource.disconnect();
       this.frightSource = null;
     }
   }
@@ -306,6 +307,7 @@ export class AudioManager {
       } catch {
         // Ignore errors on stop (e.g. if already stopped or invalid state)
       }
+      this.eyesSource.disconnect();
       this.eyesSource = null;
     }
   }

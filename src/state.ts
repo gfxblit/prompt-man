@@ -261,6 +261,7 @@ export class GameState implements IGameState {
       if (this.pauseTimer <= 0) {
         this.pauseTimer = 0;
         this.pointEffects = [];
+        this.updateBackgroundSound();
       }
       return;
     }
@@ -403,6 +404,9 @@ export class GameState implements IGameState {
       if (dist < COLLISION_THRESHOLD) {
         if (ghost.isScared) {
           // Ghost is eaten
+          this.audioManager?.stopSiren();
+          this.audioManager?.stopFrightSound();
+          this.audioManager?.stopEyesSound();
           this.audioManager?.playEatGhostSound();
           const points = GHOST_EATEN_SCORE * Math.pow(2, this.ghostsEatenCount);
           this.score += points;
@@ -737,7 +741,7 @@ export class GameState implements IGameState {
   }
 
   private updateBackgroundSound(): void {
-    if (this.gameOver || this.win || this.dying || this.ready) {
+    if (this.gameOver || this.win || this.dying || this.ready || this.pauseTimer > 0) {
       return;
     }
 

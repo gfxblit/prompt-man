@@ -234,6 +234,9 @@ describe('GameState Sound Events', () => {
       // updatePacman calls checkCollisions
       state.updatePacman({ dx: 0, dy: 0 }, 16);
       
+      // Advance past pause (1000ms)
+      state.updatePacman({ dx: 0, dy: 0 }, 1100);
+      
       expect(audioManager.startEyesSound).toHaveBeenCalled();
       expect(audioManager.stopSiren).toHaveBeenCalled();
       expect(audioManager.stopFrightSound).toHaveBeenCalled();
@@ -275,6 +278,9 @@ describe('GameState Sound Events', () => {
       pacman.y = ghost.y;
       state.updatePacman({ dx: 0, dy: 0 }, 16);
 
+      // Advance past pause (1000ms)
+      state.updatePacman({ dx: 0, dy: 0 }, 1100);
+
       expect(audioManager.startEyesSound).toHaveBeenCalled();
       expect(audioManager.stopFrightSound).toHaveBeenCalled();
     });
@@ -293,6 +299,9 @@ describe('GameState Sound Events', () => {
       pacman.y = ghost.y;
       state.updatePacman({ dx: 0, dy: 0 }, 16); // -> Eyes
       
+      // Advance past pause (1000ms)
+      state.updatePacman({ dx: 0, dy: 0 }, 1100);
+      
       expect(audioManager.startEyesSound).toHaveBeenCalled();
       
       // Respawn ghost
@@ -302,7 +311,7 @@ describe('GameState Sound Events', () => {
       state.updateGhosts(16); // -> should go back to Fright
       
       expect(audioManager.stopEyesSound).toHaveBeenCalled();
-      expect(audioManager.startFrightSound).toHaveBeenCalledTimes(2); // Once for pellet, once for return
+      expect(audioManager.startFrightSound).toHaveBeenCalledTimes(3); // Once for pellet, once for updateBackgroundSound in consumePellet, once for return
     });
   });
 });
