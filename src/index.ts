@@ -29,18 +29,32 @@ export async function init(container: HTMLElement): Promise<void> {
   const inputHandler = InputHandler.getInstance();
 
   // Resume audio context on first interaction
+  let gameStarted = false;
   const resumeAudio = async () => {
+    if (gameStarted) return;
+
+    try {
+      await audioManager.resumeIfNeeded();
+    } catch (e) {
+      return;
+    }
+
+    if (gameStarted) return;
+    gameStarted = true;
     window.removeEventListener('keydown', resumeAudio);
     window.removeEventListener('mousedown', resumeAudio);
     window.removeEventListener('touchstart', resumeAudio);
+    window.removeEventListener('touchend', resumeAudio);
+    window.removeEventListener('click', resumeAudio);
 
-    await audioManager.resumeIfNeeded();
     audioManager.playIntroMusic();
     state.startReady(audioManager.getIntroDuration());
   };
   window.addEventListener('keydown', resumeAudio);
   window.addEventListener('mousedown', resumeAudio);
   window.addEventListener('touchstart', resumeAudio);
+  window.addEventListener('touchend', resumeAudio);
+  window.addEventListener('click', resumeAudio);
 
   // Create score bar
   const scoreContainer = document.createElement('div');
