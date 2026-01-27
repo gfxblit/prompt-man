@@ -219,6 +219,7 @@ describe('AudioManager', () => {
 
 
 
+
   it('should resume audio context if suspended', async () => {
     await audioManager.initialize();
     vi.spyOn(mockCtx.context, 'state', 'get').mockReturnValue('suspended');
