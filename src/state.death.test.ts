@@ -4,6 +4,8 @@ import { Grid } from './grid.js';
 import { EntityType } from './types.js';
 import { PACMAN_DEATH_ANIMATION_SPEED } from './config.js';
 
+import { AudioManager } from './audio-manager.js';
+
 // Mock configuration to disable the "Ready" state delay for these tests. This allows tests to focus on core logic without waiting for the initial pause.
 vi.mock('./config.js', async (importOriginal) => {
   const mod = await importOriginal<typeof import('./config.js')>();
@@ -32,6 +34,28 @@ describe('GameState Death Logic', () => {
 
   afterEach(() => {
     vi.unstubAllGlobals();
+  });
+
+  it('should play death sequence on collision', () => {
+    const mockAudioManager = {
+      playPelletSound: vi.fn(),
+      playPowerPelletSound: vi.fn(),
+      playDeathSequence: vi.fn(),
+      stopSiren: vi.fn(),
+      stopFrightSound: vi.fn(),
+      playSiren: vi.fn(),
+    } as unknown as AudioManager;
+    
+    const state = new GameState(grid, mockAudioManager);
+    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+    const ghost = state.getEntities().find(e => e.type === EntityType.Ghost)!;
+
+    // Trigger collision
+    pacman.x = ghost.x - 0.4;
+    state.updatePacman({ dx: 0, dy: 0 }, 0);
+
+    expect(state.isDying()).toBe(true);
+    expect(mockAudioManager.playDeathSequence).toHaveBeenCalled();
   });
 
   it('should enter dying state on collision with ghost', () => {

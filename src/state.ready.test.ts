@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { GameState } from './state.js';
 import { Grid } from './grid.js';
 import { EntityType } from './types.js';
-import { READY_DURATION, PACMAN_SPEED } from './config.js';
+import { READY_DURATION, PACMAN_SPEED, PACMAN_DEATH_ANIMATION_SPEED, PACMAN_DEATH_ANIMATION_FRAMES } from './config.js';
 
 describe('GameState - Ready State', () => {
   let grid: Grid;
@@ -114,7 +114,7 @@ describe('GameState - Ready State', () => {
     // Finish dying animation
     // We need to advance time enough for death animation to finish
     // PACMAN_DEATH_ANIMATION_SPEED * PACMAN_DEATH_ANIMATION_FRAMES
-    const deathDuration = 150 * 12 + 100;
+    const deathDuration = PACMAN_DEATH_ANIMATION_SPEED * PACMAN_DEATH_ANIMATION_FRAMES + 100;
     state.updatePacman({ dx: 0, dy: 0 }, deathDuration);
     
     expect(state.isDying()).toBe(false);

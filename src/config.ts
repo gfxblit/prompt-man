@@ -62,6 +62,10 @@ export const AUDIO = {
   POWER_PELLET_SOUND: 'sfx/eat_fruit.wav', // Placeholder for future
   INTRO_SOUND: 'sfx/start.wav',
   FRIGHT_SOUND: 'sfx/fright.wav',
+  DEATH_SOUNDS: [
+    'sfx/death_0.wav',
+    'sfx/death_1.wav'
+  ]
 } as const;
 
 /** Thresholds for siren changes based on pellets eaten ratio (0 to 1). */
@@ -98,7 +102,7 @@ export const GHOST_OFFSETS = {
 export const PACMAN_ANIMATION_SPEED = 100;
 /** Pacman death animation configuration. */
 /** Pacman death animation speed in milliseconds per frame. */
-export const PACMAN_DEATH_ANIMATION_SPEED = 150;
+export const PACMAN_DEATH_ANIMATION_SPEED = 300;
 export const PACMAN_DEATH_ANIMATION_FRAMES = 12;
 export const PACMAN_DEATH_PALETTE_OFFSET_X = 400;
 export const PACMAN_DEATH_PALETTE_OFFSET_Y = 319;

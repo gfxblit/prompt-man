@@ -91,6 +91,7 @@ export function mockAudioContext() {
     connect: vi.fn(),
     start: vi.fn(),
     stop: vi.fn(),
+    disconnect: vi.fn(),
     onended: null,
   } as unknown as AudioBufferSourceNode;
 
