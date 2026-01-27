@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Renderer } from './renderer.js';
 import { Grid } from './grid.js';
 import { EntityType } from './types.js';
-import type { IGameState, IPacman } from './types.js';
+import type { IGameState, Entity } from './types.js';
 import { TILE_SIZE } from './config.js';
 
 describe('Issue 89: Hide Pacman During Ghost Bonus Score', () => {
@@ -73,14 +73,12 @@ describe('Issue 89: Hide Pacman During Ghost Bonus Score', () => {
   });
 
   it('should skip rendering Pacman if a point effect is at its position', () => {
-    const pacman: IPacman = { 
+    const pacman: Entity = { 
       type: EntityType.Pacman, 
       x: 5, 
       y: 5, 
-      direction: { x: 1, y: 0 }, 
-      nextDirection: { x: 1, y: 0 },
-      isMoving: false,
-      mouthOpen: 0.5
+      direction: { dx: 1, dy: 0 },
+      animationFrame: 0
     };
     vi.mocked(mockState.getEntities).mockReturnValue([pacman]);
     vi.mocked(mockState.getPointEffects).mockReturnValue([
@@ -100,14 +98,12 @@ describe('Issue 89: Hide Pacman During Ghost Bonus Score', () => {
   });
 
   it('should skip rendering Pacman (spritesheet) if a point effect is at its position', () => {
-    const pacman: IPacman = { 
+    const pacman: Entity = { 
       type: EntityType.Pacman, 
       x: 5, 
       y: 5, 
-      direction: { x: 1, y: 0 }, 
-      nextDirection: { x: 1, y: 0 },
-      isMoving: false,
-      mouthOpen: 0.5
+      direction: { dx: 1, dy: 0 },
+      animationFrame: 0
     };
     vi.mocked(mockState.getEntities).mockReturnValue([pacman]);
     vi.mocked(mockState.getPointEffects).mockReturnValue([
@@ -127,3 +123,4 @@ describe('Issue 89: Hide Pacman During Ghost Bonus Score', () => {
     expect(mockContext.fillText).toHaveBeenCalledWith('200', 5 * TILE_SIZE + TILE_SIZE / 2, 5 * TILE_SIZE + TILE_SIZE / 2);
   });
 });
+
