@@ -12,6 +12,7 @@ export class AudioManager {
   private pelletSoundIndex: number = 0;
   private frightBuffer: AudioBuffer | null = null;
   private frightSource: AudioBufferSourceNode | null = null;
+  private deathBuffers: AudioBuffer[] = [];
 
   constructor(private assetLoader: AssetLoader) { }
 
@@ -60,6 +61,12 @@ export class AudioManager {
       } catch (error) {
         console.warn('Failed to load fright sound:', error);
       }
+
+      // Load death sounds
+      const deathLoadPromises = AUDIO.DEATH_SOUNDS.map(url =>
+        this.assetLoader.loadAudio(url, this.audioContext!)
+      );
+      this.deathBuffers = await Promise.all(deathLoadPromises);
     } catch (error) {
       console.warn('AudioManager failed to initialize:', error);
       throw error;
@@ -121,6 +128,31 @@ export class AudioManager {
     }
 
     this.pelletSoundIndex = (this.pelletSoundIndex + 1) % this.pelletBuffers.length;
+  }
+
+  /**
+   * Plays the sequence of death sounds.
+   */
+  playDeathSequence(): void {
+    if (!this.audioContext || this.deathBuffers.length < 2) return;
+
+    if (this.audioContext.state === 'suspended') {
+      this.audioContext.resume().catch(console.error);
+    }
+
+    const startTime = this.audioContext.currentTime;
+
+    // Play first sound
+    const source0 = this.audioContext.createBufferSource();
+    source0.buffer = this.deathBuffers[0];
+    source0.connect(this.audioContext.destination);
+    source0.start(startTime);
+
+    // Play second sound after first finishes
+    const source1 = this.audioContext.createBufferSource();
+    source1.buffer = this.deathBuffers[1];
+    source1.connect(this.audioContext.destination);
+    source1.start(startTime + this.deathBuffers[0].duration);
   }
 
   /**

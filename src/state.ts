@@ -431,6 +431,8 @@ export class GameState implements IGameState {
       pacman.deathTimer = 0;
       pacman.animationFrame = 0;
       pacman.direction = { dx: 0, dy: 0 };
+
+      this.audioManager?.playDeathSequence();
     }
   }
 

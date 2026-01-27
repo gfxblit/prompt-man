@@ -62,6 +62,10 @@ export const AUDIO = {
   POWER_PELLET_SOUND: 'sfx/eat_fruit.wav', // Placeholder for future
   INTRO_SOUND: 'sfx/start.wav',
   FRIGHT_SOUND: 'sfx/fright.wav',
+  DEATH_SOUNDS: [
+    'sfx/death_0.wav',
+    'sfx/death_1.wav'
+  ]
 } as const;
 
 /** Thresholds for siren changes based on pellets eaten ratio (0 to 1). */
