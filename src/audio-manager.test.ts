@@ -32,8 +32,8 @@ describe('AudioManager', () => {
     await audioManager.initialize();
 
     expect(window.AudioContext).toHaveBeenCalled();
-    // Should load pellet sounds + siren sounds + power pellet sound + intro sound + fright sound + death sounds
-    const expectedCalls = AUDIO.PELLET_SOUNDS.length + AUDIO.SIRENS.length + 3 + AUDIO.DEATH_SOUNDS.length;
+    // Should load pellet sounds + siren sounds + power pellet sound + intro sound + fright sound + ghost eaten sound + death sounds
+    const expectedCalls = AUDIO.PELLET_SOUNDS.length + AUDIO.SIRENS.length + 4 + AUDIO.DEATH_SOUNDS.length;
     expect(assetLoader.loadAudio).toHaveBeenCalledTimes(expectedCalls);
     AUDIO.PELLET_SOUNDS.forEach(url => {
       expect(assetLoader.loadAudio).toHaveBeenCalledWith(url, mockCtx.context);
@@ -44,9 +44,46 @@ describe('AudioManager', () => {
     expect(assetLoader.loadAudio).toHaveBeenCalledWith(AUDIO.POWER_PELLET_SOUND, mockCtx.context);
     expect(assetLoader.loadAudio).toHaveBeenCalledWith(AUDIO.INTRO_SOUND, mockCtx.context);
     expect(assetLoader.loadAudio).toHaveBeenCalledWith(AUDIO.FRIGHT_SOUND, mockCtx.context);
+    expect(assetLoader.loadAudio).toHaveBeenCalledWith(AUDIO.GHOST_EATEN_SOUND, mockCtx.context);
     AUDIO.DEATH_SOUNDS.forEach(url => {
       expect(assetLoader.loadAudio).toHaveBeenCalledWith(url, mockCtx.context);
     });
+  });
+
+  it('should play ghost eaten sound', async () => {
+    const eatGhostBuffer = { duration: 0.5 } as AudioBuffer;
+    const mockLoad = vi.spyOn(assetLoader, 'loadAudio');
+
+    // PELLET_SOUNDS (2)
+    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
+    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
+
+    // SIRENS (4)
+    for (let i = 0; i < 4; i++) {
+      mockLoad.mockResolvedValueOnce({} as AudioBuffer);
+    }
+
+    // POWER_PELLET (1)
+    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
+
+    // INTRO (1)
+    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
+
+    // FRIGHT (1)
+    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
+
+    // GHOST_EATEN (1)
+    mockLoad.mockResolvedValueOnce(eatGhostBuffer);
+
+    // DEATH (2)
+    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
+    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
+
+    await audioManager.initialize();
+    audioManager.playEatGhostSound();
+
+    expect(mockCtx.context.createBufferSource).toHaveBeenCalled();
+    expect(mockCtx.mockSource.buffer).toBe(eatGhostBuffer);
   });
 
   it('should return intro duration', async () => {
@@ -71,6 +108,9 @@ describe('AudioManager', () => {
     mockLoad.mockResolvedValueOnce(introBuffer);
 
     // FRIGHT (1)
+    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
+
+    // GHOST_EATEN (1)
     mockLoad.mockResolvedValueOnce({} as AudioBuffer);
 
     // DEATH (2)
@@ -103,6 +143,9 @@ describe('AudioManager', () => {
     mockLoad.mockResolvedValueOnce(introBuffer);
 
     // FRIGHT (1)
+    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
+
+    // GHOST_EATEN (1)
     mockLoad.mockResolvedValueOnce({} as AudioBuffer);
 
     // DEATH (2)
@@ -144,6 +187,9 @@ describe('AudioManager', () => {
     // FRIGHT (1)
     mockLoad.mockResolvedValueOnce(frightBuffer);
     
+    // GHOST_EATEN (1)
+    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
+
     // DEATH (2)
     mockLoad.mockResolvedValueOnce({} as AudioBuffer);
     mockLoad.mockResolvedValueOnce({} as AudioBuffer);
@@ -197,6 +243,9 @@ describe('AudioManager', () => {
 
     // FRIGHT (1)
     mockLoad.mockResolvedValueOnce(frightBuffer);
+
+    // GHOST_EATEN (1)
+    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
 
     // DEATH (2)
     mockLoad.mockResolvedValueOnce({} as AudioBuffer);
@@ -265,6 +314,9 @@ describe('AudioManager', () => {
     mockLoad.mockResolvedValueOnce({} as AudioBuffer);
 
     // FRIGHT (1)
+    mockLoad.mockResolvedValueOnce({} as AudioBuffer);
+
+    // GHOST_EATEN (1)
     mockLoad.mockResolvedValueOnce({} as AudioBuffer);
     
     // DEATH (2)

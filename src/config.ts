@@ -65,7 +65,8 @@ export const AUDIO = {
   DEATH_SOUNDS: [
     'sfx/death_0.wav',
     'sfx/death_1.wav'
-  ]
+  ],
+  GHOST_EATEN_SOUND: 'sfx/eat_ghost.wav'
 } as const;
 
 /** Thresholds for siren changes based on pellets eaten ratio (0 to 1). */

@@ -13,6 +13,7 @@ export class AudioManager {
   private frightBuffer: AudioBuffer | null = null;
   private frightSource: AudioBufferSourceNode | null = null;
   private introSource: AudioBufferSourceNode | null = null;
+  private eatGhostBuffer: AudioBuffer | null = null;
   private deathBuffers: AudioBuffer[] = [];
 
   constructor(private assetLoader: AssetLoader) { }
@@ -61,6 +62,13 @@ export class AudioManager {
         this.frightBuffer = await this.assetLoader.loadAudio(AUDIO.FRIGHT_SOUND, this.audioContext!);
       } catch (error) {
         console.warn('Failed to load fright sound:', error);
+      }
+
+      // Load ghost eaten sound
+      try {
+        this.eatGhostBuffer = await this.assetLoader.loadAudio(AUDIO.GHOST_EATEN_SOUND, this.audioContext!);
+      } catch (error) {
+        console.warn('Failed to load ghost eaten sound:', error);
       }
 
       // Load death sounds
@@ -153,6 +161,21 @@ export class AudioManager {
     }
 
     this.pelletSoundIndex = (this.pelletSoundIndex + 1) % this.pelletBuffers.length;
+  }
+
+  /**
+   * Plays the ghost eaten sound.
+   */
+  playEatGhostSound(): void {
+    if (!this.audioContext || !this.eatGhostBuffer) {
+      return;
+    }
+
+    if (this.audioContext.state === 'suspended') {
+      this.audioContext.resume().catch(console.error);
+    }
+
+    this.playSound(this.eatGhostBuffer);
   }
 
   /**
