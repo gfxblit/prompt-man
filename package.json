@@ -22,7 +22,6 @@
     "@types/node": "^25.0.9",
     "@vitest/coverage-v8": "^4.0.17",
     "autoprefixer": "^10.4.23",
-    "eruda": "^3.4.3",
     "eslint": "^9.39.2",
     "happy-dom": "^20.3.3",
     "postcss": "^8.5.6",
