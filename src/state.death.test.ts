@@ -3,7 +3,6 @@ import { GameState } from './state.js';
 import { Grid } from './grid.js';
 import { EntityType } from './types.js';
 import { PACMAN_DEATH_ANIMATION_SPEED } from './config.js';
-
 import { AudioManager } from './audio-manager.js';
 
 // Mock configuration to disable the "Ready" state delay for these tests. This allows tests to focus on core logic without waiting for the initial pause.
@@ -196,4 +195,6 @@ describe('GameState Death Logic', () => {
     expect(ghost.isScared).toBe(false);
     expect(ghost.isDead).toBe(false);
   });
+
+
 });

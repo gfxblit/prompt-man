@@ -139,4 +139,15 @@ describe('GameState Sound Events', () => {
 
     expect(audioManager.stopSiren).toHaveBeenCalled();
   });
+
+  it('should call audioManager.stopSiren when startReady is called', () => {
+    const state = new GameState(grid, audioManager);
+    
+    // Clear previous calls
+    vi.clearAllMocks();
+    
+    state.startReady(4000);
+    
+    expect(audioManager.stopSiren).toHaveBeenCalled();
+  });
 });

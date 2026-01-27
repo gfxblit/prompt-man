@@ -175,6 +175,7 @@ export class GameState implements IGameState {
     this.started = true;
     this.ready = true;
     this.readyTimer = duration;
+    this.audioManager?.stopSiren();
   }
 
   getPowerUpTimer(): number {
@@ -425,6 +426,7 @@ export class GameState implements IGameState {
     if (this.gameOver || this.dying) return;
 
     this.dying = true;
+    this.audioManager?.playDeathSequence();
 
     const pacman = this.entities.find(e => e.type === EntityType.Pacman);
     if (pacman) {

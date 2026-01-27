@@ -11,10 +11,8 @@ describe('main entry point', () => {
   });
 
   it('should call init if #game-container exists', async () => {
-    const mockContainer = { appendChild: vi.fn() };
-    vi.stubGlobal('document', {
-      getElementById: vi.fn((id) => (id === 'game-container' ? mockContainer : null)),
-    });
+    const mockContainer = { appendChild: vi.fn() } as unknown as HTMLElement;
+    const getElementByIdSpy = vi.spyOn(document, 'getElementById').mockImplementation((id) => (id === 'game-container' ? mockContainer : null));
 
     // Import main to trigger side effect
     await import('./main.js?test=' + Date.now());
@@ -22,19 +20,17 @@ describe('main entry point', () => {
     expect(document.getElementById).toHaveBeenCalledWith('game-container');
     expect(init).toHaveBeenCalledWith(mockContainer);
     
-    vi.unstubAllGlobals();
+    getElementByIdSpy.mockRestore();
   });
 
   it('should not call init if #game-container does not exist', async () => {
-    vi.stubGlobal('document', {
-      getElementById: vi.fn(() => null),
-    });
+    const getElementByIdSpy = vi.spyOn(document, 'getElementById').mockImplementation(() => null);
 
     // Import main to trigger side effect
     await import('./main.js?test2=' + Date.now());
 
     expect(init).not.toHaveBeenCalled();
     
-    vi.unstubAllGlobals();
+    getElementByIdSpy.mockRestore();
   });
 });
