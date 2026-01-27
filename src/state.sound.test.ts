@@ -86,12 +86,6 @@ describe('GameState Sound Events', () => {
   });
 
   it('should call audioManager.playSiren when Ready state ends', () => {
-    // Should NOT be called initially (during Ready state)
-    expect(audioManager.playSiren).not.toHaveBeenCalled();
-  });
-
-    // Advance Ready timer to start game and trigger initial siren
-  it('should call audioManager.playSiren when Ready state ends', () => {
     const state = new GameState(grid, audioManager);
     // Should NOT be called initially (during Ready state)
     expect(audioManager.playSiren).not.toHaveBeenCalled();
@@ -149,5 +143,31 @@ describe('GameState Sound Events', () => {
     state.startReady(4000);
     
     expect(audioManager.stopSiren).toHaveBeenCalled();
+  });
+
+  it('should call audioManager.stopAll on collision', () => {
+    const collisionTemplate = `
+#####
+#P G#
+#####
+    `.trim();
+    const collisionGrid = Grid.fromString(collisionTemplate);
+    vi.spyOn(audioManager, 'stopAll');
+    const state = new GameState(collisionGrid, audioManager);
+    
+    // Clear ready state
+    state.updatePacman({ dx: 0, dy: 0 }, 5000);
+    
+    // Move Pacman right to hit Ghost
+    // Pacman is at (1,1), Ghost is at (3,1)
+    // PACMAN_SPEED is 0.006 tiles/ms.
+    // 300ms * 0.006 = 1.8 tiles.
+    // 1st update: Pacman moves from 1.0 to 2.8.
+    // 2nd update: checkCollisions is called while Pacman is at 2.8.
+    // Ghost is at 3.0. Dist = 0.2 < COLLISION_THRESHOLD (0.5).
+    state.updatePacman({ dx: 1, dy: 0 }, 300); 
+    state.updatePacman({ dx: 1, dy: 0 }, 300); 
+    
+    expect(audioManager.stopAll).toHaveBeenCalled();
   });
 });
