@@ -55,6 +55,7 @@ describe('GameState Death Logic', () => {
     state.updatePacman({ dx: 0, dy: 0 }, 0);
 
     expect(state.isDying()).toBe(true);
+    expect(mockAudioManager.stopSiren).toHaveBeenCalled();
     expect(mockAudioManager.playDeathSequence).toHaveBeenCalled();
   });
 
