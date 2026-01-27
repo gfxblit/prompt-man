@@ -1,8 +1,9 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from 'vitest';
 import { GameState } from './state.js';
 import { Grid } from './grid.js';
 import { EntityType } from './types.js';
 import { PACMAN_SPEED, POWER_UP_DURATION, GHOST_EATEN_SCORE, POWER_PELLET_SCORE, ALIGNMENT_TOLERANCE, RESPAWN_INVULNERABILITY_DURATION } from './config.js';
+import { AudioManager } from './audio-manager.js';
 
 // Mock configuration to disable the "Ready" state delay for these tests. This allows tests to focus on core logic without waiting for the initial pause.
 vi.mock('./config.js', async (importOriginal) => {
@@ -13,8 +14,55 @@ vi.mock('./config.js', async (importOriginal) => {
   };
 });
 
+vi.mock('./audio-manager.js', () => {
+  return {
+    AudioManager: vi.fn().mockImplementation(() => ({
+      startEyesSound: vi.fn(),
+      stopEyesSound: vi.fn(),
+      startFrightSound: vi.fn(),
+      stopFrightSound: vi.fn(),
+      playPelletSound: vi.fn(),
+      playPowerPelletSound: vi.fn(),
+      playEatGhostSound: vi.fn(),
+      playSiren: vi.fn(),
+      stopSiren: vi.fn(),
+      playDeathSequence: vi.fn(),
+      stopAll: vi.fn(),
+      resumeIfNeeded: vi.fn(),
+      playIntroMusic: vi.fn(),
+      stopIntroMusic: vi.fn(),
+      getIntroDuration: vi.fn(() => 0),
+      initialize: vi.fn(),
+    }))
+  };
+});
+
+  type Mocked<T> = {
+    [P in keyof T]: T[P] extends (...args: unknown[]) => unknown ? Mock<T[P]> : T[P];
+  };
+const getFreshMockAudioManager = (): Mocked<AudioManager> => ({
+  startEyesSound: vi.fn(),
+  stopEyesSound: vi.fn(),
+  startFrightSound: vi.fn(),
+  stopFrightSound: vi.fn(),
+  playPelletSound: vi.fn(),
+  playPowerPelletSound: vi.fn(),
+  playEatGhostSound: vi.fn(),
+  playSiren: vi.fn(),
+  stopSiren: vi.fn(),
+  playDeathSequence: vi.fn(),
+  stopAll: vi.fn(),
+  resumeIfNeeded: vi.fn(),
+  playIntroMusic: vi.fn(),
+  stopIntroMusic: vi.fn(),
+  getIntroDuration: vi.fn(() => 0),
+  initialize: vi.fn(),
+});
+
 describe('GameState', () => {
   let grid: Grid;
+  let mockedAudioManager: Mocked<AudioManager>;
+
   const template = `
 ##########
 #P.G#....#
@@ -40,14 +88,17 @@ describe('GameState', () => {
       setItem: vi.fn(),
       clear: vi.fn(),
     });
+    mockedAudioManager = getFreshMockAudioManager(); // Get a fresh mock for each test
   });
 
   afterEach(() => {
     vi.unstubAllGlobals();
+    // No need to clear mocks on mockedAudioManager here, as a fresh one is created in beforeEach
+    // vi.clearAllMocks(); // This clears ALL mocks, including those in audio-manager.test.ts, which might be undesired.
   });
 
   it('should initialize entities from grid spawns', () => {
-    const state = new GameState(grid);
+    const state = new GameState(grid, mockedAudioManager as unknown as AudioManager);
     const entities = state.getEntities();
 
     expect(entities).toHaveLength(2);
@@ -64,7 +115,7 @@ describe('GameState', () => {
   });
 
   it('should count initial pellets correctly', () => {
-    const state = new GameState(grid);
+    const state = new GameState(grid, mockedAudioManager as unknown as AudioManager);
     // Row 1: (2,1), (5,1), (6,1), (7,1), (8,1) -> 5
     // Row 2: (1,2) - power, (2,2), (3,2), (5,2), (6,2), (7,2), (8,2) -> 7
     // Row 3: (5,3), (6,3), (7,3), (8,3) -> 4
@@ -73,12 +124,12 @@ describe('GameState', () => {
   });
 
   it('should initialize score to 0', () => {
-    const state = new GameState(grid);
+    const state = new GameState(grid, mockedAudioManager as unknown as AudioManager);
     expect(state.getScore()).toBe(0);
   });
 
   it('should update score and pellet count when consuming a pellet', () => {
-    const state = new GameState(grid);
+    const state = new GameState(grid, mockedAudioManager as unknown as AudioManager);
 
     state.consumePellet(2, 1);
     expect(state.getRemainingPellets()).toBe(15);
@@ -91,15 +142,17 @@ describe('GameState', () => {
   });
 
   it('should update score and pellet count when consuming a power pellet', () => {
-    const state = new GameState(grid);
+    const state = new GameState(grid, mockedAudioManager as unknown as AudioManager);
 
     state.consumePellet(1, 2);
     expect(state.getRemainingPellets()).toBe(15);
     expect(state.getScore()).toBe(50);
+    expect(mockedAudioManager.playPowerPelletSound).toHaveBeenCalled();
+    expect(mockedAudioManager.startFrightSound).toHaveBeenCalled();
   });
 
   it('should consume pellets when Pacman moves over them', () => {
-    const state = new GameState(grid);
+    const state = new GameState(grid, mockedAudioManager as unknown as AudioManager);
     const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
     if (!pacman) throw new Error('Pacman not found');
 
@@ -110,10 +163,11 @@ describe('GameState', () => {
     expect(pacman.y).toBe(1);
     expect(state.getRemainingPellets()).toBe(15);
     expect(state.getScore()).toBe(10);
+    expect(mockedAudioManager.playPelletSound).toHaveBeenCalled();
   });
 
   it('should not move Pacman into walls from standstill', () => {
-    const state = new GameState(grid);
+    const state = new GameState(grid, mockedAudioManager as unknown as AudioManager);
     const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
     if (!pacman) throw new Error('Pacman not found');
     const initialX = pacman.x;
@@ -129,7 +183,7 @@ describe('GameState', () => {
   });
 
   it('should update Pacman position based on direction and deltaTime', () => {
-    const state = new GameState(grid);
+    const state = new GameState(grid, mockedAudioManager as unknown as AudioManager);
     const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
     if (!pacman) throw new Error('Pacman not found');
     const initialX = pacman.x;
@@ -149,7 +203,7 @@ describe('GameState', () => {
 #####
     `.trim();
     const customGrid = Grid.fromString(customTemplate);
-    const state = new GameState(customGrid);
+    const state = new GameState(customGrid, mockedAudioManager as unknown as AudioManager);
     const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
     if (!pacman) throw new Error('Pacman not found');
 
@@ -182,7 +236,7 @@ describe('GameState', () => {
     // (1,1) P -> (2,1) . -> (3,1) .
     // (3,2) is walkable.
     const customGrid = Grid.fromString(customTemplate);
-    const state = new GameState(customGrid);
+    const state = new GameState(customGrid, mockedAudioManager as unknown as AudioManager);
     const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
     if (!pacman) throw new Error('Pacman not found');
 
@@ -229,7 +283,7 @@ describe('GameState', () => {
 #####
     `.trim();
     const customGrid = Grid.fromString(customTemplate);
-    const state = new GameState(customGrid);
+    const state = new GameState(customGrid, mockedAudioManager as unknown as AudioManager);
     const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
 
     // 1. Move Right to 1.5
@@ -252,7 +306,7 @@ describe('GameState', () => {
 #####
     `.trim();
     const customGrid = Grid.fromString(customTemplate);
-    const state = new GameState(customGrid);
+    const state = new GameState(customGrid, mockedAudioManager as unknown as AudioManager);
     const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
     if (!pacman) throw new Error('Pacman not found');
 
@@ -281,7 +335,7 @@ describe('GameState', () => {
 #####
     `.trim();
     const customGrid = Grid.fromString(customTemplate);
-    const state = new GameState(customGrid);
+    const state = new GameState(customGrid, mockedAudioManager as unknown as AudioManager);
     const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
     if (!pacman) throw new Error('Pacman not found');
 
@@ -318,7 +372,7 @@ describe('GameState', () => {
     });
 
     it('should make ghosts scared when Pacman consumes a power pellet', () => {
-      const state = new GameState(powerGrid);
+      const state = new GameState(powerGrid, mockedAudioManager as unknown as AudioManager);
       const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
       const ghost = state.getEntities().find(e => e.type === EntityType.Ghost);
 
@@ -338,10 +392,11 @@ describe('GameState', () => {
 
       // Expect ghost to be scared
       expect(ghost?.isScared).toBe(true);
+      expect(mockedAudioManager.startFrightSound).toHaveBeenCalled();
     });
 
     it('should have a power-up timer that decrements and eventually unscares ghosts', () => {
-      const state = new GameState(powerGrid);
+      const state = new GameState(powerGrid, mockedAudioManager as unknown as AudioManager);
       const ghost = state.getEntities().find(e => e.type === EntityType.Ghost);
 
       // Consume power pellet to activate scared state
@@ -355,10 +410,11 @@ describe('GameState', () => {
       // Advance time by remaining duration to exceed POWER_UP_DURATION
       state.updateGhosts(POWER_UP_DURATION / 2 + 1); // +1 to ensure it goes past
       expect(ghost?.isScared).toBeFalsy(); // Ghost should no longer be scared
+      expect(mockedAudioManager.stopFrightSound).toHaveBeenCalled();
     });
 
     it('should set ghost to dead state and award points without resetting its position immediately, when eaten', () => {
-      const state = new GameState(powerGrid);
+      const state = new GameState(powerGrid, mockedAudioManager as unknown as AudioManager);
       const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
       const ghost = state.getEntities().find(e => e.type === EntityType.Ghost);
 
@@ -392,8 +448,53 @@ describe('GameState', () => {
       expect(state.getLives()).toBe(initialLives);
     });
 
+    it('should play eyes sound when a ghost is eaten and becomes dead, and stop it when all dead ghosts respawn', () => {
+      const state = new GameState(powerGrid, mockedAudioManager as unknown as AudioManager);
+      const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
+      const ghost = state.getEntities().find(e => e.type === EntityType.Ghost);
+
+      if (!pacman || !ghost) throw new Error('Entities not found');
+
+      const initialGhostX = ghost.x;
+      const initialGhostY = ghost.y;
+      
+      // 1. Eat power pellet (scares ghost)
+      state.updatePacman({ dx: 0, dy: 1 }, deltaTimeForOneTile);
+      expect(ghost.isScared).toBe(true);
+      vi.clearAllMocks();
+
+      // 2. Position for eating ghost
+      pacman.x = initialGhostX;
+      pacman.y = initialGhostY;
+      
+      // 3. Eat ghost
+      state.updatePacman({ dx: 0, dy: 0 }, 1);
+      expect(ghost.isDead).toBe(true);
+      
+      // Advance past pause (1000ms) to trigger updateBackgroundSound
+      state.updatePacman({ dx: 0, dy: 0 }, 1100);
+      
+      expect(mockedAudioManager.startEyesSound).toHaveBeenCalledTimes(1);
+      // It might have been called to stop background sounds during the pause, but we expect it to NOT have been stopped AFTER the pause until respawn
+      // Actually, stopEyesSound IS called in checkCollisions now.
+      expect(mockedAudioManager.stopEyesSound).toHaveBeenCalled();
+
+      // 4. Move ghost to spawn point
+      const spawnPos = state.getSpawnPosition(ghost)!;
+      ghost.x = spawnPos.x;
+      ghost.y = spawnPos.y;
+
+      // 5. Update ghosts once to trigger respawn
+      // Clear pauseTimer via updatePacman
+      state.updatePacman({ dx: 0, dy: 0 }, 2000);
+      state.updateGhosts(1); 
+      expect(ghost.isDead).toBe(false);
+      expect(mockedAudioManager.stopEyesSound).toHaveBeenCalledTimes(2);
+    });
+
+
     it('should move dead ghost towards its spawn and respawn when it reaches it', () => {
-      const state = new GameState(powerGrid);
+      const state = new GameState(powerGrid, mockedAudioManager as unknown as AudioManager);
       const ghost = state.getEntities().find(e => e.type === EntityType.Ghost);
       if (!ghost) throw new Error('Ghost not found');
 
@@ -439,7 +540,7 @@ describe('GameState', () => {
     });
 
     it('should not kill Pacman when colliding with a dead ghost', () => {
-      const state = new GameState(powerGrid);
+      const state = new GameState(powerGrid, mockedAudioManager as unknown as AudioManager);
       const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
       const ghost = state.getEntities().find(e => e.type === EntityType.Ghost);
       if (!pacman || !ghost) throw new Error('Entities not found');
@@ -463,7 +564,7 @@ describe('GameState', () => {
       expect(state.isGameOver()).toBe(false);
     });
     it('should make ghost invulnerable to collision briefly after respawning', () => {
-      const state = new GameState(powerGrid);
+      const state = new GameState(powerGrid, mockedAudioManager as unknown as AudioManager);
       const pacman = state.getEntities().find(e => e.type === EntityType.Pacman);
       const ghost = state.getEntities().find(e => e.type === EntityType.Ghost);
       if (!pacman || !ghost) throw new Error('Entities not found');

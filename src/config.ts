@@ -62,6 +62,7 @@ export const AUDIO = {
   POWER_PELLET_SOUND: 'sfx/eat_fruit.wav', // Placeholder for future
   INTRO_SOUND: 'sfx/start.wav',
   FRIGHT_SOUND: 'sfx/fright.wav',
+  EYES_SOUND: 'sfx/eyes.wav',
   DEATH_SOUNDS: [
     'sfx/death_0.wav',
     'sfx/death_1.wav'
