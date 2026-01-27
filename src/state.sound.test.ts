@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { GameState } from './state.js';
 import { Grid } from './grid.js';
-import { TileType } from './types.js';
+import { TileType, EntityType } from './types.js';
 import { AudioManager } from './audio-manager.js';
 import { AssetLoader } from './assets.js';
 
@@ -31,6 +31,49 @@ describe('GameState Sound Events', () => {
     vi.spyOn(audioManager, 'stopSiren');
     vi.spyOn(audioManager, 'startFrightSound');
     vi.spyOn(audioManager, 'stopFrightSound');
+    vi.spyOn(audioManager, 'playEatGhostSound');
+  });
+
+  it('should call audioManager.playEatGhostSound when a scared ghost is eaten', () => {
+    // Template:
+    // #####
+    // #P.G.o#
+    // #####
+    // P is Pacman at (1,1)
+    
+    // We need a ghost that is scared.
+    // The template includes a GhostSpawn 'G' tile, so a ghost will be created by the GameState constructor.
+    
+    const templateWithGhost = `
+#######
+#P.G.o#
+#######
+    `.trim();
+    const gridWithGhost = Grid.fromString(templateWithGhost);
+    const state = new GameState(gridWithGhost, audioManager);
+    
+    // Scare the ghost by eating the power pellet
+    state.consumePellet(5, 1);
+    
+    const ghost = state.getEntities().find(e => e.type === EntityType.Ghost);
+    expect(ghost).toBeDefined();
+    expect(ghost?.isScared).toBe(true);
+    
+    // Move Pacman to collide with the ghost
+    // Pacman is at (1,1), Ghost is at (3,1)
+    // We can just manually set their positions for the test
+    const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
+    pacman.x = 3;
+    pacman.y = 1;
+    ghost!.x = 3;
+    ghost!.y = 1;
+    
+    // Trigger collision check
+    // state.updatePacman calls checkCollisions
+    // We need to advance more than READY_DURATION (2000ms)
+    state.updatePacman({ dx: 0, dy: 0 }, 2100);
+    
+    expect(audioManager.playEatGhostSound).toHaveBeenCalled();
   });
 
   it('should call audioManager.playPelletSound when a regular pellet is eaten', () => {

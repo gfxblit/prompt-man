@@ -401,6 +401,7 @@ export class GameState implements IGameState {
       if (dist < COLLISION_THRESHOLD) {
         if (ghost.isScared) {
           // Ghost is eaten
+          this.audioManager?.playEatGhostSound();
           const points = GHOST_EATEN_SCORE * Math.pow(2, this.ghostsEatenCount);
           this.score += points;
           this.pointEffects.push({ x: ghost.x, y: ghost.y, points });

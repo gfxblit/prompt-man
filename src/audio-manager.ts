@@ -13,6 +13,7 @@ export class AudioManager {
   private frightBuffer: AudioBuffer | null = null;
   private frightSource: AudioBufferSourceNode | null = null;
   private introSource: AudioBufferSourceNode | null = null;
+  private eatGhostBuffer: AudioBuffer | null = null;
   private deathBuffers: AudioBuffer[] = [];
 
   constructor(private assetLoader: AssetLoader) { }
@@ -30,47 +31,31 @@ export class AudioManager {
 
       this.audioContext = new AudioContextClass();
 
-      const loadPromises = AUDIO.PELLET_SOUNDS.map(url =>
-        this.assetLoader.loadAudio(url, this.audioContext!)
-      );
-
-      this.pelletBuffers = await Promise.all(loadPromises);
-
-      // Load siren sounds
-      const sirenLoadPromises = AUDIO.SIRENS.map(url =>
-        this.assetLoader.loadAudio(url, this.audioContext!)
-      );
-      this.sirenBuffers = await Promise.all(sirenLoadPromises);
-
-      // Load power pellet sound
-      try {
-        this.powerPelletBuffer = await this.assetLoader.loadAudio(AUDIO.POWER_PELLET_SOUND, this.audioContext!);
-      } catch (error) {
-        console.warn('Failed to load power pellet sound:', error);
-      }
-
-      // Load intro sound
-      try {
-        this.introBuffer = await this.assetLoader.loadAudio(AUDIO.INTRO_SOUND, this.audioContext!);
-      } catch (error) {
-        console.warn('Failed to load intro sound:', error);
-      }
-
-      // Load fright sound
-      try {
-        this.frightBuffer = await this.assetLoader.loadAudio(AUDIO.FRIGHT_SOUND, this.audioContext!);
-      } catch (error) {
-        console.warn('Failed to load fright sound:', error);
-      }
-
-      // Load death sounds
-      const deathLoadPromises = AUDIO.DEATH_SOUNDS.map(url =>
-        this.assetLoader.loadAudio(url, this.audioContext!)
-      );
-      this.deathBuffers = await Promise.all(deathLoadPromises);
+      this.pelletBuffers = await this.loadAudioBuffers(AUDIO.PELLET_SOUNDS);
+      this.sirenBuffers = await this.loadAudioBuffers(AUDIO.SIRENS);
+      this.powerPelletBuffer = await this.loadSingleAudio(AUDIO.POWER_PELLET_SOUND, 'power pellet');
+      this.introBuffer = await this.loadSingleAudio(AUDIO.INTRO_SOUND, 'intro');
+      this.frightBuffer = await this.loadSingleAudio(AUDIO.FRIGHT_SOUND, 'fright');
+      this.eatGhostBuffer = await this.loadSingleAudio(AUDIO.GHOST_EATEN_SOUND, 'ghost eaten');
+      this.deathBuffers = await this.loadAudioBuffers(AUDIO.DEATH_SOUNDS);
     } catch (error) {
       console.warn('AudioManager failed to initialize:', error);
       throw error;
+    }
+  }
+
+  private async loadAudioBuffers(urls: readonly string[]): Promise<AudioBuffer[]> {
+    return await Promise.all(urls.map(url =>
+      this.assetLoader.loadAudio(url, this.audioContext!)
+    ));
+  }
+
+  private async loadSingleAudio(url: string, name: string): Promise<AudioBuffer | null> {
+    try {
+      return await this.assetLoader.loadAudio(url, this.audioContext!);
+    } catch (error) {
+      console.warn(`Failed to load ${name} sound:`, error);
+      return null;
     }
   }
 
@@ -91,9 +76,7 @@ export class AudioManager {
       return;
     }
 
-    if (this.audioContext.state === 'suspended') {
-      this.audioContext.resume().catch(console.error);
-    }
+    this.resumeContextIfNeeded();
 
     this.introSource = this.audioContext.createBufferSource();
     this.introSource.buffer = this.introBuffer;
@@ -143,9 +126,7 @@ export class AudioManager {
       return;
     }
 
-    if (this.audioContext.state === 'suspended') {
-      this.audioContext.resume().catch(console.error);
-    }
+    this.resumeContextIfNeeded();
 
     const buffer = this.pelletBuffers[this.pelletSoundIndex];
     if (buffer) {
@@ -153,6 +134,19 @@ export class AudioManager {
     }
 
     this.pelletSoundIndex = (this.pelletSoundIndex + 1) % this.pelletBuffers.length;
+  }
+
+  /**
+   * Plays the ghost eaten sound.
+   */
+  playEatGhostSound(): void {
+    if (!this.audioContext || !this.eatGhostBuffer) {
+      return;
+    }
+
+    this.resumeContextIfNeeded();
+
+    this.playSound(this.eatGhostBuffer);
   }
 
   /**
@@ -165,9 +159,7 @@ export class AudioManager {
       return;
     }
 
-    if (this.audioContext.state === 'suspended') {
-      this.audioContext.resume().catch(console.error);
-    }
+    this.resumeContextIfNeeded();
 
     this.playSound(this.powerPelletBuffer);
   }
@@ -189,9 +181,7 @@ export class AudioManager {
 
     this.stopSiren();
 
-    if (this.audioContext.state === 'suspended') {
-      this.audioContext.resume().catch(console.error);
-    }
+    this.resumeContextIfNeeded();
 
     const buffer = this.sirenBuffers[index];
     if (buffer) {
@@ -232,15 +222,22 @@ export class AudioManager {
   }
 
   /**
+   * Resumes the AudioContext if it's suspended (browser autoplay policy).
+   */
+  private resumeContextIfNeeded(): void {
+    if (this.audioContext && this.audioContext.state === 'suspended') {
+      this.audioContext.resume().catch(console.error);
+    }
+  }
+
+  /**
    * Starts the fright sound loop if not already playing.
    */
   startFrightSound(): void {
     if (!this.audioContext || !this.frightBuffer) return;
 
     // Resume context if needed
-    if (this.audioContext.state === 'suspended') {
-      this.audioContext.resume().catch(console.error);
-    }
+    this.resumeContextIfNeeded();
 
     // Don't restart if already playing
     if (this.frightSource) return;
@@ -279,9 +276,7 @@ export class AudioManager {
 
     this.stopAll();
 
-    if (this.audioContext.state === 'suspended') {
-      this.audioContext.resume().catch(console.error);
-    }
+    this.resumeContextIfNeeded();
 
     let startTime = this.audioContext.currentTime;
 
