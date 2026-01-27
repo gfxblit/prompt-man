@@ -43,21 +43,21 @@ export class AudioManager {
 
       // Load power pellet sound
       try {
-        this.powerPelletBuffer = await this.assetLoader.loadAudio(AUDIO.POWER_PELLET_SOUND, this.audioContext);
+        this.powerPelletBuffer = await this.assetLoader.loadAudio(AUDIO.POWER_PELLET_SOUND, this.audioContext!);
       } catch (error) {
         console.warn('Failed to load power pellet sound:', error);
       }
 
       // Load intro sound
       try {
-        this.introBuffer = await this.assetLoader.loadAudio(AUDIO.INTRO_SOUND, this.audioContext);
+        this.introBuffer = await this.assetLoader.loadAudio(AUDIO.INTRO_SOUND, this.audioContext!);
       } catch (error) {
         console.warn('Failed to load intro sound:', error);
       }
 
       // Load fright sound
       try {
-        this.frightBuffer = await this.assetLoader.loadAudio(AUDIO.FRIGHT_SOUND, this.audioContext);
+        this.frightBuffer = await this.assetLoader.loadAudio(AUDIO.FRIGHT_SOUND, this.audioContext!);
       } catch (error) {
         console.warn('Failed to load fright sound:', error);
       }
@@ -144,15 +144,15 @@ export class AudioManager {
 
     // Play first sound
     const source0 = this.audioContext.createBufferSource();
-    source0.buffer = this.deathBuffers[0];
+    source0.buffer = this.deathBuffers[0]!;
     source0.connect(this.audioContext.destination);
     source0.start(startTime);
 
     // Play second sound after first finishes
     const source1 = this.audioContext.createBufferSource();
-    source1.buffer = this.deathBuffers[1];
+    source1.buffer = this.deathBuffers[1]!;
     source1.connect(this.audioContext.destination);
-    source1.start(startTime + this.deathBuffers[0].duration);
+    source1.start(startTime + this.deathBuffers[0]!.duration);
   }
 
   /**

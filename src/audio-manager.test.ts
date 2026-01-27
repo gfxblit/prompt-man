@@ -292,11 +292,11 @@ describe('AudioManager', () => {
     audioManager.playDeathSequence();
     
     expect(sources.length).toBe(2);
-    expect(sources[0].buffer).toBe(deathBuffer0);
-    expect(sources[1].buffer).toBe(deathBuffer1);
+    expect(sources[0]!.buffer).toBe(deathBuffer0);
+    expect(sources[1]!.buffer).toBe(deathBuffer1);
     
-    expect(sources[0].start).toHaveBeenCalledWith(mockCtx.context.currentTime);
-    expect(sources[1].start).toHaveBeenCalledWith(mockCtx.context.currentTime + deathBuffer0.duration);
+    expect(sources[0]!.start).toHaveBeenCalledWith(mockCtx.context.currentTime);
+    expect(sources[1]!.start).toHaveBeenCalledWith(mockCtx.context.currentTime + deathBuffer0.duration);
   });
 
   it('should start and stop fright sound', async () => {
