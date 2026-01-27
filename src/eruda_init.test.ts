@@ -3,19 +3,16 @@ import { readFileSync } from 'fs';
 import { resolve } from 'path';
 
 describe('Eruda Integration', () => {
-  it('should only load eruda if eruda=true is in URL', () => {
+  it('should load eruda unconditionally', () => {
     const html = readFileSync(resolve(process.cwd(), 'index.html'), 'utf-8');
-    expect(html).toContain("new URLSearchParams(window.location.search).get('eruda') === 'true'");
-  });
-
-  it('should have eruda CDN script in index.html', () => {
-    const html = readFileSync(resolve(process.cwd(), 'index.html'), 'utf-8');
-    expect(html).toContain('https://cdn.jsdelivr.net/npm/eruda');
+    expect(html).toContain('<script src="https://cdn.jsdelivr.net/npm/eruda"></script>');
   });
 
   it('should initialize eruda with correct settings in index.html', () => {
     const html = readFileSync(resolve(process.cwd(), 'index.html'), 'utf-8');
     expect(html).toContain('eruda.init');
+    expect(html).toContain('container: document.body');
+    expect(html).toContain("tool: ['console', 'elements', 'network', 'resources', 'info', 'snippets', 'sources']");
     expect(html).toContain('useShadowDom: true');
     expect(html).toContain('autoScale: true');
     expect(html).toContain("theme: 'Dark'");
