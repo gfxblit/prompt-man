@@ -33,6 +33,7 @@ vi.mock('./audio-manager.js', () => {
       stopIntroMusic: vi.fn(),
       getIntroDuration: vi.fn(() => 0),
       initialize: vi.fn(),
+      getState: vi.fn(() => 'running'),
     }))
   };
 });
@@ -57,6 +58,7 @@ const getFreshMockAudioManager = (): Mocked<AudioManager> => ({
   stopIntroMusic: vi.fn(),
   getIntroDuration: vi.fn(() => 0),
   initialize: vi.fn(),
+  getState: vi.fn(() => 'running'),
 });
 
 describe('GameState', () => {
