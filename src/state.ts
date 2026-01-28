@@ -73,15 +73,27 @@ export class GameState implements IGameState {
   private updateHighScore(): void {
     if (this.score > this.highScore) {
       this.highScore = this.score;
-      localStorage.setItem(this.HIGH_SCORE_KEY, this.highScore.toString());
+      try {
+        if (typeof localStorage !== 'undefined' && typeof localStorage.setItem === 'function') {
+          localStorage.setItem(this.HIGH_SCORE_KEY, this.highScore.toString());
+        }
+      } catch (e) {
+        // Silently fail if localStorage is not accessible
+      }
     }
   }
 
   private initialize(): void {
     // Load high score
-    const savedHighScore = localStorage.getItem(this.HIGH_SCORE_KEY);
-    if (savedHighScore) {
-      this.highScore = parseInt(savedHighScore, 10) || 0;
+    try {
+      if (typeof localStorage !== 'undefined' && typeof localStorage.getItem === 'function') {
+        const savedHighScore = localStorage.getItem(this.HIGH_SCORE_KEY);
+        if (savedHighScore) {
+          this.highScore = parseInt(savedHighScore, 10) || 0;
+        }
+      }
+    } catch (e) {
+      // Silently fail if localStorage is not accessible
     }
 
     // Find Pacman spawn
