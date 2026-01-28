@@ -6,6 +6,15 @@ import { AudioManager } from './audio-manager.js';
 import { AssetLoader } from './assets.js';
 import { EventBus } from './event-bus.js';
 
+// Mock configuration to disable the "Ready" state delay for these tests.
+vi.mock('./config.js', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('./config.js')>();
+  return {
+    ...mod,
+    READY_DURATION: 1,
+  };
+});
+
 describe('GameState Sound Events', () => {
   let grid: Grid;
   let audioManager: AudioManager;
