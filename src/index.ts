@@ -60,6 +60,22 @@ export async function init(container: HTMLElement): Promise<void> {
   window.addEventListener('click', resumeAudio);
   window.addEventListener('touchend', resumeAudio);
 
+  // Score board
+  const scoreBoard = document.createElement('div');
+  scoreBoard.classList.add('score-board', 'flex', 'justify-between', 'w-full', 'max-w-md', 'text-white', 'font-mono', 'text-xl', 'mb-2');
+  
+  const scoreEl = document.createElement('div');
+  scoreEl.id = 'score';
+  scoreEl.innerText = 'Score: 0';
+  scoreBoard.appendChild(scoreEl);
+  
+  const highScoreEl = document.createElement('div');
+  highScoreEl.id = 'highscore';
+  highScoreEl.innerText = `High Score: ${state.getHighScore()}`;
+  scoreBoard.appendChild(highScoreEl);
+  
+  container.appendChild(scoreBoard);
+
   const canvas = document.createElement('canvas');
   canvas.width = grid.getWidth() * TILE_SIZE + MAZE_RENDER_OFFSET_X * 2;
   canvas.height = grid.getHeight() * TILE_SIZE + MAZE_RENDER_OFFSET_Y + MAZE_RENDER_MARGIN_BOTTOM;
@@ -80,6 +96,10 @@ export async function init(container: HTMLElement): Promise<void> {
 
     state.updatePacman(inputHandler.getDirection(), deltaTime);
     state.updateGhosts(deltaTime);
+
+    // Update score display
+    scoreEl.innerText = `Score: ${state.getScore()}`;
+    highScoreEl.innerText = `High Score: ${state.getHighScore()}`;
 
     if (renderer && uiRenderer) {
       renderer.render(grid, state, time);

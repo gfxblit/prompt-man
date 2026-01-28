@@ -27,7 +27,7 @@ describe('index robustness', () => {
       createElement: vi.fn((tagName: string) => {
         if (tagName === 'canvas') return canvas;
         if (tagName === 'div') {
-          return {
+          const div = {
             id: '',
             classList: { add: vi.fn() },
             appendChild: vi.fn(),
@@ -35,6 +35,7 @@ describe('index robustness', () => {
             get innerText() { return this._innerText; },
             set innerText(val: string) { this._innerText = val; },
           };
+          return div as unknown as HTMLDivElement;
         }
         throw new Error(`Unexpected tag name: ${tagName}`);
       }),
