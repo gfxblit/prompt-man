@@ -7,8 +7,8 @@ describe('Audio Unlock', () => {
   let container: HTMLElement;
   let eventListeners: { [type: string]: (() => Promise<void> | void)[] } = {};
 
-  const GAME_START_EVENTS = ['keydown', 'mousedown'];
-  const AUDIO_UNLOCK_EVENTS = ['click', 'touchend'];
+  const GAME_START_EVENTS = ['keydown', 'mousedown', 'touchstart', 'pointerdown'];
+  const AUDIO_UNLOCK_EVENTS = ['click', 'touchend', 'touchmove'];
   const ALL_EVENTS = [...GAME_START_EVENTS, ...AUDIO_UNLOCK_EVENTS];
 
   beforeEach(() => {
@@ -87,13 +87,6 @@ describe('Audio Unlock', () => {
     ALL_EVENTS.forEach(event => {
       expect(window.addEventListener).toHaveBeenCalledWith(event, expect.any(Function));
     });
-
-    // Verify that resumeAudio is NOT registered for touchstart
-    const touchStartCalls = vi.mocked(window.addEventListener).mock.calls.filter(call => call[0] === 'touchstart');
-    touchStartCalls.forEach(call => {
-      const listener = call[1] as () => void;
-      expect(listener.name).not.toBe('resumeAudio');
-    });
   });
 
   it('should resume audio and start game on first interaction', async () => {
@@ -119,9 +112,6 @@ describe('Audio Unlock', () => {
     GAME_START_EVENTS.forEach(event => {
       expect(window.removeEventListener).toHaveBeenCalledWith(event, listener);
     });
-
-    // touchstart should NOT be removed because it was never added for resumeAudio
-    expect(window.removeEventListener).not.toHaveBeenCalledWith('touchstart', listener);
 
     // Audio is still suspended, so 'unlock' listeners should NOT be removed yet
     AUDIO_UNLOCK_EVENTS.forEach(event => {
