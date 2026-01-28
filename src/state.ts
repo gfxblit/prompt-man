@@ -1,4 +1,4 @@
-import { TileType, EntityType } from './types.js';
+import { TileType, EntityType, FruitType } from './types.js';
 import type { Entity, IGrid, IGameState, Direction, PointEffect } from './types.js';
 import {
   PELLET_SCORE,
@@ -22,7 +22,11 @@ import {
   READY_DURATION,
   WIN_DELAY,
   GHOST_SPEED_LEVEL_MULTIPLIER,
-  SIREN_THRESHOLDS
+  SIREN_THRESHOLDS,
+  FRUIT_SPAWN_THRESHOLDS,
+  FRUIT_DURATION,
+  FRUIT_SPAWN_POS,
+  FRUIT_DATA
 } from './config.js';
 import { PACMAN_ANIMATION_SEQUENCE, GHOST_ANIMATION_SEQUENCE } from './sprites.js';
 import { GhostAI } from './ghost-ai.js';
@@ -53,6 +57,9 @@ export class GameState implements IGameState {
   private readonly width: number;
   private readonly height: number;
   private initialPositions: Map<Entity, { x: number, y: number }> = new Map();
+  private dotsEatenInLevel: number = 0;
+  private fruit: Entity | null = null;
+  private fruitTimer: number = 0;
   /** Callback fired when a pellet is consumed. */
   public onPelletConsumed?: (tileType: TileType) => void;
 
@@ -121,7 +128,15 @@ export class GameState implements IGameState {
   }
 
   getEntities(): Entity[] {
-    return this.entities;
+    const allEntities = [...this.entities];
+    if (this.fruit) {
+      allEntities.push(this.fruit);
+    }
+    return allEntities;
+  }
+
+  getFruit(): Entity | null {
+    return this.fruit;
   }
 
   getScore(): number {
@@ -197,7 +212,13 @@ export class GameState implements IGameState {
     if (tile === TileType.Pellet || tile === TileType.PowerPellet) {
       this.eatenPellets.add(`${x},${y}`);
       this.remainingPellets--;
+      this.dotsEatenInLevel++;
       this.score += tile === TileType.Pellet ? PELLET_SCORE : POWER_PELLET_SCORE;
+
+      // Check for fruit spawn
+      if ((FRUIT_SPAWN_THRESHOLDS as readonly number[]).includes(this.dotsEatenInLevel)) {
+        this.spawnFruit();
+      }
 
       // Play sound effect
       if (tile === TileType.Pellet) {
@@ -243,6 +264,17 @@ export class GameState implements IGameState {
         this.audioManager?.stopSiren();
       }
     }
+  }
+
+  private spawnFruit(): void {
+    const levelData = FRUIT_DATA[this.level] || FRUIT_DATA[13];
+    this.fruit = {
+      type: EntityType.Fruit,
+      x: FRUIT_SPAWN_POS.x,
+      y: FRUIT_SPAWN_POS.y,
+      fruitType: levelData!.type as FruitType,
+    };
+    this.fruitTimer = FRUIT_DURATION;
   }
 
   private getWrappedCoordinate(val: number, max: number): number {
@@ -296,6 +328,7 @@ export class GameState implements IGameState {
 
     // Check collisions
     this.checkCollisions(pacman);
+    this.checkFruitCollision(pacman);
     if (this.dying) {
       // If dying, reset velocity immediately to prevent further movement during animation
       pacman.direction = { dx: 0, dy: 0 };
@@ -430,6 +463,27 @@ export class GameState implements IGameState {
     }
   }
 
+  private checkFruitCollision(pacman: Entity): void {
+    if (!this.fruit) return;
+
+    const dist = Math.sqrt(
+      Math.pow(pacman.x - this.fruit.x, 2) + Math.pow(pacman.y - this.fruit.y, 2)
+    );
+
+    if (dist < COLLISION_THRESHOLD) {
+      const levelData = FRUIT_DATA[this.level] || FRUIT_DATA[13];
+      const points = levelData!.score;
+      this.score += points;
+      this.pointEffects.push({ x: this.fruit.x, y: this.fruit.y, points });
+      this.audioManager?.playPowerPelletSound();
+      this.fruit = null;
+      this.fruitTimer = 0;
+      this.updateHighScore();
+      // Original game doesn't pause for fruit, but plays a sound.
+      // We'll skip sound for now or add it later if requested.
+    }
+  }
+
   private handleCollision(): void {
     if (this.gameOver || this.dying) return;
 
@@ -501,6 +555,8 @@ export class GameState implements IGameState {
         entity.isDead = false;
       }
     }
+    this.fruit = null;
+    this.fruitTimer = 0;
     this.nextDirection = null;
   }
 
@@ -512,6 +568,9 @@ export class GameState implements IGameState {
     const pellets = this.grid.findTiles(TileType.Pellet);
     const powerPellets = this.grid.findTiles(TileType.PowerPellet);
     this.remainingPellets = pellets.length + powerPellets.length;
+    this.dotsEatenInLevel = 0;
+    this.fruit = null;
+    this.fruitTimer = 0;
     this.resetPositions();
     this.ready = READY_DURATION > 0;
     this.readyTimer = READY_DURATION;
@@ -534,6 +593,13 @@ export class GameState implements IGameState {
 
     if (this.gameOver || this.dying || this.ready || this.pauseTimer > 0) return;
 
+    if (this.fruitTimer > 0) {
+      this.fruitTimer -= deltaTime;
+      if (this.fruitTimer <= 0) {
+        this.fruitTimer = 0;
+        this.fruit = null;
+      }
+    }
 
     if (this.powerUpTimer > 0) {
       this.powerUpTimer -= deltaTime;

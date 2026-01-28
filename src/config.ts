@@ -41,6 +41,32 @@ export const WIN_DELAY = 3000;
 /** Multiplier for ghost speed for each level gained. */
 export const GHOST_SPEED_LEVEL_MULTIPLIER = 1.1;
 
+/** Fruit spawn thresholds (dots eaten in level). */
+export const FRUIT_SPAWN_THRESHOLDS = [70, 170] as const;
+/** Duration in milliseconds for how long fruit stays on screen. */
+export const FRUIT_DURATION = 9500;
+/** Default fruit spawn position in grid coordinates. */
+export const FRUIT_SPAWN_POS = { x: 13.5, y: 17 };
+
+/**
+ * Fruit data mapping levels to types and point values.
+ */
+export const FRUIT_DATA: Record<number, { type: string, score: number }> = {
+  1: { type: 'Cherry', score: 100 },
+  2: { type: 'Strawberry', score: 300 },
+  3: { type: 'Peach', score: 500 },
+  4: { type: 'Peach', score: 500 },
+  5: { type: 'Apple', score: 700 },
+  6: { type: 'Apple', score: 700 },
+  7: { type: 'Grapes', score: 1000 },
+  8: { type: 'Grapes', score: 1000 },
+  9: { type: 'Galaxian', score: 2000 },
+  10: { type: 'Galaxian', score: 2000 },
+  11: { type: 'Bell', score: 3000 },
+  12: { type: 'Bell', score: 3000 },
+  13: { type: 'Key', score: 5000 },
+};
+
 /**
  * Assets configuration
  */

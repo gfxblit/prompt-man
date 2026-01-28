@@ -24,6 +24,22 @@ export enum EntityType {
   Pacman = 'Pacman',
   /** An AI-controlled Ghost entity. */
   Ghost = 'Ghost',
+  /** A bonus fruit entity. */
+  Fruit = 'Fruit',
+}
+
+/**
+ * Represents the type of bonus fruit.
+ */
+export enum FruitType {
+  Cherry = 'Cherry',
+  Strawberry = 'Strawberry',
+  Peach = 'Peach',
+  Apple = 'Apple',
+  Grapes = 'Grapes',
+  Galaxian = 'Galaxian',
+  Bell = 'Bell',
+  Key = 'Key',
 }
 
 /**
@@ -56,6 +72,8 @@ export interface Entity {
   isRespawning?: boolean;
   /** Optional timer for tracking how long the isRespawning state should last. */
   respawnTimer?: number;
+  /** Optional type of fruit for Fruit entities. */
+  fruitType?: FruitType;
 }
 
 /**
@@ -114,6 +132,8 @@ export interface IGameState {
   getRemainingPellets(): number;
   /** Returns the active point effects (e.g., scores from eating ghosts). */
   getPointEffects(): PointEffect[];
+  /** Returns the active fruit entity, if any. */
+  getFruit(): Entity | null;
   /** Returns the spawn position for a given entity. */
   getSpawnPosition(entity: Entity): { x: number; y: number } | undefined;
   /** Consumes a pellet at the specified coordinates and updates state. */

@@ -26,6 +26,7 @@ import {
   TILE_MAP,
   SOURCE_QUADRANT_SIZE,
   STATIC_SPRITE_MAP,
+  FRUIT_SPRITE_MAP,
   SOURCE_TILE_SIZE,
   SOURCE_PACMAN_SIZE,
   PACMAN_DEATH_ANIMATION_MAP,
@@ -583,6 +584,35 @@ export class Renderer implements IRenderer {
           this.ctx.lineTo(screenX + TILE_SIZE / 2 - 1, screenY + TILE_SIZE / 2 - 1);
           this.ctx.lineTo(screenX - TILE_SIZE / 2 + 1, screenY + TILE_SIZE / 2 - 1);
           this.ctx.closePath();
+          this.ctx.fill();
+        }
+        break;
+      }
+
+      case EntityType.Fruit: {
+        if (state.isDying()) return;
+
+        if (this.spritesheet && entity.fruitType) {
+          const coord = FRUIT_SPRITE_MAP[entity.fruitType];
+          if (coord) {
+            const [sRow, sCol] = coord;
+            this.ctx.drawImage(
+              this.spritesheet,
+              PALETTE_ORIGIN_X + (sCol * SOURCE_TILE_SIZE) + PALETTE_PADDING_X,
+              PALETTE_ORIGIN_Y + (sRow * SOURCE_TILE_SIZE) + PALETTE_PADDING_Y,
+              SOURCE_TILE_SIZE - PALETTE_PADDING_X,
+              SOURCE_TILE_SIZE - PALETTE_PADDING_Y,
+              screenX - TILE_SIZE / 2,
+              screenY - TILE_SIZE / 2,
+              TILE_SIZE,
+              TILE_SIZE
+            );
+          }
+        } else {
+          // Fallback: colored circle
+          this.ctx.fillStyle = '#ff0000'; // Red for cherry
+          this.ctx.beginPath();
+          this.ctx.arc(screenX, screenY, TILE_SIZE / 3, 0, Math.PI * 2);
           this.ctx.fill();
         }
         break;
