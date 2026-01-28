@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { init } from './index.js';
 import { setupMockImage, mock2dContext, MockImage, setupMockAudio } from './test-utils.js';
@@ -22,23 +21,12 @@ describe('index robustness', () => {
       },
     } as unknown as HTMLCanvasElement;
 
-    (mockContext as any).canvas = canvas;
+    (mockContext as { canvas: HTMLCanvasElement }).canvas = canvas;
 
     // Mock document
     vi.stubGlobal('document', {
       createElement: vi.fn((tagName: string) => {
         if (tagName === 'canvas') return canvas;
-        if (tagName === 'div') {
-          const div = {
-            id: '',
-            classList: { add: vi.fn() },
-            appendChild: vi.fn(),
-            _innerText: '',
-            get innerText() { return this._innerText; },
-            set innerText(val: string) { this._innerText = val; },
-          };
-          return div as unknown as HTMLDivElement;
-        }
         throw new Error(`Unexpected tag name: ${tagName}`);
       }),
     });
@@ -55,7 +43,7 @@ describe('index robustness', () => {
     vi.stubGlobal('requestAnimationFrame', vi.fn((cb) => {
       // Store callback for manual execution if needed, but don't auto-run
         // biome-ignore lint/suspicious/noExplicitAny: lastRafCallback is a test utility not part of the production code.
-      (globalThis as any).lastRafCallback = cb; 
+      (globalThis as unknown as { lastRafCallback: FrameRequestCallback }).lastRafCallback = cb; 
       return 1;
     }));
 
@@ -101,7 +89,7 @@ describe('index robustness', () => {
 
     // Execute the captured loop callback manually
       // biome-ignore lint/suspicious/noExplicitAny: lastRafCallback is a test utility not part of the production code.
-    const loop = (globalThis as any).lastRafCallback;
+    const loop = (globalThis as unknown as { lastRafCallback: FrameRequestCallback }).lastRafCallback;
     if (loop) loop(100);
 
     expect(mockContext.clearRect).toHaveBeenCalled(); 

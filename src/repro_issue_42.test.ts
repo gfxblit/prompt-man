@@ -37,7 +37,7 @@ describe('Issue #42: iPhone portrait mode cropping', () => {
       },
     } as unknown as HTMLCanvasElement;
 
-    (context as any).canvas = canvas;
+    (context as { canvas: HTMLCanvasElement }).canvas = canvas;
 
     // Mock container
     container = {

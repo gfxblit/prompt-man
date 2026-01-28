@@ -43,7 +43,7 @@ describe('index', () => {
       },
     } as unknown as HTMLCanvasElement;
 
-    (context as any).canvas = canvas;
+    (context as { canvas: HTMLCanvasElement }).canvas = canvas;
 
     // Mock document
     vi.stubGlobal('document', {
