@@ -77,7 +77,7 @@ export class GameState implements IGameState {
         if (typeof localStorage !== 'undefined' && typeof localStorage.setItem === 'function') {
           localStorage.setItem(this.HIGH_SCORE_KEY, this.highScore.toString());
         }
-      } catch (e) {
+      } catch {
         // Silently fail if localStorage is not accessible
       }
     }
@@ -92,7 +92,7 @@ export class GameState implements IGameState {
           this.highScore = parseInt(savedHighScore, 10) || 0;
         }
       }
-    } catch (e) {
+    } catch {
       // Silently fail if localStorage is not accessible
     }
 
