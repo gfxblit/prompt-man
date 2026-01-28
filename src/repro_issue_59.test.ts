@@ -3,6 +3,12 @@ import { Renderer } from './renderer.js';
 import { Grid } from './grid.js';
 import { EntityType } from './types.js';
 import type { IGameState } from './types.js';
+import {
+  TILE_SIZE,
+  MAZE_RENDER_OFFSET_X,
+  MAZE_RENDER_OFFSET_Y,
+  MAZE_RENDER_MARGIN_BOTTOM
+} from './config.js';
 
 describe('Issue 59: Ghost Rendering on Death', () => {
   let mockContext: {
@@ -23,6 +29,10 @@ describe('Issue 59: Ghost Rendering on Death', () => {
     font: string;
     textAlign: string;
     textBaseline: string;
+    canvas: {
+      width: number;
+      height: number;
+    };
   };
   let mockState: IGameState;
   let renderer: Renderer;
@@ -46,6 +56,10 @@ describe('Issue 59: Ghost Rendering on Death', () => {
       font: '',
       textAlign: '',
       textBaseline: '',
+      canvas: {
+        width: 10 * TILE_SIZE + MAZE_RENDER_OFFSET_X * 2,
+        height: 10 * TILE_SIZE + MAZE_RENDER_OFFSET_Y + MAZE_RENDER_MARGIN_BOTTOM
+      }
     };
     mockState = {
       getEntities: vi.fn().mockReturnValue([]),
@@ -91,10 +105,11 @@ describe('Issue 59: Ghost Rendering on Death', () => {
     vi.mocked(mockState.isDying).mockReturnValue(false);
 
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
+    const fillStyleSpy = vi.spyOn(mockContext, 'fillStyle', 'set');
     renderer.render(grid, mockState);
 
     // Should render ghost (fallback rendering)
-    expect(mockContext.fillStyle).toBe('red');
+    expect(fillStyleSpy).toHaveBeenCalledWith('red');
     expect(mockContext.beginPath).toHaveBeenCalled();
     expect(mockContext.arc).toHaveBeenCalled();
     expect(mockContext.fill).toHaveBeenCalled();

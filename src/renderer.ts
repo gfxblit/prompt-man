@@ -16,7 +16,10 @@ import {
   PACMAN_DEATH_ANIMATION_FRAMES,
   POWER_UP_FLASH_THRESHOLD,
   POWER_UP_FLASH_RATE,
-  COLLISION_THRESHOLD
+  COLLISION_THRESHOLD,
+  MAZE_RENDER_OFFSET_X,
+  MAZE_RENDER_OFFSET_Y,
+  MAZE_RENDER_MARGIN_BOTTOM
 } from './config.js';
 import { getTileMask } from './autotile.js';
 import {
@@ -38,14 +41,15 @@ export class Renderer implements IRenderer {
   ) { }
 
   render(grid: IGrid, state: IGameState, time: number = 0): void {
-    const width = grid.getWidth();
-    const height = grid.getHeight();
+    const gridWidth = grid.getWidth();
+    const gridHeight = grid.getHeight();
+    const { width: canvasWidth, height: canvasHeight } = this.getCanvasDimensions(grid);
 
     // Clear canvas
-    this.ctx.clearRect(0, 0, width * TILE_SIZE, height * TILE_SIZE);
+    this.ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
+    for (let y = 0; y < gridHeight; y++) {
+      for (let x = 0; x < gridWidth; x++) {
         const tile = grid.getTile(x, y);
         if (!tile) continue;
 
@@ -62,6 +66,7 @@ export class Renderer implements IRenderer {
     this.renderEntities(state);
     this.renderPointEffects(state);
     this.renderLives(grid, state.getLives());
+    this.renderHUD(state, grid);
 
     if (state.isGameOver()) {
       this.renderGameOver(grid);
@@ -74,9 +79,40 @@ export class Renderer implements IRenderer {
     }
   }
 
+  private getCanvasDimensions(grid: IGrid): { width: number; height: number } {
+    return {
+      width: this.ctx.canvas?.width ?? (grid.getWidth() * TILE_SIZE + MAZE_RENDER_OFFSET_X * 2),
+      height: this.ctx.canvas?.height ?? (grid.getHeight() * TILE_SIZE + MAZE_RENDER_OFFSET_Y + MAZE_RENDER_MARGIN_BOTTOM)
+    };
+  }
+
+  private renderHUD(state: IGameState, grid: IGrid): void {
+    const { width } = this.getCanvasDimensions(grid);
+    this.ctx.save();
+    this.ctx.fillStyle = 'white';
+    this.ctx.font = 'bold 18px monospace';
+    this.ctx.textBaseline = 'top';
+
+    // 1UP
+    this.ctx.textAlign = 'left';
+    this.ctx.fillText('1UP', TILE_SIZE + MAZE_RENDER_OFFSET_X, TILE_SIZE);
+    this.ctx.fillText(state.getScore().toString().padStart(2, ' '), TILE_SIZE + MAZE_RENDER_OFFSET_X, TILE_SIZE * 2);
+
+    // HIGH SCORE
+    this.ctx.textAlign = 'center';
+    const centerX = width / 2;
+    this.ctx.fillText('HIGH SCORE', centerX, TILE_SIZE);
+    this.ctx.fillText(state.getHighScore().toString().padStart(2, ' '), centerX, TILE_SIZE * 2);
+
+    // LEVEL
+    this.ctx.textAlign = 'right';
+    this.ctx.fillText('LEVEL', width - TILE_SIZE - MAZE_RENDER_OFFSET_X, TILE_SIZE);
+    this.ctx.fillText(state.getLevel().toString().padStart(2, ' '), width - TILE_SIZE - MAZE_RENDER_OFFSET_X, TILE_SIZE * 2);
+    this.ctx.restore();
+  }
+
   private renderWin(grid: IGrid): void {
-    const width = grid.getWidth() * TILE_SIZE;
-    const height = grid.getHeight() * TILE_SIZE;
+    const { width, height } = this.getCanvasDimensions(grid);
 
     this.ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
     this.ctx.fillRect(0, 0, width, height);
@@ -89,8 +125,7 @@ export class Renderer implements IRenderer {
   }
 
   private renderReady(grid: IGrid): void {
-    const width = grid.getWidth() * TILE_SIZE;
-    const height = grid.getHeight() * TILE_SIZE;
+    const { width, height } = this.getCanvasDimensions(grid);
 
     this.ctx.fillStyle = COLORS.PACMAN; // Yellow
     this.ctx.font = 'bold 24px monospace';
@@ -102,8 +137,7 @@ export class Renderer implements IRenderer {
   }
 
   private renderGameOver(grid: IGrid): void {
-    const width = grid.getWidth() * TILE_SIZE;
-    const height = grid.getHeight() * TILE_SIZE;
+    const { width, height } = this.getCanvasDimensions(grid);
 
     this.ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
     this.ctx.fillRect(0, 0, width, height);
@@ -118,8 +152,8 @@ export class Renderer implements IRenderer {
   private renderPointEffects(state: IGameState): void {
     const effects = state.getPointEffects();
     for (const effect of effects) {
-      const screenX = effect.x * TILE_SIZE + TILE_SIZE / 2;
-      const screenY = effect.y * TILE_SIZE + TILE_SIZE / 2;
+      const screenX = effect.x * TILE_SIZE + TILE_SIZE / 2 + MAZE_RENDER_OFFSET_X;
+      const screenY = effect.y * TILE_SIZE + TILE_SIZE / 2 + MAZE_RENDER_OFFSET_Y;
 
       this.ctx.fillStyle = '#00ffff'; // Cyan (standard for ghost points)
       this.ctx.font = 'bold 12px monospace';
@@ -130,9 +164,10 @@ export class Renderer implements IRenderer {
   }
 
   private renderLives(grid: IGrid, lives: number): void {
-    const height = grid.getHeight();
-    const startX = TILE_SIZE * 2; // Start a bit offset from the left edge
-    const startY = (height - 1) * TILE_SIZE; // Bottom row
+    const { height } = this.getCanvasDimensions(grid);
+    this.ctx.save();
+    const startX = TILE_SIZE * 2 + MAZE_RENDER_OFFSET_X; // Start offset from the left edge plus maze offset
+    const startY = height - TILE_SIZE * 2; // Bottom margin
     const gap = TILE_SIZE * 1.2;
 
     for (let i = 0; i < lives; i++) {
@@ -152,11 +187,12 @@ export class Renderer implements IRenderer {
       this.ctx.closePath();
       this.ctx.fill();
     }
+    this.ctx.restore();
   }
 
   private renderTile(grid: IGrid, x: number, y: number, tile: TileType, time: number = 0): void {
-    const screenX = x * TILE_SIZE;
-    const screenY = y * TILE_SIZE;
+    const screenX = x * TILE_SIZE + MAZE_RENDER_OFFSET_X;
+    const screenY = y * TILE_SIZE + MAZE_RENDER_OFFSET_Y;
 
     switch (tile) {
       case TileType.Wall:
@@ -237,8 +273,8 @@ export class Renderer implements IRenderer {
     if (!this.spritesheet) return;
     const mask = getTileMask(grid, x, y);
     const quadrantSet = TILE_MAP[mask] || TILE_MAP[0]!;
-    const screenX = x * TILE_SIZE;
-    const screenY = y * TILE_SIZE;
+    const screenX = x * TILE_SIZE + MAZE_RENDER_OFFSET_X;
+    const screenY = y * TILE_SIZE + MAZE_RENDER_OFFSET_Y;
 
     const renderQuadrantSize = TILE_SIZE / 2;
 
@@ -374,8 +410,8 @@ export class Renderer implements IRenderer {
   }
 
   private renderEntity(entity: Entity, state: IGameState): void {
-    const screenX = entity.x * TILE_SIZE + TILE_SIZE / 2;
-    const screenY = entity.y * TILE_SIZE + TILE_SIZE / 2;
+    const screenX = entity.x * TILE_SIZE + TILE_SIZE / 2 + MAZE_RENDER_OFFSET_X;
+    const screenY = entity.y * TILE_SIZE + TILE_SIZE / 2 + MAZE_RENDER_OFFSET_Y;
 
     switch (entity.type) {
       case EntityType.Pacman: {

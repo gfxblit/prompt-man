@@ -30,6 +30,7 @@ describe('index', () => {
       font: '',
       textAlign: '',
       textBaseline: '',
+      canvas: null as unknown as HTMLCanvasElement,
     } as unknown as CanvasRenderingContext2D;
 
     // Mock canvas
@@ -41,6 +42,8 @@ describe('index', () => {
         add: vi.fn(),
       },
     } as unknown as HTMLCanvasElement;
+
+    (context as { canvas: HTMLCanvasElement }).canvas = canvas;
 
     // Mock document
     vi.stubGlobal('document', {
@@ -128,41 +131,6 @@ describe('index', () => {
     // It should draw Pacman and ghosts (still using primitives)
     expect(context.lineTo).toHaveBeenCalled();
     expect(context.closePath).toHaveBeenCalled();
-
-    // Check for score board
-    expect(document.createElement).toHaveBeenCalledWith('div');
-    const divCalls = vi.mocked(document.createElement).mock.results
-      .filter(result => result.type === 'return' && result.value.innerText !== undefined)
-      .map(result => result.value);
-    
-    expect(divCalls).toHaveLength(4);
-    const scoreEl = divCalls.find(d => d.id === 'score');
-    const highScoreEl = divCalls.find(d => d.id === 'highscore');
-    const levelEl = divCalls.find(d => d.id === 'level');
-
-    expect(scoreEl).toBeDefined();
-    expect(highScoreEl).toBeDefined();
-    expect(levelEl).toBeDefined();
-
-    if (!scoreEl || !highScoreEl || !levelEl) throw new Error('Score elements not found');
-
-    // Initial call (loop calls skipped because score hasn't changed)
-    const scoreSetter = Object.getOwnPropertyDescriptor(scoreEl, 'innerText')?.set;
-    const highScoreSetter = Object.getOwnPropertyDescriptor(highScoreEl, 'innerText')?.set;
-    const levelSetter = Object.getOwnPropertyDescriptor(levelEl, 'innerText')?.set;
-    expect(scoreSetter).toHaveBeenCalledTimes(1);
-    expect(highScoreSetter).toHaveBeenCalledTimes(1);
-    expect(levelSetter).toHaveBeenCalledTimes(1);
-    
-    // We expect exactly 4 divs: container, score, level, highscore
-    // Actually implementation detail might vary, but let's assume structure:
-    // <div class="flex ..."> 
-    //   <div id="score">Score: 0</div>
-    //   <div id="level">Level: 1</div>
-    //   <div id="highscore">High Score: 0</div>
-    // </div>
-    // Container appended to main container
-    expect(container.appendChild).toHaveBeenCalledTimes(2); // Canvas + Score container
   });
 
   it('should initialize with fallback when asset loading fails', async () => {

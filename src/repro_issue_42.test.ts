@@ -24,6 +24,7 @@ describe('Issue #42: iPhone portrait mode cropping', () => {
       stroke: vi.fn(),
       strokeStyle: '',
       lineWidth: 0,
+      canvas: null as unknown as HTMLCanvasElement,
     } as unknown as CanvasRenderingContext2D;
 
     // Mock canvas
@@ -35,6 +36,8 @@ describe('Issue #42: iPhone portrait mode cropping', () => {
         add: vi.fn(),
       },
     } as unknown as HTMLCanvasElement;
+
+    (context as { canvas: HTMLCanvasElement }).canvas = canvas;
 
     // Mock container
     container = {

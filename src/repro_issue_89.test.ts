@@ -3,7 +3,12 @@ import { Renderer } from './renderer.js';
 import { Grid } from './grid.js';
 import { EntityType } from './types.js';
 import type { IGameState, Entity } from './types.js';
-import { TILE_SIZE } from './config.js';
+import { 
+  TILE_SIZE,
+  MAZE_RENDER_OFFSET_X,
+  MAZE_RENDER_OFFSET_Y,
+  MAZE_RENDER_MARGIN_BOTTOM
+} from './config.js';
 
 describe('Issue 89: Hide Pacman During Ghost Bonus Score', () => {
   let mockContext: {
@@ -25,6 +30,10 @@ describe('Issue 89: Hide Pacman During Ghost Bonus Score', () => {
     font: string;
     textAlign: string;
     textBaseline: string;
+    canvas: {
+      width: number;
+      height: number;
+    };
   };
   let mockState: IGameState;
   let renderer: Renderer;
@@ -49,6 +58,10 @@ describe('Issue 89: Hide Pacman During Ghost Bonus Score', () => {
       font: '',
       textAlign: '',
       textBaseline: '',
+      canvas: {
+        width: 10 * TILE_SIZE + MAZE_RENDER_OFFSET_X * 2,
+        height: 10 * TILE_SIZE + MAZE_RENDER_OFFSET_Y + MAZE_RENDER_MARGIN_BOTTOM
+      }
     };
     mockState = {
       getEntities: vi.fn().mockReturnValue([]),
@@ -94,7 +107,11 @@ describe('Issue 89: Hide Pacman During Ghost Bonus Score', () => {
     expect(fillStyleSetter).not.toHaveBeenCalledWith('yellow');
 
     // Should still draw the point effect
-    expect(mockContext.fillText).toHaveBeenCalledWith('200', 5 * TILE_SIZE + TILE_SIZE / 2, 5 * TILE_SIZE + TILE_SIZE / 2);
+    expect(mockContext.fillText).toHaveBeenCalledWith(
+      '200',
+      5 * TILE_SIZE + TILE_SIZE / 2 + MAZE_RENDER_OFFSET_X,
+      5 * TILE_SIZE + TILE_SIZE / 2 + MAZE_RENDER_OFFSET_Y
+    );
   });
 
   it('should skip rendering Pacman (spritesheet) if a point effect is near its position', () => {
@@ -120,7 +137,11 @@ describe('Issue 89: Hide Pacman During Ghost Bonus Score', () => {
     expect(mockContext.drawImage).not.toHaveBeenCalled();
 
     // Should still draw the point effect
-    expect(mockContext.fillText).toHaveBeenCalledWith('200', 5 * TILE_SIZE + TILE_SIZE / 2, 5 * TILE_SIZE + TILE_SIZE / 2);
+    expect(mockContext.fillText).toHaveBeenCalledWith(
+      '200',
+      5 * TILE_SIZE + TILE_SIZE / 2 + MAZE_RENDER_OFFSET_X,
+      5 * TILE_SIZE + TILE_SIZE / 2 + MAZE_RENDER_OFFSET_Y
+    );
   });
 });
 

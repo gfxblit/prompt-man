@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { GameState } from './state.js';
 import { Grid } from './grid.js';
 import { EntityType } from './types.js';
-import { POWER_UP_DURATION, GHOST_OFFSETS, SOURCE_GHOST_SIZE, PALETTE_PADDING_X, COLORS } from './config.js';
+import { POWER_UP_DURATION, GHOST_OFFSETS, SOURCE_GHOST_SIZE, PALETTE_PADDING_X, COLORS, TILE_SIZE, MAZE_RENDER_OFFSET_X, MAZE_RENDER_OFFSET_Y, MAZE_RENDER_MARGIN_BOTTOM } from './config.js';
 import { Renderer } from './renderer.js';
 
 vi.mock('./config.js', async (importOriginal) => {
@@ -64,6 +64,10 @@ describe('Issue #62: Ghost Flashing when Power Pellet runs low', () => {
       closePath: vi.fn(),
       fillText: vi.fn(),
       fillRect: vi.fn(),
+      canvas: {
+        width: 10 * TILE_SIZE + MAZE_RENDER_OFFSET_X * 2,
+        height: 10 * TILE_SIZE + MAZE_RENDER_OFFSET_Y + MAZE_RENDER_MARGIN_BOTTOM
+      }
     };
     const mockSpritesheet = {} as HTMLImageElement;
     const renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D, mockSpritesheet);
@@ -126,6 +130,10 @@ describe('Issue #62: Ghost Flashing when Power Pellet runs low', () => {
       closePath: vi.fn(),
       fillText: vi.fn(),
       fillRect: vi.fn(),
+      canvas: {
+        width: 10 * TILE_SIZE + MAZE_RENDER_OFFSET_X * 2,
+        height: 10 * TILE_SIZE + MAZE_RENDER_OFFSET_Y + MAZE_RENDER_MARGIN_BOTTOM
+      },
       set fillStyle(val: string) {
         fillStyles.push(val);
       },
