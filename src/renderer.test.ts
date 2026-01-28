@@ -586,8 +586,8 @@ describe('Renderer', () => {
     // 2 lives means 2 calls to beginPath, arc, fill (specifically for the lives)
     expect(mockContext.beginPath).toHaveBeenCalledTimes(2);
     
-    // Expected Y is mockContext.canvas.height - TILE_SIZE + TILE_SIZE / 2
-    const expectedY = mockContext.canvas.height - TILE_SIZE + TILE_SIZE / 2;
+    // Expected Y is mockContext.canvas.height - TILE_SIZE * 2 + TILE_SIZE / 2
+    const expectedY = mockContext.canvas.height - TILE_SIZE * 2 + TILE_SIZE / 2;
     expect(mockContext.arc).toHaveBeenCalledWith(
       expect.any(Number),
       expectedY,

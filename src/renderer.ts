@@ -96,19 +96,19 @@ export class Renderer implements IRenderer {
 
     // 1UP
     this.ctx.textAlign = 'left';
-    this.ctx.fillText('1UP', TILE_SIZE + MAZE_RENDER_OFFSET_X, TILE_SIZE / 2);
-    this.ctx.fillText(state.getScore().toString().padStart(2, ' '), TILE_SIZE + MAZE_RENDER_OFFSET_X, TILE_SIZE * 1.5);
+    this.ctx.fillText('1UP', TILE_SIZE + MAZE_RENDER_OFFSET_X, TILE_SIZE);
+    this.ctx.fillText(state.getScore().toString().padStart(2, ' '), TILE_SIZE + MAZE_RENDER_OFFSET_X, TILE_SIZE * 2);
 
     // HIGH SCORE
     this.ctx.textAlign = 'center';
     const centerX = width / 2;
-    this.ctx.fillText('HIGH SCORE', centerX, TILE_SIZE / 2);
-    this.ctx.fillText(state.getHighScore().toString().padStart(2, ' '), centerX, TILE_SIZE * 1.5);
+    this.ctx.fillText('HIGH SCORE', centerX, TILE_SIZE);
+    this.ctx.fillText(state.getHighScore().toString().padStart(2, ' '), centerX, TILE_SIZE * 2);
 
     // LEVEL
     this.ctx.textAlign = 'right';
-    this.ctx.fillText('LEVEL', width - TILE_SIZE - MAZE_RENDER_OFFSET_X, TILE_SIZE / 2);
-    this.ctx.fillText(state.getLevel().toString().padStart(2, ' '), width - TILE_SIZE - MAZE_RENDER_OFFSET_X, TILE_SIZE * 1.5);
+    this.ctx.fillText('LEVEL', width - TILE_SIZE - MAZE_RENDER_OFFSET_X, TILE_SIZE);
+    this.ctx.fillText(state.getLevel().toString().padStart(2, ' '), width - TILE_SIZE - MAZE_RENDER_OFFSET_X, TILE_SIZE * 2);
     this.ctx.restore();
   }
 
@@ -168,7 +168,7 @@ export class Renderer implements IRenderer {
     const { height } = this.getCanvasDimensions(grid);
     this.ctx.save();
     const startX = TILE_SIZE * 2 + MAZE_RENDER_OFFSET_X; // Start offset from the left edge plus maze offset
-    const startY = height - TILE_SIZE; // Bottom margin
+    const startY = height - TILE_SIZE * 2; // Bottom margin
     const gap = TILE_SIZE * 1.2;
 
     for (let i = 0; i < lives; i++) {
