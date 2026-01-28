@@ -43,7 +43,6 @@ export async function init(container: HTMLElement): Promise<void> {
       // Remove events that are only needed to start the game
       window.removeEventListener('keydown', resumeAudio);
       window.removeEventListener('mousedown', resumeAudio);
-      window.removeEventListener('touchstart', resumeAudio);
     }
 
     // If audio is successfully running, we can stop listening for unlock events
@@ -52,13 +51,11 @@ export async function init(container: HTMLElement): Promise<void> {
       window.removeEventListener('touchend', resumeAudio);
       window.removeEventListener('keydown', resumeAudio);
       window.removeEventListener('mousedown', resumeAudio);
-      window.removeEventListener('touchstart', resumeAudio);
     }
   };
 
   window.addEventListener('keydown', resumeAudio);
   window.addEventListener('mousedown', resumeAudio);
-  window.addEventListener('touchstart', resumeAudio);
   window.addEventListener('click', resumeAudio);
   window.addEventListener('touchend', resumeAudio);
 

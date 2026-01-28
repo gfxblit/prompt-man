@@ -7,7 +7,7 @@ describe('Audio Unlock', () => {
   let container: HTMLElement;
   let eventListeners: { [type: string]: (() => Promise<void> | void)[] } = {};
 
-  const GAME_START_EVENTS = ['keydown', 'mousedown', 'touchstart'];
+  const GAME_START_EVENTS = ['keydown', 'mousedown'];
   const AUDIO_UNLOCK_EVENTS = ['click', 'touchend'];
   const ALL_EVENTS = [...GAME_START_EVENTS, ...AUDIO_UNLOCK_EVENTS];
 
@@ -87,6 +87,13 @@ describe('Audio Unlock', () => {
     ALL_EVENTS.forEach(event => {
       expect(window.addEventListener).toHaveBeenCalledWith(event, expect.any(Function));
     });
+
+    // Verify that resumeAudio is NOT registered for touchstart
+    const touchStartCalls = vi.mocked(window.addEventListener).mock.calls.filter(call => call[0] === 'touchstart');
+    touchStartCalls.forEach(call => {
+      const listener = call[1] as () => void;
+      expect(listener.name).not.toBe('resumeAudio');
+    });
   });
 
   it('should resume audio and start game on first interaction', async () => {
@@ -97,8 +104,10 @@ describe('Audio Unlock', () => {
 
     await init(container);
 
-    // Get the registered listener for 'touchstart'
-    const listener = eventListeners['touchstart']![0];
+    // Get the registered listener for 'keydown' (one of the GAME_START_EVENTS)
+    const keydownCalls = vi.mocked(window.addEventListener).mock.calls.filter(call => call[0] === 'keydown');
+    // The last 'keydown' listener should be 'resumeAudio' (the one from init)
+    const listener = keydownCalls.find(call => (call[1] as { name: string }).name === 'resumeAudio')?.[1] as (() => Promise<void>);
     
     // Simulate first interaction
     if (listener) await listener();
@@ -111,6 +120,9 @@ describe('Audio Unlock', () => {
       expect(window.removeEventListener).toHaveBeenCalledWith(event, listener);
     });
 
+    // touchstart should NOT be removed because it was never added for resumeAudio
+    expect(window.removeEventListener).not.toHaveBeenCalledWith('touchstart', listener);
+
     // Audio is still suspended, so 'unlock' listeners should NOT be removed yet
     AUDIO_UNLOCK_EVENTS.forEach(event => {
       expect(window.removeEventListener).not.toHaveBeenCalledWith(event, listener);
@@ -118,7 +130,8 @@ describe('Audio Unlock', () => {
 
     // Simulate second interaction (touchend) that successfully resumes audio
     getStateSpy.mockReturnValue('running');
-    const touchendListener = eventListeners['touchend']![0];
+    const touchendCalls = vi.mocked(window.addEventListener).mock.calls.filter(call => call[0] === 'touchend');
+    const touchendListener = touchendCalls.find(call => (call[1] as { name: string }).name === 'resumeAudio')?.[1] as (() => Promise<void>);
     if (touchendListener) await touchendListener();
 
     AUDIO_UNLOCK_EVENTS.forEach(event => {
