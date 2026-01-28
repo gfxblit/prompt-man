@@ -2,7 +2,7 @@ import { Grid } from './grid.js';
 import { Renderer, UIRenderer } from './renderer.js';
 import { GameState } from './state.js';
 import { InputHandler } from './input.js';
-import { TILE_SIZE, LEVEL_TEMPLATE, PALETTE_URL, MAZE_RENDER_OFFSET_Y, MAZE_RENDER_MARGIN_BOTTOM } from './config.js';
+import { TILE_SIZE, LEVEL_TEMPLATE, PALETTE_URL, MAZE_RENDER_OFFSET_X, MAZE_RENDER_OFFSET_Y, MAZE_RENDER_MARGIN_BOTTOM } from './config.js';
 import { AssetLoader } from './assets.js';
 import { AudioManager } from './audio-manager.js';
 
@@ -61,7 +61,7 @@ export async function init(container: HTMLElement): Promise<void> {
   window.addEventListener('touchend', resumeAudio);
 
   const canvas = document.createElement('canvas');
-  canvas.width = grid.getWidth() * TILE_SIZE;
+  canvas.width = grid.getWidth() * TILE_SIZE + MAZE_RENDER_OFFSET_X * 2;
   canvas.height = grid.getHeight() * TILE_SIZE + MAZE_RENDER_OFFSET_Y + MAZE_RENDER_MARGIN_BOTTOM;
   canvas.classList.add('game-canvas', 'border-2', 'border-gray-600');
   container.appendChild(canvas);

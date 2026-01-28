@@ -1,18 +1,6 @@
 /**
- * Rendering configuration
- */
-export const TILE_SIZE = 18;
-
-/**
  * Game mechanics configuration
  */
-/** Vertical offset for the maze to accommodate top HUD. */
-export const MAZE_RENDER_OFFSET_Y = TILE_SIZE * 3;
-/** Bottom margin for lives display. */
-export const MAZE_RENDER_MARGIN_BOTTOM = TILE_SIZE * 2;
-/** Horizontal offset for the maze. */
-export const MAZE_RENDER_OFFSET_X = 0;
-
 /** Points awarded for collecting a regular pellet. */
 export const PELLET_SCORE = 10;
 /** Points awarded for collecting a power pellet. */
@@ -127,8 +115,19 @@ export const PALETTE_PADDING_X = 1;
 /** Padding (pixels) on the top of each sprite in the palette (e.g., pink boundary). */
 export const PALETTE_PADDING_Y = 1;
 
+/**
+ * Rendering configuration
+ */
+export const TILE_SIZE = 18;
 /** Time in milliseconds for each blink state (on/off). */
 export const POWER_PELLET_BLINK_RATE = 250;
+
+/** Vertical offset for the maze to accommodate top HUD. */
+export const MAZE_RENDER_OFFSET_Y = TILE_SIZE * 3;
+/** Bottom margin for lives display. */
+export const MAZE_RENDER_MARGIN_BOTTOM = TILE_SIZE * 2;
+/** Horizontal offset for the maze. */
+export const MAZE_RENDER_OFFSET_X = 0;
 
 /**
  * Game color palette

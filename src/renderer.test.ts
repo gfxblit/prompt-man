@@ -598,6 +598,24 @@ describe('Renderer', () => {
     expect(mockContext.fill).toHaveBeenCalledTimes(2);
   });
 
+  it('should render HUD with score, high score, and level', () => {
+    vi.mocked(mockState.getScore).mockReturnValue(123);
+    vi.mocked(mockState.getHighScore).mockReturnValue(456);
+    vi.mocked(mockState.getLevel).mockReturnValue(7);
+    renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
+    const grid = new Grid(10, 10);
+
+    renderer.render(grid, mockState);
+
+    // Should call fillText for "1UP", "123", "HIGH SCORE", "456", "LEVEL", " 7"
+    expect(mockContext.fillText).toHaveBeenCalledWith('1UP', expect.any(Number), expect.any(Number));
+    expect(mockContext.fillText).toHaveBeenCalledWith('123', expect.any(Number), expect.any(Number));
+    expect(mockContext.fillText).toHaveBeenCalledWith('HIGH SCORE', expect.any(Number), expect.any(Number));
+    expect(mockContext.fillText).toHaveBeenCalledWith('456', expect.any(Number), expect.any(Number));
+    expect(mockContext.fillText).toHaveBeenCalledWith('LEVEL', expect.any(Number), expect.any(Number));
+    expect(mockContext.fillText).toHaveBeenCalledWith(' 7', expect.any(Number), expect.any(Number));
+  });
+
   it('should not crash when animationFrame is out of bounds for PACMAN_ANIMATION_MAP', () => {
     const mockSpritesheet = {} as HTMLImageElement;
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D, mockSpritesheet);
