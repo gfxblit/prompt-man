@@ -13,7 +13,7 @@ const localStorageMock = (() => {
     clear: () => { store = {}; }
   };
 })();
-Object.defineProperty(global, 'localStorage', { value: localStorageMock });
+Object.defineProperty(globalThis, 'localStorage', { value: localStorageMock });
 
 describe('GameState Fruit Logic', () => {
   let grid: Grid;

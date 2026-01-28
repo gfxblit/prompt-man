@@ -92,6 +92,7 @@ describe('Renderer', () => {
       isReady: vi.fn().mockReturnValue(false),
       getPowerUpTimer: vi.fn().mockReturnValue(0),
       getPointEffects: vi.fn().mockReturnValue([]),
+      getFruit: vi.fn().mockReturnValue(null),
       startReady: vi.fn(),
     };
 
