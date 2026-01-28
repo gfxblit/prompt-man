@@ -61,6 +61,7 @@ export class GameState implements IGameState {
   private dotsEatenInLevel: number = 0;
   private fruit: Entity | null = null;
   private fruitTimer: number = 0;
+  private jailTiles: Set<string> = new Set();
   /** Callback fired when a pellet is consumed. */
   public onPelletConsumed?: (tileType: TileType) => void;
 
@@ -69,6 +70,53 @@ export class GameState implements IGameState {
     this.height = grid.getHeight();
     this.started = startImmediately;
     this.initialize();
+    this.calculateJailTiles();
+  }
+
+  private calculateJailTiles(): void {
+    const spawns = this.grid.findTiles(TileType.GhostSpawn);
+    const doors = this.grid.findTiles(TileType.JailDoor);
+    
+    if (spawns.length === 0 && doors.length === 0) return;
+
+    this.jailTiles.clear();
+    const queue: {x: number, y: number}[] = [...spawns];
+    spawns.forEach(s => this.jailTiles.add(`${s.x},${s.y}`));
+
+    // Flood fill from spawns to find all connected non-wall tiles,
+    // but don't cross through jail doors.
+    let head = 0;
+    while (head < queue.length) {
+      const {x, y} = queue[head++]!;
+      const neighbors = [
+        {x: x + 1, y}, {x: x - 1, y}, {x, y: y + 1}, {x, y: y - 1}
+      ];
+
+      for (const n of neighbors) {
+        // Use wrapping for consistency, though jail shouldn't typically wrap
+        const nx = (n.x % this.width + this.width) % this.width;
+        const ny = (n.y % this.height + this.height) % this.height;
+        const key = `${nx},${ny}`;
+        
+        if (this.jailTiles.has(key)) continue;
+
+        const tile = this.grid.getTile(nx, ny);
+        if (tile !== undefined && tile !== TileType.Wall && tile !== TileType.JailDoor) {
+          this.jailTiles.add(key);
+          queue.push({x: nx, y: ny});
+        }
+      }
+    }
+
+    // Finally add doors themselves to the jail tiles set
+    doors.forEach(d => this.jailTiles.add(`${d.x},${d.y}`));
+  }
+
+  private isTileInJail(x: number, y: number): boolean {
+    // Handle wrapping
+    const wx = (Math.round(x) % this.width + this.width) % this.width;
+    const wy = (Math.round(y) % this.height + this.height) % this.height;
+    return this.jailTiles.has(`${wx},${wy}`);
   }
 
   private updateHighScore(): void {
@@ -118,7 +166,7 @@ export class GameState implements IGameState {
     // Find Ghost spawns
     const ghostSpawns = this.grid.findTiles(TileType.GhostSpawn);
     const ghostColors = COLORS.GHOST_COLORS;
-    for (let i = 0; i < ghostSpawns.length; i++) {
+    for (let i = 0; i < Math.min(ghostSpawns.length, 4); i++) {
       const spawn = ghostSpawns[i]!;
       const ghost: Entity = {
         type: EntityType.Ghost,
@@ -127,6 +175,7 @@ export class GameState implements IGameState {
         color: ghostColors[i % ghostColors.length]!,
         animationFrame: 0,
         animationTimer: 0,
+        isLeavingJail: true,
       };
       this.entities.push(ghost);
       this.initialPositions.set(ghost, { x: spawn.x, y: spawn.y });
@@ -201,7 +250,7 @@ export class GameState implements IGameState {
    */
   startReady(duration: number): void {
     this.started = true;
-    this.ready = true;
+    this.ready = duration > 0;
     this.readyTimer = duration;
     this.audioManager?.stopSiren();
     this.audioManager?.stopFrightSound();
@@ -400,7 +449,7 @@ export class GameState implements IGameState {
           targetX = this.getWrappedCoordinate(targetX, this.width);
           targetY = this.getWrappedCoordinate(targetY, this.height);
 
-          if (this.grid.isWalkable(targetX, targetY)) {
+          if (this.grid.isWalkable(targetX, targetY, EntityType.Pacman)) {
             moveDir = nextDir;
             this.nextDirection = null; // Consumed
 
@@ -558,6 +607,7 @@ export class GameState implements IGameState {
       ghost.isDead = false;
       ghost.isScared = false;
       ghost.isRespawning = true;
+      ghost.isLeavingJail = true;
       ghost.respawnTimer = RESPAWN_INVULNERABILITY_DURATION;
       ghost.x = initialPos.x;
       ghost.y = initialPos.y;
@@ -667,6 +717,21 @@ export class GameState implements IGameState {
         }
       }
 
+      // Check if ghost has left the jail
+      if (ghost.isLeavingJail) {
+        const x = Math.round(ghost.x);
+        const y = Math.round(ghost.y);
+        const currentTileType = this.grid.getTile(x, y);
+        
+        const inJail = this.isTileInJail(x, y);
+
+        // A ghost has left jail if it's on a tile that is neither GhostSpawn nor JailDoor
+        // AND it's not within the jail room anymore.
+        if (!inJail && currentTileType !== TileType.GhostSpawn && currentTileType !== TileType.JailDoor) {
+          ghost.isLeavingJail = false;
+        }
+      }
+
       const levelMultiplier = Math.pow(GHOST_SPEED_LEVEL_MULTIPLIER, this.level - 1);
       const baseSpeed = GHOST_SPEED * levelMultiplier;
 
@@ -691,15 +756,16 @@ export class GameState implements IGameState {
           // Check if continuing in the current direction is possible (with grid wrapping)
           const nextX = this.getWrappedCoordinate(x + ghost.direction.dx, this.width);
           const nextY = this.getWrappedCoordinate(y + ghost.direction.dy, this.height);
-          const canContinueStraight = this.grid.isWalkable(nextX, nextY);
+          const canContinueStraight = this.grid.isWalkable(nextX, nextY, EntityType.Ghost, !!ghost.isDead, !!ghost.isLeavingJail);
 
           // Scared ghosts only change direction when they hit a wall (not at every intersection)
           // This prevents jiggling from random re-picks while still in alignment tolerance
           // Normal/dead ghosts re-evaluate at intersections to chase Pac-Man
-          const isScaredAndCanContinue = ghost.isScared && !ghost.isDead && canContinueStraight;
+          // Ghosts leaving jail should ALWAYS re-evaluate to find the exit efficiently.
+          const isScaredAndCanContinue = ghost.isScared && !ghost.isDead && !ghost.isLeavingJail && canContinueStraight;
 
           if (!isScaredAndCanContinue) {
-            const allPossibleDirs = this.getPossibleDirections(x, y); // Get all directions, including reverse for dead-end check
+            const allPossibleDirs = this.getPossibleDirections(x, y, ghost as Entity); // Pass the whole ghost entity with correct typing
             const nonReversePossibleDirs = allPossibleDirs.filter(
               dir => !(dir.dx === -ghost.direction!.dx && dir.dy === -ghost.direction!.dy)
             );
@@ -732,13 +798,15 @@ export class GameState implements IGameState {
     }
   }
 
-  private getPossibleDirections(x: number, y: number, currentDir?: Direction): Direction[] {
+  private getPossibleDirections(x: number, y: number, entity: Entity): Direction[] {
     const dirs: Direction[] = [
       { dx: 1, dy: 0 },
       { dx: -1, dy: 0 },
       { dx: 0, dy: 1 },
       { dx: 0, dy: -1 },
     ];
+
+    const currentDir = entity.direction;
 
     return dirs.filter(dir => {
       // Don't allow immediate reversal (only if ghost is actually moving)
@@ -750,13 +818,14 @@ export class GameState implements IGameState {
       // Use grid wrapping for tunnel support
       const targetX = this.getWrappedCoordinate(x + dir.dx, this.width);
       const targetY = this.getWrappedCoordinate(y + dir.dy, this.height);
-      return this.grid.isWalkable(targetX, targetY);
+      return this.grid.isWalkable(targetX, targetY, entity.type, !!entity.isDead, !!entity.isLeavingJail);
     });
   }
 
   private chooseGhostDirection(ghost: Entity): void {
-    const isScared = !!ghost.isScared;
     const isDead = !!ghost.isDead;
+    const isLeavingJail = !!ghost.isLeavingJail;
+    const isScared = !!ghost.isScared && !isDead && !isLeavingJail;
     const pacman = this.entities.find(e => e.type === EntityType.Pacman);
 
     let target = pacman
@@ -768,13 +837,54 @@ export class GameState implements IGameState {
       if (initialPos) {
         target = { x: initialPos.x, y: initialPos.y };
       }
+    } else if (isLeavingJail) {
+      // Find the nearest jail door
+      const doors = this.grid.findTiles(TileType.JailDoor);
+      if (doors.length > 0) {
+        // Find the nearest door
+        let nearestDoor = doors[0]!;
+        let minDist = Math.pow(ghost.x - nearestDoor.x, 2) + Math.pow(ghost.y - nearestDoor.y, 2);
+        for (let i = 1; i < doors.length; i++) {
+          const door = doors[i]!;
+          const dist = Math.pow(ghost.x - door.x, 2) + Math.pow(ghost.y - door.y, 2);
+          if (dist < minDist) {
+            minDist = dist;
+            nearestDoor = door;
+          }
+        }
+        
+        // Target the jail door tile itself
+        target = { x: nearestDoor.x, y: nearestDoor.y };
+
+        // If we are already at the door, or very close, target a point BEYOND the door
+        // to avoid random movement when reaching the target.
+        const distToDoor = Math.abs(ghost.x - nearestDoor.x) + Math.abs(ghost.y - nearestDoor.y);
+        if (distToDoor < 0.2) {
+            // Find a neighbor of the door that is NOT in jail and NOT a wall
+            const neighbors = [
+                {x: nearestDoor.x, y: nearestDoor.y - 1}, // Prefer Up
+                {x: nearestDoor.x, y: nearestDoor.y + 1}, // Then Down
+                {x: nearestDoor.x + 1, y: nearestDoor.y},
+                {x: nearestDoor.x - 1, y: nearestDoor.y},
+            ];
+            for (const n of neighbors) {
+                const tile = this.grid.getTile(n.x, n.y);
+                const inJail = this.isTileInJail(n.x, n.y);
+                if (tile !== undefined && tile !== TileType.Wall && tile !== TileType.GhostSpawn && tile !== TileType.JailDoor && !inJail) {
+                    target = { x: n.x, y: n.y };
+                    break;
+                }
+            }
+        }
+      }
     }
 
     // Pathfinding priority:
     // 1. Dead ghosts: Pathfind to spawn position
-    // 2. Scared ghosts: Pathfind AWAY from Pacman (handled in GhostAI.pickDirection)
-    // 3. Normal ghosts: Pathfind towards Pacman
-    const newDir = GhostAI.pickDirection(ghost, target, this.grid, isScared && !isDead);
+    // 2. Ghosts in jail: Pathfind to jail door
+    // 3. Scared ghosts (only if not in jail): Pathfind AWAY from Pacman (handled in GhostAI.pickDirection)
+    // 4. Normal ghosts: Pathfind towards Pacman
+    const newDir = GhostAI.pickDirection(ghost, target, this.grid, isScared, isDead, isLeavingJail);
     ghost.direction = newDir;
     ghost.rotation = Math.atan2(newDir.dy, newDir.dx);
   }
@@ -786,11 +896,11 @@ export class GameState implements IGameState {
     let result = { pos: 0, stopped: false };
 
     if (dx !== 0) {
-      result = this.attemptMove(entity.x, dx, distance, Math.round(entity.y), true);
+      result = this.attemptMove(entity.x, dx, distance, Math.round(entity.y), true, entity.type, entity.isDead, entity.isLeavingJail);
       entity.x = result.pos;
       entity.y = this.getWrappedCoordinate(entity.y, this.height);
     } else if (dy !== 0) {
-      result = this.attemptMove(entity.y, dy, distance, Math.round(entity.x), false);
+      result = this.attemptMove(entity.y, dy, distance, Math.round(entity.x), false, entity.type, entity.isDead, entity.isLeavingJail);
       entity.y = result.pos;
       entity.x = this.getWrappedCoordinate(entity.x, this.width);
     }
@@ -800,7 +910,7 @@ export class GameState implements IGameState {
     }
   }
 
-  private attemptMove(pos: number, dir: number, dist: number, crossPos: number, isHorizontal: boolean): { pos: number, stopped: boolean } {
+  private attemptMove(pos: number, dir: number, dist: number, crossPos: number, isHorizontal: boolean, entityType: EntityType, isDead: boolean = false, isLeavingJail: boolean = false): { pos: number, stopped: boolean } {
     const max = isHorizontal ? this.width : this.height;
     if (max === 0) return { pos: 0, stopped: true };
 
@@ -823,7 +933,7 @@ export class GameState implements IGameState {
       const tileX = isHorizontal ? wrappedNextTile : wrappedCrossPos;
       const tileY = isHorizontal ? wrappedCrossPos : wrappedNextTile;
 
-      if (!this.grid.isWalkable(tileX, tileY)) {
+      if (!this.grid.isWalkable(tileX, tileY, entityType, isDead, isLeavingJail)) {
         // Stop at the center of the current tile
         return { pos: currentTile, stopped: true };
       }

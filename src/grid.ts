@@ -1,4 +1,4 @@
-import { TileType } from './types.js';
+import { TileType, EntityType } from './types.js';
 import type { IGrid } from './types.js';
 import { CHAR_MAP } from './constants.js';
 
@@ -111,9 +111,15 @@ export class Grid implements IGrid {
     return x < 0 || x >= this.width || y < 0 || y >= this.height;
   }
 
-  isWalkable(x: number, y: number): boolean {
+  isWalkable(x: number, y: number, entityType?: EntityType, isDead: boolean = false, isLeavingJail: boolean = false): boolean {
     const tile = this.getTile(x, y);
-    return tile !== undefined && tile !== TileType.Wall;
+    if (tile === undefined || tile === TileType.Wall) {
+      return false;
+    }
+    if (tile === TileType.JailDoor) {
+      return entityType === EntityType.Ghost && (isDead || isLeavingJail);
+    }
+    return true;
   }
 
   findTiles(type: TileType): { x: number; y: number }[] {
