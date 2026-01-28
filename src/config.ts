@@ -1,3 +1,5 @@
+import { FruitType } from './types.js';
+
 /**
  * Game mechanics configuration
  */
@@ -51,20 +53,20 @@ export const FRUIT_SPAWN_POS = { x: 13.5, y: 17 };
 /**
  * Fruit data mapping levels to types and point values.
  */
-export const FRUIT_DATA: Record<number, { type: string, score: number }> = {
-  1: { type: 'Cherry', score: 100 },
-  2: { type: 'Strawberry', score: 300 },
-  3: { type: 'Peach', score: 500 },
-  4: { type: 'Peach', score: 500 },
-  5: { type: 'Apple', score: 700 },
-  6: { type: 'Apple', score: 700 },
-  7: { type: 'Grapes', score: 1000 },
-  8: { type: 'Grapes', score: 1000 },
-  9: { type: 'Galaxian', score: 2000 },
-  10: { type: 'Galaxian', score: 2000 },
-  11: { type: 'Bell', score: 3000 },
-  12: { type: 'Bell', score: 3000 },
-  13: { type: 'Key', score: 5000 },
+export const FRUIT_DATA: Record<number, { type: FruitType, score: number }> = {
+  1: { type: FruitType.Cherry, score: 100 },
+  2: { type: FruitType.Strawberry, score: 300 },
+  3: { type: FruitType.Peach, score: 500 },
+  4: { type: FruitType.Peach, score: 500 },
+  5: { type: FruitType.Apple, score: 700 },
+  6: { type: FruitType.Apple, score: 700 },
+  7: { type: FruitType.Grapes, score: 1000 },
+  8: { type: FruitType.Grapes, score: 1000 },
+  9: { type: FruitType.Galaxian, score: 2000 },
+  10: { type: FruitType.Galaxian, score: 2000 },
+  11: { type: FruitType.Bell, score: 3000 },
+  12: { type: FruitType.Bell, score: 3000 },
+  13: { type: FruitType.Key, score: 5000 },
 };
 
 /**

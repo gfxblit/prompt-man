@@ -279,14 +279,18 @@ export class GameState implements IGameState {
   }
 
   private spawnFruit(): void {
-    const levelData = FRUIT_DATA[this.level] || FRUIT_DATA[13];
+    const levelData = this.getFruitDataForLevel();
     this.fruit = {
       type: EntityType.Fruit,
       x: FRUIT_SPAWN_POS.x,
       y: FRUIT_SPAWN_POS.y,
-      fruitType: levelData!.type as FruitType,
+      fruitType: levelData.type,
     };
     this.fruitTimer = FRUIT_DURATION;
+  }
+
+  private getFruitDataForLevel(): { type: FruitType, score: number } {
+    return FRUIT_DATA[this.level] || FRUIT_DATA[13]!;
   }
 
   private getWrappedCoordinate(val: number, max: number): number {
@@ -483,8 +487,8 @@ export class GameState implements IGameState {
     );
 
     if (dist < COLLISION_THRESHOLD) {
-      const levelData = FRUIT_DATA[this.level] || FRUIT_DATA[13];
-      const points = levelData!.score;
+      const levelData = this.getFruitDataForLevel();
+      const points = levelData.score;
       this.score += points;
       this.pointEffects.push({ x: this.fruit.x, y: this.fruit.y, points });
       this.audioManager?.playPowerPelletSound();

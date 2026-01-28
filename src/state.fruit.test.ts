@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { GameState } from './state.js';
 import { TileType, EntityType, FruitType } from './types.js';
 import { Grid } from './grid.js';
-import { LEVEL_TEMPLATE, FRUIT_SPAWN_THRESHOLDS, FRUIT_DURATION } from './config.js';
+import { LEVEL_TEMPLATE, FRUIT_SPAWN_THRESHOLDS, FRUIT_DURATION, FRUIT_DATA } from './config.js';
 
 // Mock localStorage
 const localStorageMock = (() => {
@@ -102,6 +102,6 @@ describe('GameState Fruit Logic', () => {
     state.updatePacman({ dx: 0, dy: 0 }, 16);
     
     expect(state.getFruit()).toBeNull();
-    expect(state.getScore()).toBe(initialScore + 100);
+    expect(state.getScore()).toBe(initialScore + FRUIT_DATA[1]!.score);
   });
 });
