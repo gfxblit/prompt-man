@@ -36,6 +36,8 @@ describe('GameState Sound Events', () => {
     eventBus = new EventBus();
     const assetLoader = new AssetLoader();
     audioManager = new AudioManager(assetLoader, eventBus);
+    // @ts-expect-error - calling private method for testing
+    audioManager.setupEventListeners();
     vi.spyOn(audioManager, 'playPelletSound');
     vi.spyOn(audioManager, 'playPowerPelletSound');
     vi.spyOn(audioManager, 'playSiren');

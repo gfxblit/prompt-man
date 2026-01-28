@@ -19,15 +19,14 @@ export class AudioManager {
   private eyesBuffer: AudioBuffer | null = null;
   private eyesSource: AudioBufferSourceNode | null = null;
   private deathBuffers: AudioBuffer[] = [];
+  private listenersSet: boolean = false;
 
   constructor(private assetLoader: AssetLoader, private eventBus?: EventBus) {
-    if (this.eventBus) {
-      this.setupEventListeners();
-    }
   }
 
   private setupEventListeners(): void {
-    if (!this.eventBus) return;
+    if (!this.eventBus || this.listenersSet) return;
+    this.listenersSet = true;
 
     this.eventBus.on(GameEvent.PELLET_EATEN, (data) => {
       if (data === TileType.PowerPellet) {
@@ -100,6 +99,8 @@ export class AudioManager {
       this.eatGhostBuffer = await this.loadSingleAudio(AUDIO.GHOST_EATEN_SOUND, 'ghost eaten');
       this.eyesBuffer = await this.loadSingleAudio(AUDIO.EYES_SOUND, 'eyes');
       this.deathBuffers = await this.loadAudioBuffers(AUDIO.DEATH_SOUNDS);
+
+      this.setupEventListeners();
     } catch (error) {
       console.warn('AudioManager failed to initialize:', error);
       throw error;
