@@ -29,18 +29,36 @@ export async function init(container: HTMLElement): Promise<void> {
   const inputHandler = InputHandler.getInstance();
 
   // Resume audio context on first interaction
+  let gameStarted = false;
   const resumeAudio = async () => {
-    window.removeEventListener('keydown', resumeAudio);
-    window.removeEventListener('mousedown', resumeAudio);
-    window.removeEventListener('touchstart', resumeAudio);
-
     await audioManager.resumeIfNeeded();
-    audioManager.playIntroMusic();
-    state.startReady(audioManager.getIntroDuration());
+
+    if (!gameStarted) {
+      gameStarted = true;
+      audioManager.playIntroMusic();
+      state.startReady(audioManager.getIntroDuration());
+
+      // Remove events that are only needed to start the game
+      window.removeEventListener('keydown', resumeAudio);
+      window.removeEventListener('mousedown', resumeAudio);
+      window.removeEventListener('touchstart', resumeAudio);
+    }
+
+    // If audio is successfully running, we can stop listening for unlock events
+    if (audioManager.getState() === 'running') {
+      window.removeEventListener('click', resumeAudio);
+      window.removeEventListener('touchend', resumeAudio);
+      window.removeEventListener('keydown', resumeAudio);
+      window.removeEventListener('mousedown', resumeAudio);
+      window.removeEventListener('touchstart', resumeAudio);
+    }
   };
+
   window.addEventListener('keydown', resumeAudio);
   window.addEventListener('mousedown', resumeAudio);
   window.addEventListener('touchstart', resumeAudio);
+  window.addEventListener('click', resumeAudio);
+  window.addEventListener('touchend', resumeAudio);
 
   // Create score bar
   const scoreContainer = document.createElement('div');

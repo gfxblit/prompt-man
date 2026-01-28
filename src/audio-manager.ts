@@ -63,6 +63,13 @@ export class AudioManager {
   }
 
   /**
+   * Returns the current state of the AudioContext.
+   */
+  getState(): AudioContextState | 'uninitialized' {
+    return this.audioContext ? this.audioContext.state : 'uninitialized';
+  }
+
+  /**
    * Resumes the AudioContext if it's suspended (browser autoplay policy).
    */
   async resumeIfNeeded(): Promise<void> {
