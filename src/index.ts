@@ -45,8 +45,6 @@ export async function init(container: HTMLElement): Promise<void> {
       window.removeEventListener('mousedown', resumeAudio);
       window.removeEventListener('touchstart', resumeAudio);
       window.removeEventListener('pointerdown', resumeAudio);
-      window.removeEventListener('pointerup', resumeAudio);
-      window.removeEventListener('pointermove', resumeAudio);
       window.removeEventListener('touchmove', resumeAudio);
     }
 
@@ -58,8 +56,6 @@ export async function init(container: HTMLElement): Promise<void> {
       window.removeEventListener('mousedown', resumeAudio);
       window.removeEventListener('touchstart', resumeAudio);
       window.removeEventListener('pointerdown', resumeAudio);
-      window.removeEventListener('pointerup', resumeAudio);
-      window.removeEventListener('pointermove', resumeAudio);
       window.removeEventListener('touchmove', resumeAudio);
     }
   };
@@ -68,8 +64,6 @@ export async function init(container: HTMLElement): Promise<void> {
   window.addEventListener('mousedown', resumeAudio);
   window.addEventListener('touchstart', resumeAudio);
   window.addEventListener('pointerdown', resumeAudio);
-  window.addEventListener('pointerup', resumeAudio);
-  window.addEventListener('pointermove', resumeAudio);
   window.addEventListener('click', resumeAudio);
   window.addEventListener('touchend', resumeAudio);
   window.addEventListener('touchmove', resumeAudio);

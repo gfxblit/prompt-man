@@ -7,8 +7,8 @@ describe('Audio Unlock', () => {
   let container: HTMLElement;
   let eventListeners: { [type: string]: (() => Promise<void> | void)[] } = {};
 
-  const GAME_START_EVENTS = ['keydown', 'mousedown', 'touchstart', 'pointerdown'];
-  const AUDIO_UNLOCK_EVENTS = ['click', 'touchend', 'touchmove'];
+  const GAME_START_EVENTS = ['keydown', 'mousedown', 'touchstart', 'pointerdown', 'touchmove'];
+  const AUDIO_UNLOCK_EVENTS = ['click', 'touchend'];
   const ALL_EVENTS = [...GAME_START_EVENTS, ...AUDIO_UNLOCK_EVENTS];
 
   beforeEach(() => {
