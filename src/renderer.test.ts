@@ -7,10 +7,6 @@ import {
   TILE_SIZE,
   COLORS,
   PACMAN_DEATH_ANIMATION_FRAMES,
-  GHOST_OFFSETS,
-  SOURCE_GHOST_SIZE,
-  PALETTE_PADDING_X,
-  PALETTE_PADDING_Y,
   MAZE_RENDER_OFFSET_Y,
   MAZE_RENDER_OFFSET_X,
   MAZE_RENDER_MARGIN_BOTTOM
@@ -98,6 +94,22 @@ describe('Renderer', () => {
       getPointEffects: vi.fn().mockReturnValue([]),
       startReady: vi.fn(),
     };
+
+    // Mock document.createElement for canvas
+    const mockCanvas = {
+      getContext: vi.fn().mockReturnValue({
+        drawImage: vi.fn(),
+        getImageData: vi.fn().mockReturnValue({
+          data: new Uint8ClampedArray(16 * 16 * 4)
+        }),
+        putImageData: vi.fn()
+      }),
+      width: 0,
+      height: 0
+    };
+    vi.stubGlobal('document', {
+      createElement: vi.fn().mockReturnValue(mockCanvas)
+    });
   });
 
   it('should be initialized with a context', () => {
@@ -339,11 +351,11 @@ describe('Renderer', () => {
       MAZE_RENDER_OFFSET_Y + TILE_SIZE / 2
     );
     expect(mockContext.drawImage).toHaveBeenCalledWith(
-      mockSpritesheet,
-      GHOST_OFFSETS.RED!.x + (0 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X, // sourceX
-      GHOST_OFFSETS.RED!.y + PALETTE_PADDING_Y, // sourceY
-      SOURCE_GHOST_SIZE - PALETTE_PADDING_X,
-      SOURCE_GHOST_SIZE - PALETTE_PADDING_Y,
+      expect.any(Object),
+      0,                  // sourceX (from canvas, should be 0)
+      0,                  // sourceY (from canvas, should be 0)
+      expect.any(Number), // sourceWidth
+      expect.any(Number), // sourceHeight
       -TILE_SIZE / 2,     // destX
       -TILE_SIZE / 2,     // destY
       TILE_SIZE,
@@ -379,11 +391,11 @@ describe('Renderer', () => {
     );
 
     expect(mockContext.drawImage).toHaveBeenCalledWith(
-      mockSpritesheet,
-      GHOST_OFFSETS.PINK!.x + (4 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X, // sourceX (sCol=4)
-      GHOST_OFFSETS.PINK!.y + PALETTE_PADDING_Y, // sourceY
-      SOURCE_GHOST_SIZE - PALETTE_PADDING_X,
-      SOURCE_GHOST_SIZE - PALETTE_PADDING_Y,
+      expect.any(Object),
+      0,                  // sourceX (from canvas, should be 0)
+      0,                  // sourceY (from canvas, should be 0)
+      expect.any(Number), // sourceWidth
+      expect.any(Number), // sourceHeight
       -TILE_SIZE / 2,     // destX
       -TILE_SIZE / 2,     // destY
       TILE_SIZE,

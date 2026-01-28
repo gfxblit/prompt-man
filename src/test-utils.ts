@@ -117,6 +117,10 @@ export function mock2dContext(): CanvasRenderingContext2D {
     fill: vi.fn(),
     stroke: vi.fn(),
     drawImage: vi.fn(),
+    getImageData: vi.fn().mockReturnValue({
+      data: new Uint8ClampedArray(16 * 16 * 4)
+    }),
+    putImageData: vi.fn(),
     measureText: vi.fn(() => ({ width: 10 })),
     fillText: vi.fn(),
     save: vi.fn(),

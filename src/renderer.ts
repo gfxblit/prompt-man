@@ -35,6 +35,8 @@ import {
 } from './sprites.js';
 
 export class Renderer implements IRenderer {
+  private ghostCache = new Map<string, HTMLCanvasElement>();
+
   constructor(
     private ctx: CanvasRenderingContext2D,
     private spritesheet?: HTMLImageElement
@@ -350,44 +352,52 @@ export class Renderer implements IRenderer {
   ): void {
     if (!this.spritesheet) return;
 
-    // Create a temporary canvas to extract and modify the sprite
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = sourceWidth;
-    tempCanvas.height = sourceHeight;
-    const tempCtx = tempCanvas.getContext('2d');
-    if (!tempCtx) return;
+    const cacheKey = `${sourceX},${sourceY},${sourceWidth},${sourceHeight}`;
+    let tempCanvas = this.ghostCache.get(cacheKey);
 
-    // Draw the sprite to the temporary canvas
-    tempCtx.drawImage(
-      this.spritesheet,
-      sourceX,
-      sourceY,
-      sourceWidth,
-      sourceHeight,
-      0,
-      0,
-      sourceWidth,
-      sourceHeight
-    );
+    if (!tempCanvas) {
+      // Create a temporary canvas to extract and modify the sprite
+      tempCanvas = document.createElement('canvas');
+      tempCanvas.width = sourceWidth;
+      tempCanvas.height = sourceHeight;
+      const tempCtx = tempCanvas.getContext('2d');
+      if (!tempCtx) return;
 
-    // Get the image data and make black pixels transparent
-    const imageData = tempCtx.getImageData(0, 0, sourceWidth, sourceHeight);
-    const data = imageData.data;
+      // Draw the sprite to the temporary canvas
+      tempCtx.drawImage(
+        this.spritesheet,
+        sourceX,
+        sourceY,
+        sourceWidth,
+        sourceHeight,
+        0,
+        0,
+        sourceWidth,
+        sourceHeight
+      );
 
-    // Iterate through each pixel
-    for (let i = 0; i < data.length; i += 4) {
-      const r = data[i]!;
-      const g = data[i + 1]!;
-      const b = data[i + 2]!;
+      // Get the image data and make black pixels transparent
+      const imageData = tempCtx.getImageData(0, 0, sourceWidth, sourceHeight);
+      const data = imageData.data;
 
-      // If the pixel is black or very close to black, make it transparent
-      if (r < 10 && g < 10 && b < 10) {
-        data[i + 3] = 0; // Set alpha to 0 (transparent)
+      // Iterate through each pixel
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i]!;
+        const g = data[i + 1]!;
+        const b = data[i + 2]!;
+
+        // If the pixel is black or very close to black, make it transparent
+        if (r < 10 && g < 10 && b < 10) {
+          data[i + 3] = 0; // Set alpha to 0 (transparent)
+        }
       }
-    }
 
-    // Put the modified image data back
-    tempCtx.putImageData(imageData, 0, 0);
+      // Put the modified image data back
+      tempCtx.putImageData(imageData, 0, 0);
+
+      // Store in cache
+      this.ghostCache.set(cacheKey, tempCanvas);
+    }
 
     // Draw the modified sprite to the main canvas
     this.ctx.drawImage(
@@ -532,31 +542,17 @@ export class Renderer implements IRenderer {
           const scaleY = spriteSource.flipY ? -1 : 1;
           this.ctx.scale(scaleX, scaleY);
 
-          // For dead ghosts (eyes), make black pixels transparent
-          if (entity.isDead) {
-            this.renderGhostWithTransparentBlack(
-              spriteSource.x,
-              spriteSource.y,
-              spriteSource.width,
-              spriteSource.height,
-              -TILE_SIZE / 2,
-              -TILE_SIZE / 2,
-              TILE_SIZE,
-              TILE_SIZE
-            );
-          } else {
-            this.ctx.drawImage(
-              this.spritesheet,
-              spriteSource.x,
-              spriteSource.y,
-              spriteSource.width,
-              spriteSource.height,
-              -TILE_SIZE / 2,
-              -TILE_SIZE / 2,
-              TILE_SIZE,
-              TILE_SIZE
-            );
-          }
+          // For all ghosts, make black pixels transparent
+          this.renderGhostWithTransparentBlack(
+            spriteSource.x,
+            spriteSource.y,
+            spriteSource.width,
+            spriteSource.height,
+            -TILE_SIZE / 2,
+            -TILE_SIZE / 2,
+            TILE_SIZE,
+            TILE_SIZE
+          );
 
           this.ctx.restore();
         } else if (entity.isDead) {

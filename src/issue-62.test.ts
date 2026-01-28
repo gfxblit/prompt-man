@@ -70,6 +70,24 @@ describe('Issue #62: Ghost Flashing when Power Pellet runs low', () => {
       }
     };
     const mockSpritesheet = {} as HTMLImageElement;
+
+    // Mock document.createElement for transparency processing
+    const mockTempContext = {
+      drawImage: vi.fn(),
+      getImageData: vi.fn().mockReturnValue({
+        data: new Uint8ClampedArray(16 * 16 * 4)
+      }),
+      putImageData: vi.fn()
+    };
+    const mockTempCanvas = {
+      getContext: vi.fn().mockReturnValue(mockTempContext),
+      width: 0,
+      height: 0
+    };
+    vi.stubGlobal('document', {
+      createElement: vi.fn().mockReturnValue(mockTempCanvas)
+    });
+
     const renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D, mockSpritesheet);
 
     const ghost = gameState.getEntities().find(e => e.type === EntityType.Ghost)!;
@@ -81,11 +99,7 @@ describe('Issue #62: Ghost Flashing when Power Pellet runs low', () => {
     
     renderer.render(grid, gameState, 0);
     
-    // Check drawImage calls. The ghost should be rendered.
-    // getGhostSpriteSource(color, dir, isScared, frame, isDead, isFlashing)
-    // For SCARED, sCol is 0.
-    // For SCARED_FLASH, sCol is 2.
-    
+    // Check drawImage calls on the temporary context
     const scaredX0 = GHOST_OFFSETS.SCARED.x + (0 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X;
     const scaredX1 = GHOST_OFFSETS.SCARED.x + (1 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X;
     const flashX0 = GHOST_OFFSETS.SCARED_FLASH.x + (0 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X;
@@ -94,11 +108,13 @@ describe('Issue #62: Ghost Flashing when Power Pellet runs low', () => {
     const isScaredX = (x: number) => x === scaredX0 || x === scaredX1;
     const isFlashX = (x: number) => x === flashX0 || x === flashX1;
 
-    const scaredCall = mockContext.drawImage.mock.calls.find(call => isScaredX(call[1]));
+    const scaredCall = mockTempContext.drawImage.mock.calls.find(call => isScaredX(call[1]));
     expect(scaredCall).toBeDefined();
 
-    mockContext.drawImage.mockClear();
-
+    mockTempContext.drawImage.mockClear();
+    // Also clear the cache in renderer if we want to re-test with different state
+    // but here we are using a new renderer or it will use a different key because of sourceX
+    
     // 2. Scared and flashing (timer <= threshold)
     // Threshold is 2000. Set timer to 1500.
     gameState.updateGhosts(POWER_UP_DURATION - 1500);
@@ -109,9 +125,11 @@ describe('Issue #62: Ghost Flashing when Power Pellet runs low', () => {
 
     renderer.render(grid, gameState, 0);
     
-    const lastCall = mockContext.drawImage.mock.calls.find(call => isFlashX(call[1]) || isScaredX(call[1]));
+    const lastCall = mockTempContext.drawImage.mock.calls.find(call => isFlashX(call[1]) || isScaredX(call[1]));
     expect(lastCall).toBeDefined();
     expect(isFlashX(lastCall![1])).toBe(true); 
+
+    vi.unstubAllGlobals();
   });
 
   it('calculates flashing state correctly in primitive renderer', () => {

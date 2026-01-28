@@ -48,7 +48,50 @@ describe('index', () => {
     // Mock document
     vi.stubGlobal('document', {
       createElement: vi.fn((tagName: string) => {
-        if (tagName === 'canvas') return canvas;
+        if (tagName === 'canvas') {
+          const newContext = {
+            clearRect: vi.fn(),
+            fillStyle: '',
+            fillRect: vi.fn(),
+            beginPath: vi.fn(),
+            arc: vi.fn(),
+            lineTo: vi.fn(),
+            closePath: vi.fn(),
+            fill: vi.fn(),
+            drawImage: vi.fn(),
+            save: vi.fn(),
+            restore: vi.fn(),
+            translate: vi.fn(),
+            scale: vi.fn(),
+            stroke: vi.fn(),
+            strokeStyle: '',
+            lineWidth: 0,
+            fillText: vi.fn(),
+            font: '',
+            textAlign: '',
+            textBaseline: '',
+            getImageData: vi.fn().mockReturnValue({
+              data: new Uint8ClampedArray(16 * 16 * 4)
+            }),
+            putImageData: vi.fn(),
+          };
+          const newCanvas = {
+            width: 0,
+            height: 0,
+            getContext: vi.fn(() => newContext),
+            classList: {
+              add: vi.fn(),
+            },
+          };
+
+          // If it's the first canvas, keep track of it as 'canvas' and 'context' for assertions
+          if (!vi.mocked(canvas.getContext).mock.calls.length) {
+            Object.assign(canvas, newCanvas);
+            Object.assign(context, newContext);
+            return canvas;
+          }
+          return newCanvas;
+        }
         if (tagName === 'div') {
           const div = {
             id: '',
