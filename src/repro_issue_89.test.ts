@@ -6,7 +6,8 @@ import type { IGameState, Entity } from './types.js';
 import { 
   TILE_SIZE,
   MAZE_RENDER_OFFSET_X,
-  MAZE_RENDER_OFFSET_Y
+  MAZE_RENDER_OFFSET_Y,
+  MAZE_RENDER_MARGIN_BOTTOM
 } from './config.js';
 
 describe('Issue 89: Hide Pacman During Ghost Bonus Score', () => {
@@ -29,6 +30,10 @@ describe('Issue 89: Hide Pacman During Ghost Bonus Score', () => {
     font: string;
     textAlign: string;
     textBaseline: string;
+    canvas: {
+      width: number;
+      height: number;
+    };
   };
   let mockState: IGameState;
   let renderer: Renderer;
@@ -53,6 +58,10 @@ describe('Issue 89: Hide Pacman During Ghost Bonus Score', () => {
       font: '',
       textAlign: '',
       textBaseline: '',
+      canvas: {
+        width: 10 * TILE_SIZE + MAZE_RENDER_OFFSET_X * 2,
+        height: 10 * TILE_SIZE + MAZE_RENDER_OFFSET_Y + MAZE_RENDER_MARGIN_BOTTOM
+      }
     };
     mockState = {
       getEntities: vi.fn().mockReturnValue([]),

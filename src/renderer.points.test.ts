@@ -6,7 +6,8 @@ import type { IGameState } from './types.js';
 import {
   TILE_SIZE,
   MAZE_RENDER_OFFSET_X,
-  MAZE_RENDER_OFFSET_Y
+  MAZE_RENDER_OFFSET_Y,
+  MAZE_RENDER_MARGIN_BOTTOM
 } from './config.js';
 
 describe('Renderer Point Effects', () => {
@@ -28,6 +29,10 @@ describe('Renderer Point Effects', () => {
     font: string;
     textAlign: string;
     textBaseline: string;
+    canvas: {
+      width: number;
+      height: number;
+    };
   };
   let mockState: IGameState;
   let renderer: Renderer;
@@ -51,6 +56,10 @@ describe('Renderer Point Effects', () => {
       font: '',
       textAlign: '',
       textBaseline: '',
+      canvas: {
+        width: 10 * TILE_SIZE + MAZE_RENDER_OFFSET_X * 2,
+        height: 10 * TILE_SIZE + MAZE_RENDER_OFFSET_Y + MAZE_RENDER_MARGIN_BOTTOM
+      }
     };
     mockState = {
       getEntities: vi.fn().mockReturnValue([]),

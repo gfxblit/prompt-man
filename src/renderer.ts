@@ -43,8 +43,7 @@ export class Renderer implements IRenderer {
   render(grid: IGrid, state: IGameState, time: number = 0): void {
     const gridWidth = grid.getWidth();
     const gridHeight = grid.getHeight();
-    const canvasWidth = this.ctx.canvas?.width ?? (gridWidth * TILE_SIZE + MAZE_RENDER_OFFSET_X * 2);
-    const canvasHeight = this.ctx.canvas?.height ?? (gridHeight * TILE_SIZE + MAZE_RENDER_OFFSET_Y + MAZE_RENDER_MARGIN_BOTTOM);
+    const { width: canvasWidth, height: canvasHeight } = this.getCanvasDimensions(grid);
 
     // Clear canvas
     this.ctx.clearRect(0, 0, canvasWidth, canvasHeight);

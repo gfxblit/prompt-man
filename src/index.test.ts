@@ -30,6 +30,7 @@ describe('index', () => {
       font: '',
       textAlign: '',
       textBaseline: '',
+      canvas: null as unknown as HTMLCanvasElement,
     } as unknown as CanvasRenderingContext2D;
 
     // Mock canvas
@@ -41,6 +42,8 @@ describe('index', () => {
         add: vi.fn(),
       },
     } as unknown as HTMLCanvasElement;
+
+    (context as any).canvas = canvas;
 
     // Mock document
     vi.stubGlobal('document', {

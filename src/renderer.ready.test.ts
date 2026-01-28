@@ -2,7 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Renderer } from './renderer.js';
 import { Grid } from './grid.js';
 import type { IGameState } from './types.js';
-import { COLORS } from './config.js';
+import { 
+  COLORS, 
+  TILE_SIZE, 
+  MAZE_RENDER_OFFSET_X, 
+  MAZE_RENDER_OFFSET_Y, 
+  MAZE_RENDER_MARGIN_BOTTOM 
+} from './config.js';
 
 describe('Renderer - Ready State', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -29,6 +35,10 @@ describe('Renderer - Ready State', () => {
       scale: vi.fn(),
       closePath: vi.fn(),
       lineTo: vi.fn(),
+      canvas: {
+        width: 10 * TILE_SIZE + MAZE_RENDER_OFFSET_X * 2,
+        height: 10 * TILE_SIZE + MAZE_RENDER_OFFSET_Y + MAZE_RENDER_MARGIN_BOTTOM
+      }
     };
 
     mockState = {

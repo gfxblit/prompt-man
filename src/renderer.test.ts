@@ -12,7 +12,8 @@ import {
   PALETTE_PADDING_X,
   PALETTE_PADDING_Y,
   MAZE_RENDER_OFFSET_Y,
-  MAZE_RENDER_OFFSET_X
+  MAZE_RENDER_OFFSET_X,
+  MAZE_RENDER_MARGIN_BOTTOM
 } from './config.js';
 
 interface MockContext {
@@ -73,8 +74,8 @@ describe('Renderer', () => {
       textAlign: '',
       textBaseline: '',
       canvas: {
-        width: 10 * TILE_SIZE,
-        height: 15 * TILE_SIZE
+        width: 10 * TILE_SIZE + MAZE_RENDER_OFFSET_X * 2,
+        height: 15 * TILE_SIZE + MAZE_RENDER_OFFSET_Y + MAZE_RENDER_MARGIN_BOTTOM
       }
     };
     mockState = {

@@ -22,6 +22,8 @@ describe('index robustness', () => {
       },
     } as unknown as HTMLCanvasElement;
 
+    (mockContext as any).canvas = canvas;
+
     // Mock document
     vi.stubGlobal('document', {
       createElement: vi.fn((tagName: string) => {
