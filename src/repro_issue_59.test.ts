@@ -91,10 +91,11 @@ describe('Issue 59: Ghost Rendering on Death', () => {
     vi.mocked(mockState.isDying).mockReturnValue(false);
 
     renderer = new Renderer(mockContext as unknown as CanvasRenderingContext2D);
+    const fillStyleSpy = vi.spyOn(mockContext, 'fillStyle', 'set');
     renderer.render(grid, mockState);
 
     // Should render ghost (fallback rendering)
-    expect(mockContext.fillStyle).toBe('red');
+    expect(fillStyleSpy).toHaveBeenCalledWith('red');
     expect(mockContext.beginPath).toHaveBeenCalled();
     expect(mockContext.arc).toHaveBeenCalled();
     expect(mockContext.fill).toHaveBeenCalled();

@@ -3,7 +3,11 @@ import { Renderer } from './renderer.js';
 import { Grid } from './grid.js';
 import { EntityType } from './types.js';
 import type { IGameState } from './types.js';
-import { TILE_SIZE } from './config.js';
+import {
+  TILE_SIZE,
+  MAZE_RENDER_OFFSET_X,
+  MAZE_RENDER_OFFSET_Y
+} from './config.js';
 
 describe('Renderer Point Effects', () => {
   let mockContext: {
@@ -79,7 +83,11 @@ describe('Renderer Point Effects', () => {
 
     renderer.render(grid, mockState);
 
-    expect(mockContext.fillText).toHaveBeenCalledWith('200', 5 * TILE_SIZE + TILE_SIZE / 2, 5 * TILE_SIZE + TILE_SIZE / 2);
+    expect(mockContext.fillText).toHaveBeenCalledWith(
+      '200',
+      5 * TILE_SIZE + TILE_SIZE / 2 + MAZE_RENDER_OFFSET_X,
+      5 * TILE_SIZE + TILE_SIZE / 2 + MAZE_RENDER_OFFSET_Y
+    );
   });
 
   it('should skip rendering a ghost if a point effect is at its position', () => {
@@ -98,6 +106,10 @@ describe('Renderer Point Effects', () => {
     expect(fillStyleSetter).not.toHaveBeenCalledWith('red');
 
     // Should still draw the point effect
-    expect(mockContext.fillText).toHaveBeenCalledWith('200', 5 * TILE_SIZE + TILE_SIZE / 2, 5 * TILE_SIZE + TILE_SIZE / 2);
+    expect(mockContext.fillText).toHaveBeenCalledWith(
+      '200',
+      5 * TILE_SIZE + TILE_SIZE / 2 + MAZE_RENDER_OFFSET_X,
+      5 * TILE_SIZE + TILE_SIZE / 2 + MAZE_RENDER_OFFSET_Y
+    );
   });
 });

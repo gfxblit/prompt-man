@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { init } from './index.js';
 import { setupMockImage, mock2dContext, MockImage, setupMockAudio } from './test-utils.js';
 
@@ -8,30 +8,9 @@ describe('index robustness', () => {
   let canvas: HTMLCanvasElement;
   let mockContext: CanvasRenderingContext2D;
 
-  // These will hold references to our mocked DOM elements
-  let scoreElMock: any;
-  let highScoreElMock: any;
-
   beforeEach(() => {
     mockContext = mock2dContext();
     MockImage.shouldFail = false; // Ensure assets load successfully
-
-    // Reset mocks before each test
-    scoreElMock = {
-      id: 'score',
-      _innerText: '',
-      get innerText() { return this._innerText; },
-      set innerText(val: string) { this._innerText = val; },
-      classList: { add: vi.fn() },
-    };
-    highScoreElMock = {
-      id: 'highscore',
-      _innerText: '',
-      get innerText() { return this._innerText; },
-      set innerText(val: string) { this._innerText = val; },
-      classList: { add: vi.fn() },
-    };
-
 
     // Mock canvas
     canvas = {
@@ -44,12 +23,11 @@ describe('index robustness', () => {
     } as unknown as HTMLCanvasElement;
 
     // Mock document
-    let scoreContainerUsed = false;
     vi.stubGlobal('document', {
       createElement: vi.fn((tagName: string) => {
         if (tagName === 'canvas') return canvas;
         if (tagName === 'div') {
-          const div = {
+          return {
             id: '',
             classList: { add: vi.fn() },
             appendChild: vi.fn(),
@@ -57,32 +35,6 @@ describe('index robustness', () => {
             get innerText() { return this._innerText; },
             set innerText(val: string) { this._innerText = val; },
           };
-
-          // Instead of relying on creation order, assign mocks based on how they're used.
-          // We assume the first div created is the score container.
-          if (!scoreContainerUsed) {
-            scoreContainerUsed = true;
-            // Simulate appendChild behavior to link score/highscore elements
-            div.appendChild = vi.fn((child: any) => {
-              if (child.id === 'score') {
-                Object.defineProperty(scoreElMock, 'innerText', {
-                  get: () => child.innerText,
-                  set: (v) => { child.innerText = v; },
-                  configurable: true
-                });
-              }
-              if (child.id === 'highscore') {
-                Object.defineProperty(highScoreElMock, 'innerText', {
-                  get: () => child.innerText,
-                  set: (v) => { child.innerText = v; },
-                  configurable: true
-                });
-              }
-            });
-            return div;
-          }
-          
-          return div;
         }
         throw new Error(`Unexpected tag name: ${tagName}`);
       }),
@@ -133,7 +85,7 @@ describe('index robustness', () => {
     expect(requestAnimationFrame).toHaveBeenCalled();
   });
 
-  it('should render game and UI elements when a valid 2D context is available and update high score display', async () => {
+  it('should render game and UI elements when a valid 2D context is available', async () => {
     setupMockImage();
     setupMockAudio();
     
@@ -150,13 +102,5 @@ describe('index robustness', () => {
     if (loop) loop(100);
 
     expect(mockContext.clearRect).toHaveBeenCalled(); 
-
-    // Verify initial high score display
-    expect(highScoreElMock.innerText).toBe('High Score: 100');
-
-    // Manually trigger a frame update
-    (performance.now as Mock).mockReturnValue(100); 
-
-    expect(highScoreElMock.innerText).toBe('High Score: 100'); // Ensure it remains correct
   });
 });

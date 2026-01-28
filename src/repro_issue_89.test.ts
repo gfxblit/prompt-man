@@ -3,7 +3,11 @@ import { Renderer } from './renderer.js';
 import { Grid } from './grid.js';
 import { EntityType } from './types.js';
 import type { IGameState, Entity } from './types.js';
-import { TILE_SIZE } from './config.js';
+import { 
+  TILE_SIZE,
+  MAZE_RENDER_OFFSET_X,
+  MAZE_RENDER_OFFSET_Y
+} from './config.js';
 
 describe('Issue 89: Hide Pacman During Ghost Bonus Score', () => {
   let mockContext: {
@@ -94,7 +98,11 @@ describe('Issue 89: Hide Pacman During Ghost Bonus Score', () => {
     expect(fillStyleSetter).not.toHaveBeenCalledWith('yellow');
 
     // Should still draw the point effect
-    expect(mockContext.fillText).toHaveBeenCalledWith('200', 5 * TILE_SIZE + TILE_SIZE / 2, 5 * TILE_SIZE + TILE_SIZE / 2);
+    expect(mockContext.fillText).toHaveBeenCalledWith(
+      '200',
+      5 * TILE_SIZE + TILE_SIZE / 2 + MAZE_RENDER_OFFSET_X,
+      5 * TILE_SIZE + TILE_SIZE / 2 + MAZE_RENDER_OFFSET_Y
+    );
   });
 
   it('should skip rendering Pacman (spritesheet) if a point effect is near its position', () => {
@@ -120,7 +128,11 @@ describe('Issue 89: Hide Pacman During Ghost Bonus Score', () => {
     expect(mockContext.drawImage).not.toHaveBeenCalled();
 
     // Should still draw the point effect
-    expect(mockContext.fillText).toHaveBeenCalledWith('200', 5 * TILE_SIZE + TILE_SIZE / 2, 5 * TILE_SIZE + TILE_SIZE / 2);
+    expect(mockContext.fillText).toHaveBeenCalledWith(
+      '200',
+      5 * TILE_SIZE + TILE_SIZE / 2 + MAZE_RENDER_OFFSET_X,
+      5 * TILE_SIZE + TILE_SIZE / 2 + MAZE_RENDER_OFFSET_Y
+    );
   });
 });
 

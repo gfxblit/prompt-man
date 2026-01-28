@@ -2,7 +2,7 @@ import { Grid } from './grid.js';
 import { Renderer, UIRenderer } from './renderer.js';
 import { GameState } from './state.js';
 import { InputHandler } from './input.js';
-import { TILE_SIZE, LEVEL_TEMPLATE, PALETTE_URL } from './config.js';
+import { TILE_SIZE, LEVEL_TEMPLATE, PALETTE_URL, MAZE_RENDER_OFFSET_Y, MAZE_RENDER_MARGIN_BOTTOM } from './config.js';
 import { AssetLoader } from './assets.js';
 import { AudioManager } from './audio-manager.js';
 
@@ -60,30 +60,9 @@ export async function init(container: HTMLElement): Promise<void> {
   window.addEventListener('click', resumeAudio);
   window.addEventListener('touchend', resumeAudio);
 
-  // Create score bar
-  const scoreContainer = document.createElement('div');
-  scoreContainer.classList.add('flex', 'justify-between', 'w-full', 'mb-2', 'text-white', 'font-bold', 'font-mono', 'text-xl');
-  
-  const scoreEl = document.createElement('div');
-  scoreEl.id = 'score';
-  scoreEl.innerText = `Score: ${state.getScore()}`;
-
-  const highScoreEl = document.createElement('div');
-  highScoreEl.id = 'highscore';
-  highScoreEl.innerText = `High Score: ${state.getHighScore()}`;
-
-  const levelEl = document.createElement('div');
-  levelEl.id = 'level';
-  levelEl.innerText = `Level: ${state.getLevel()}`;
-  
-  scoreContainer.appendChild(scoreEl);
-  scoreContainer.appendChild(levelEl);
-  scoreContainer.appendChild(highScoreEl);
-  container.appendChild(scoreContainer);
-
   const canvas = document.createElement('canvas');
   canvas.width = grid.getWidth() * TILE_SIZE;
-  canvas.height = grid.getHeight() * TILE_SIZE;
+  canvas.height = grid.getHeight() * TILE_SIZE + MAZE_RENDER_OFFSET_Y + MAZE_RENDER_MARGIN_BOTTOM;
   canvas.classList.add('game-canvas', 'border-2', 'border-gray-600');
   container.appendChild(canvas);
 
@@ -94,9 +73,6 @@ export async function init(container: HTMLElement): Promise<void> {
   const uiRenderer = ctx ? new UIRenderer(ctx) : null;
 
   let lastTime = performance.now();
-  let lastScore = state.getScore();
-  let lastHighScore = state.getHighScore();
-  let lastLevel = state.getLevel();
 
   const loop = (time: number) => {
     const deltaTime = time - lastTime;
@@ -104,25 +80,6 @@ export async function init(container: HTMLElement): Promise<void> {
 
     state.updatePacman(inputHandler.getDirection(), deltaTime);
     state.updateGhosts(deltaTime);
-
-    // Update score display only if changed
-    const currentScore = state.getScore();
-    if (currentScore !== lastScore) {
-      scoreEl.innerText = `Score: ${currentScore}`;
-      lastScore = currentScore;
-    }
-
-    const currentHighScore = state.getHighScore();
-    if (currentHighScore !== lastHighScore) {
-      highScoreEl.innerText = `High Score: ${currentHighScore}`;
-      lastHighScore = currentHighScore;
-    }
-
-    const currentLevel = state.getLevel();
-    if (currentLevel !== lastLevel) {
-      levelEl.innerText = `Level: ${currentLevel}`;
-      lastLevel = currentLevel;
-    }
 
     if (renderer && uiRenderer) {
       renderer.render(grid, state, time);

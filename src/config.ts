@@ -1,6 +1,13 @@
 /**
  * Game mechanics configuration
  */
+/** Vertical offset for the maze to accommodate top HUD. */
+export const MAZE_RENDER_OFFSET_Y = 18 * 3; // TILE_SIZE * 3
+/** Bottom margin for lives display. */
+export const MAZE_RENDER_MARGIN_BOTTOM = 18 * 2; // TILE_SIZE * 2
+/** Horizontal offset for the maze. */
+export const MAZE_RENDER_OFFSET_X = TILE_SIZE;
+
 /** Points awarded for collecting a regular pellet. */
 export const PELLET_SCORE = 10;
 /** Points awarded for collecting a power pellet. */

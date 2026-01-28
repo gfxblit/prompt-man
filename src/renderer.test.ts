@@ -10,33 +10,47 @@ import {
   GHOST_OFFSETS,
   SOURCE_GHOST_SIZE,
   PALETTE_PADDING_X,
-  PALETTE_PADDING_Y
+  PALETTE_PADDING_Y,
+  MAZE_RENDER_OFFSET_Y,
+  MAZE_RENDER_OFFSET_X
 } from './config.js';
 
-describe('Renderer', () => {
-  let mockContext: {
-    fillRect: ReturnType<typeof vi.fn>;
-    beginPath: ReturnType<typeof vi.fn>;
-    arc: ReturnType<typeof vi.fn>;
-    fill: ReturnType<typeof vi.fn>;
-    clearRect: ReturnType<typeof vi.fn>;
-    lineTo: ReturnType<typeof vi.fn>;
-    closePath: ReturnType<typeof vi.fn>;
-    drawImage: ReturnType<typeof vi.fn>;
-    save: ReturnType<typeof vi.fn>;
-    restore: ReturnType<typeof vi.fn>;
-    translate: ReturnType<typeof vi.fn>;
-    scale: ReturnType<typeof vi.fn>;
-    fillStyle: string;
-    fillText: ReturnType<typeof vi.fn>;
-    font: string;
-    textAlign: string;
-    textBaseline: string;
+interface MockContext {
+  fillRect: ReturnType<typeof vi.fn>;
+  beginPath: ReturnType<typeof vi.fn>;
+  arc: ReturnType<typeof vi.fn>;
+  fill: ReturnType<typeof vi.fn>;
+  clearRect: ReturnType<typeof vi.fn>;
+  lineTo: ReturnType<typeof vi.fn>;
+  closePath: ReturnType<typeof vi.fn>;
+  drawImage: ReturnType<typeof vi.fn>;
+  save: ReturnType<typeof vi.fn>;
+  restore: ReturnType<typeof vi.fn>;
+  translate: ReturnType<typeof vi.fn>;
+  scale: ReturnType<typeof vi.fn>;
+  fillStyle: string;
+  fillText: ReturnType<typeof vi.fn>;
+  font: string;
+  textAlign: string;
+  textBaseline: string;
+  canvas: {
+    width: number;
+    height: number;
   };
+  _fillStyle: string;
+  fillStyleSpy: ReturnType<typeof vi.fn>;
+}
+
+describe('Renderer', () => {
+  let mockContext: MockContext;
   let mockState: IGameState;
   let renderer: Renderer;
 
   beforeEach(() => {
+    const fillStyleSpy = vi.fn((val: string) => {
+      mockContext._fillStyle = val;
+    });
+
     mockContext = {
       fillRect: vi.fn(),
       beginPath: vi.fn(),
@@ -50,11 +64,18 @@ describe('Renderer', () => {
       restore: vi.fn(),
       translate: vi.fn(),
       scale: vi.fn(),
-      fillStyle: '',
+      get fillStyle() { return this._fillStyle; },
+      set fillStyle(val) { fillStyleSpy(val); },
+      _fillStyle: '',
+      fillStyleSpy: fillStyleSpy,
       fillText: vi.fn(),
       font: '',
       textAlign: '',
       textBaseline: '',
+      canvas: {
+        width: 10 * TILE_SIZE,
+        height: 15 * TILE_SIZE
+      }
     };
     mockState = {
       getEntities: vi.fn().mockReturnValue([]),
@@ -101,8 +122,13 @@ describe('Renderer', () => {
 
     renderer.render(grid, mockState);
 
-    expect(mockContext.fillStyle).toBe(COLORS.WALL);
-    expect(mockContext.fillRect).toHaveBeenCalledWith(0, 0, TILE_SIZE, TILE_SIZE);
+    expect(mockContext.fillStyleSpy).toHaveBeenCalledWith(COLORS.WALL);
+    expect(mockContext.fillRect).toHaveBeenCalledWith(
+      MAZE_RENDER_OFFSET_X,
+      MAZE_RENDER_OFFSET_Y,
+      TILE_SIZE,
+      TILE_SIZE
+    );
   });
 
   it('should render a Pellet as a small peach dot', () => {
@@ -112,10 +138,10 @@ describe('Renderer', () => {
 
     renderer.render(grid, mockState);
 
-    expect(mockContext.fillStyle).toBe(COLORS.PELLET);
+    expect(mockContext.fillStyleSpy).toHaveBeenCalledWith(COLORS.PELLET);
     expect(mockContext.fillRect).toHaveBeenCalledWith(
-      TILE_SIZE / 2 - 1,
-      TILE_SIZE / 2 - 1,
+      MAZE_RENDER_OFFSET_X + TILE_SIZE / 2 - 1,
+      MAZE_RENDER_OFFSET_Y + TILE_SIZE / 2 - 1,
       2,
       2
     );
@@ -145,11 +171,11 @@ describe('Renderer', () => {
 
     renderer.render(grid, mockState, 0);
 
-    expect(mockContext.fillStyle).toBe(COLORS.PELLET);
+    expect(mockContext.fillStyleSpy).toHaveBeenCalledWith(COLORS.PELLET);
     expect(mockContext.beginPath).toHaveBeenCalled();
     expect(mockContext.arc).toHaveBeenCalledWith(
-      TILE_SIZE / 2,
-      TILE_SIZE / 2,
+      MAZE_RENDER_OFFSET_X + TILE_SIZE / 2,
+      MAZE_RENDER_OFFSET_Y + TILE_SIZE / 2,
       3,
       0,
       Math.PI * 2
@@ -178,8 +204,8 @@ describe('Renderer', () => {
     renderer.render(grid, mockState, 250);
 
     expect(mockContext.fillRect).toHaveBeenCalledWith(
-      TILE_SIZE / 2 - 1,
-      TILE_SIZE / 2 - 1,
+      MAZE_RENDER_OFFSET_X + TILE_SIZE / 2 - 1,
+      MAZE_RENDER_OFFSET_Y + TILE_SIZE / 2 - 1,
       2,
       2
     );
@@ -193,8 +219,8 @@ describe('Renderer', () => {
     expect(mockContext.clearRect).toHaveBeenCalledWith(
       0,
       0,
-      grid.getWidth() * TILE_SIZE,
-      grid.getHeight() * TILE_SIZE
+      mockContext.canvas.width,
+      mockContext.canvas.height
     );
   });
 
@@ -206,11 +232,11 @@ describe('Renderer', () => {
 
     renderer.render(grid, mockState);
 
-    expect(mockContext.fillStyle).toBe(COLORS.PACMAN);
+    expect(mockContext.fillStyleSpy).toHaveBeenCalledWith(COLORS.PACMAN);
     expect(mockContext.beginPath).toHaveBeenCalled();
     expect(mockContext.arc).toHaveBeenCalledWith(
-      TILE_SIZE / 2,
-      TILE_SIZE / 2,
+      MAZE_RENDER_OFFSET_X + TILE_SIZE / 2,
+      MAZE_RENDER_OFFSET_Y + TILE_SIZE / 2,
       TILE_SIZE / 2 - 1,
       0,
       2 * Math.PI
@@ -244,7 +270,10 @@ describe('Renderer', () => {
     renderer.render(grid, mockState);
 
     expect(mockContext.save).toHaveBeenCalled();
-    expect(mockContext.translate).toHaveBeenCalledWith(TILE_SIZE / 2, TILE_SIZE / 2);
+    expect(mockContext.translate).toHaveBeenCalledWith(
+      MAZE_RENDER_OFFSET_X + TILE_SIZE / 2,
+      MAZE_RENDER_OFFSET_Y + TILE_SIZE / 2
+    );
 
     const scaleX = expectedFlipX ? -1 : 1;
     const scaleY = expectedFlipY ? -1 : 1;
@@ -286,6 +315,8 @@ describe('Renderer', () => {
 
     const lastArcCall = vi.mocked(mockContext.arc).mock.calls.find(call => call[2] === TILE_SIZE / 2 - 1);
     expect(lastArcCall).toBeDefined();
+    expect(lastArcCall![0]).toBe(MAZE_RENDER_OFFSET_X + TILE_SIZE / 2);
+    expect(lastArcCall![1]).toBe(MAZE_RENDER_OFFSET_Y + TILE_SIZE / 2);
     expect(lastArcCall![3]).toBeCloseTo(startAngle);
     expect(lastArcCall![4]).toBeCloseTo(endAngle);
   });
@@ -302,6 +333,10 @@ describe('Renderer', () => {
     renderer.render(grid, mockState);
 
     expect(mockContext.save).toHaveBeenCalled();
+    expect(mockContext.translate).toHaveBeenCalledWith(
+      MAZE_RENDER_OFFSET_X + TILE_SIZE / 2,
+      MAZE_RENDER_OFFSET_Y + TILE_SIZE / 2
+    );
     expect(mockContext.drawImage).toHaveBeenCalledWith(
       mockSpritesheet,
       GHOST_OFFSETS.RED!.x + (0 * SOURCE_GHOST_SIZE) + PALETTE_PADDING_X, // sourceX
@@ -337,6 +372,10 @@ describe('Renderer', () => {
 
     // Check for NO flip
     expect(mockContext.scale).toHaveBeenCalledWith(1, 1);
+    expect(mockContext.translate).toHaveBeenCalledWith(
+      MAZE_RENDER_OFFSET_X + TILE_SIZE / 2,
+      MAZE_RENDER_OFFSET_Y + TILE_SIZE / 2
+    );
 
     expect(mockContext.drawImage).toHaveBeenCalledWith(
       mockSpritesheet,
@@ -359,11 +398,11 @@ describe('Renderer', () => {
 
     renderer.render(grid, mockState);
 
-    expect(mockContext.fillStyle).toBe('pink');
+    expect(mockContext.fillStyleSpy).toHaveBeenCalledWith('pink');
     expect(mockContext.beginPath).toHaveBeenCalled();
     expect(mockContext.arc).toHaveBeenCalledWith(
-      TILE_SIZE / 2,
-      TILE_SIZE / 2,
+      MAZE_RENDER_OFFSET_X + TILE_SIZE / 2,
+      MAZE_RENDER_OFFSET_Y + TILE_SIZE / 2,
       TILE_SIZE / 2 - 1,
       Math.PI,
       0
@@ -379,7 +418,7 @@ describe('Renderer', () => {
 
     renderer.render(grid, mockState);
 
-    expect(mockContext.fillStyle).toBe(COLORS.GHOST_DEFAULT);
+    expect(mockContext.fillStyleSpy).toHaveBeenCalledWith(COLORS.GHOST_DEFAULT);
   });
 
   it('should render a Scared Ghost as blue', () => {
@@ -390,7 +429,7 @@ describe('Renderer', () => {
 
     renderer.render(grid, mockState);
 
-    expect(mockContext.fillStyle).toBe(COLORS.SCARED_GHOST);
+    expect(mockContext.fillStyleSpy).toHaveBeenCalledWith(COLORS.SCARED_GHOST);
   });
 
   it('should render a Dead Ghost as eyes', () => {
@@ -430,14 +469,14 @@ describe('Renderer', () => {
       entities[0]!.animationFrame = i;
       renderer.render(grid, mockState);
 
-      expect(mockContext.fillStyle).toBe(COLORS.PACMAN);
+      expect(mockContext.fillStyleSpy).toHaveBeenCalledWith(COLORS.PACMAN);
       const expectedRadius = maxRadius * (1 - i / (PACMAN_DEATH_ANIMATION_FRAMES - 1));
 
       if (expectedRadius > 0) {
         expect(mockContext.beginPath).toHaveBeenCalled();
         expect(mockContext.arc).toHaveBeenCalledWith(
-          TILE_SIZE / 2,
-          TILE_SIZE / 2,
+          MAZE_RENDER_OFFSET_X + TILE_SIZE / 2,
+          MAZE_RENDER_OFFSET_Y + TILE_SIZE / 2,
           expectedRadius,
           0,
           Math.PI * 2
@@ -468,8 +507,8 @@ describe('Renderer', () => {
         expect.any(Number), // sourceY
         expect.any(Number), // sourceWidth
         expect.any(Number), // sourceHeight
-        0,                  // destX (entity.x * TILE_SIZE)
-        0,                  // destY (entity.y * TILE_SIZE)
+        MAZE_RENDER_OFFSET_X, // destX (entity.x * TILE_SIZE)
+        MAZE_RENDER_OFFSET_Y, // destY (entity.y * TILE_SIZE)
         TILE_SIZE,
         TILE_SIZE
       );
@@ -487,20 +526,25 @@ describe('Renderer', () => {
     renderer.render(grid, mockState);
 
     // Wall at (0,0)
-    expect(mockContext.fillRect).toHaveBeenCalledWith(0, 0, TILE_SIZE, TILE_SIZE);
+    expect(mockContext.fillRect).toHaveBeenCalledWith(
+      MAZE_RENDER_OFFSET_X,
+      MAZE_RENDER_OFFSET_Y,
+      TILE_SIZE,
+      TILE_SIZE
+    );
 
     // Pellet at (1,0)
     expect(mockContext.fillRect).toHaveBeenCalledWith(
-      TILE_SIZE + TILE_SIZE / 2 - 1,
-      TILE_SIZE / 2 - 1,
+      MAZE_RENDER_OFFSET_X + TILE_SIZE + TILE_SIZE / 2 - 1,
+      MAZE_RENDER_OFFSET_Y + TILE_SIZE / 2 - 1,
       2,
       2
     );
 
     // PowerPellet at (0,1)
     expect(mockContext.arc).toHaveBeenCalledWith(
-      TILE_SIZE / 2,
-      TILE_SIZE + TILE_SIZE / 2,
+      MAZE_RENDER_OFFSET_X + TILE_SIZE / 2,
+      MAZE_RENDER_OFFSET_Y + TILE_SIZE + TILE_SIZE / 2,
       3,
       0,
       Math.PI * 2
@@ -516,7 +560,7 @@ describe('Renderer', () => {
     renderer.render(grid, mockState);
 
     expect(mockContext.fillStyle).toBe('#ff0000');
-    expect(mockContext.fillText).toHaveBeenCalledWith('GAME OVER', (10 * TILE_SIZE) / 2, (10 * TILE_SIZE) / 2);
+    expect(mockContext.fillText).toHaveBeenCalledWith('GAME OVER', mockContext.canvas.width / 2, mockContext.canvas.height / 2);
   });
 
   it('should render GOOD JOB! when state is win', () => {
@@ -527,9 +571,9 @@ describe('Renderer', () => {
 
     renderer.render(grid, mockState);
 
-    expect(mockContext.fillRect).toHaveBeenCalledWith(0, 0, 10 * TILE_SIZE, 10 * TILE_SIZE);
+    expect(mockContext.fillRect).toHaveBeenCalledWith(0, 0, mockContext.canvas.width, mockContext.canvas.height);
     expect(mockContext.fillStyle).toBe('#00ff00');
-    expect(mockContext.fillText).toHaveBeenCalledWith('GOOD JOB!', (10 * TILE_SIZE) / 2, (10 * TILE_SIZE) / 2);
+    expect(mockContext.fillText).toHaveBeenCalledWith('GOOD JOB!', mockContext.canvas.width / 2, mockContext.canvas.height / 2);
   });
 
   it('should render lives as Pacman icons', () => {
@@ -540,9 +584,17 @@ describe('Renderer', () => {
     renderer.render(grid, mockState);
 
     // 2 lives means 2 calls to beginPath, arc, fill (specifically for the lives)
-    // Since getEntities returns [], no other entities are drawn
     expect(mockContext.beginPath).toHaveBeenCalledTimes(2);
-    expect(mockContext.arc).toHaveBeenCalledTimes(2);
+    
+    // Expected Y is mockContext.canvas.height - TILE_SIZE + TILE_SIZE / 2
+    const expectedY = mockContext.canvas.height - TILE_SIZE + TILE_SIZE / 2;
+    expect(mockContext.arc).toHaveBeenCalledWith(
+      expect.any(Number),
+      expectedY,
+      expect.any(Number),
+      expect.any(Number),
+      expect.any(Number)
+    );
     expect(mockContext.fill).toHaveBeenCalledTimes(2);
   });
 
