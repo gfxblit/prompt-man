@@ -1,5 +1,7 @@
 import { AssetLoader } from './assets.js';
 import { AUDIO } from './config.js';
+import { EventBus } from './event-bus.js';
+import { GameEvent, TileType } from './types.js';
 
 export class AudioManager {
   private audioContext: AudioContext | null = null;
@@ -18,7 +20,64 @@ export class AudioManager {
   private eyesSource: AudioBufferSourceNode | null = null;
   private deathBuffers: AudioBuffer[] = [];
 
-  constructor(private assetLoader: AssetLoader) { }
+  constructor(private assetLoader: AssetLoader, private eventBus?: EventBus) {
+    if (this.eventBus) {
+      this.setupEventListeners();
+    }
+  }
+
+  private setupEventListeners(): void {
+    if (!this.eventBus) return;
+
+    this.eventBus.on(GameEvent.PELLET_EATEN, (data) => {
+      if (data === TileType.PowerPellet) {
+        this.playPowerPelletSound();
+      } else {
+        this.playPelletSound();
+      }
+    });
+
+    this.eventBus.on(GameEvent.GHOST_EATEN, () => {
+      this.playEatGhostSound();
+    });
+
+    this.eventBus.on(GameEvent.PACMAN_DEATH, () => {
+      this.stopAll();
+      this.playDeathSequence();
+    });
+
+    this.eventBus.on(GameEvent.READY_START, () => {
+      this.stopAll();
+    });
+
+    this.eventBus.on(GameEvent.LEVEL_START, () => {
+      this.stopAll();
+    });
+
+    this.eventBus.on(GameEvent.LEVEL_COMPLETE, () => {
+      this.stopAll();
+    });
+
+    this.eventBus.on(GameEvent.SIREN_PLAY, (data) => {
+      this.stopFrightSound();
+      this.stopEyesSound();
+      if (typeof data === 'number') {
+        this.playSiren(data);
+      }
+    });
+
+    this.eventBus.on(GameEvent.FRIGHT_START, () => {
+      this.stopSiren();
+      this.stopEyesSound();
+      this.startFrightSound();
+    });
+
+    this.eventBus.on(GameEvent.EYES_START, () => {
+      this.stopSiren();
+      this.stopFrightSound();
+      this.startEyesSound();
+    });
+  }
 
   /**
    * Initializes the AudioContext and loads required sound assets.

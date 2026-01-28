@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { GameState } from './state.js';
 import { Grid } from './grid.js';
-import { EntityType } from './types.js';
+import { EntityType, GameEvent } from './types.js';
 import { PACMAN_DEATH_ANIMATION_SPEED } from './config.js';
-import { AudioManager } from './audio-manager.js';
+import { EventBus } from './event-bus.js';
 
 // Mock configuration to disable the "Ready" state delay for these tests. This allows tests to focus on core logic without waiting for the initial pause.
 vi.mock('./config.js', async (importOriginal) => {
@@ -35,18 +35,11 @@ describe('GameState Death Logic', () => {
     vi.unstubAllGlobals();
   });
 
-  it('should play death sequence on collision', () => {
-    const mockAudioManager = {
-      playPelletSound: vi.fn(),
-      playPowerPelletSound: vi.fn(),
-      playDeathSequence: vi.fn(),
-      stopSiren: vi.fn(),
-      stopFrightSound: vi.fn(),
-      stopAll: vi.fn(),
-      playSiren: vi.fn(),
-    } as unknown as AudioManager;
+  it('should emit PACMAN_DEATH on collision', () => {
+    const eventBus = new EventBus();
+    const emitSpy = vi.spyOn(eventBus, 'emit');
     
-    const state = new GameState(grid, mockAudioManager);
+    const state = new GameState(grid, eventBus);
     const pacman = state.getEntities().find(e => e.type === EntityType.Pacman)!;
     const ghost = state.getEntities().find(e => e.type === EntityType.Ghost)!;
 
@@ -55,8 +48,7 @@ describe('GameState Death Logic', () => {
     state.updatePacman({ dx: 0, dy: 0 }, 0);
 
     expect(state.isDying()).toBe(true);
-    expect(mockAudioManager.stopAll).toHaveBeenCalled();
-    expect(mockAudioManager.playDeathSequence).toHaveBeenCalled();
+    expect(emitSpy).toHaveBeenCalledWith(GameEvent.PACMAN_DEATH);
   });
 
   it('should enter dying state on collision with ghost', () => {

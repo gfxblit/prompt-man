@@ -5,11 +5,13 @@ import { InputHandler } from './input.js';
 import { TILE_SIZE, LEVEL_TEMPLATE, PALETTE_URL, MAZE_RENDER_OFFSET_X, MAZE_RENDER_OFFSET_Y, MAZE_RENDER_MARGIN_BOTTOM } from './config.js';
 import { AssetLoader } from './assets.js';
 import { AudioManager } from './audio-manager.js';
+import { EventBus } from './event-bus.js';
 
 export async function init(container: HTMLElement): Promise<void> {
   container.classList.add('game-container-responsive');
+  const eventBus = new EventBus();
   const assetLoader = new AssetLoader();
-  const audioManager = new AudioManager(assetLoader);
+  const audioManager = new AudioManager(assetLoader, eventBus);
   let palette: HTMLImageElement | undefined;
 
   try {
@@ -25,7 +27,7 @@ export async function init(container: HTMLElement): Promise<void> {
   }
 
   const grid = Grid.fromString(LEVEL_TEMPLATE);
-  const state = new GameState(grid, audioManager, false);
+  const state = new GameState(grid, eventBus, false);
   const inputHandler = InputHandler.getInstance();
 
   // Resume audio context on first interaction

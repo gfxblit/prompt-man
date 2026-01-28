@@ -1,4 +1,4 @@
-import { TileType, EntityType } from './types.js';
+import { TileType, EntityType, GameEvent } from './types.js';
 import type { Entity, IGrid, IGameState, Direction, PointEffect } from './types.js';
 import {
   PELLET_SCORE,
@@ -26,7 +26,7 @@ import {
 } from './config.js';
 import { PACMAN_ANIMATION_SEQUENCE, GHOST_ANIMATION_SEQUENCE } from './sprites.js';
 import { GhostAI } from './ghost-ai.js';
-import { AudioManager } from './audio-manager.js';
+import { EventBus } from './event-bus.js';
 
 export class GameState implements IGameState {
   private entities: Entity[] = [];
@@ -56,7 +56,7 @@ export class GameState implements IGameState {
   /** Callback fired when a pellet is consumed. */
   public onPelletConsumed?: (tileType: TileType) => void;
 
-  constructor(private grid: IGrid, private audioManager?: AudioManager, startImmediately: boolean = true) {
+  constructor(private grid: IGrid, private eventBus?: EventBus, startImmediately: boolean = true) {
     this.width = grid.getWidth();
     this.height = grid.getHeight();
     this.started = startImmediately;
@@ -175,9 +175,7 @@ export class GameState implements IGameState {
     this.started = true;
     this.ready = true;
     this.readyTimer = duration;
-    this.audioManager?.stopSiren();
-    this.audioManager?.stopFrightSound();
-    this.audioManager?.stopEyesSound();
+    this.eventBus?.emit(GameEvent.READY_START);
   }
 
   getPowerUpTimer(): number {
@@ -199,12 +197,8 @@ export class GameState implements IGameState {
       this.remainingPellets--;
       this.score += tile === TileType.Pellet ? PELLET_SCORE : POWER_PELLET_SCORE;
 
-      // Play sound effect
-      if (tile === TileType.Pellet) {
-        this.audioManager?.playPelletSound();
-      } else {
-        this.audioManager?.playPowerPelletSound();
-      }
+      // Notify of pellet consumption
+      this.eventBus?.emit(GameEvent.PELLET_EATEN, tile);
 
       if (this.onPelletConsumed) {
         this.onPelletConsumed(tile);
@@ -222,9 +216,6 @@ export class GameState implements IGameState {
             };
           }
         });
-
-        // Start fright sound
-        this.audioManager?.startFrightSound();
       }
 
 
@@ -240,7 +231,7 @@ export class GameState implements IGameState {
         this.entities.forEach(e => {
           e.direction = { dx: 0, dy: 0 };
         });
-        this.audioManager?.stopSiren();
+        this.eventBus?.emit(GameEvent.LEVEL_COMPLETE);
       }
     }
   }
@@ -404,10 +395,7 @@ export class GameState implements IGameState {
       if (dist < COLLISION_THRESHOLD) {
         if (ghost.isScared) {
           // Ghost is eaten
-          this.audioManager?.stopSiren();
-          this.audioManager?.stopFrightSound();
-          this.audioManager?.stopEyesSound();
-          this.audioManager?.playEatGhostSound();
+          this.eventBus?.emit(GameEvent.GHOST_EATEN);
           const points = GHOST_EATEN_SCORE * Math.pow(2, this.ghostsEatenCount);
           this.score += points;
           this.pointEffects.push({ x: ghost.x, y: ghost.y, points });
@@ -442,14 +430,12 @@ export class GameState implements IGameState {
       pacman.direction = { dx: 0, dy: 0 };
     }
     
-    this.audioManager?.stopAll();
-    this.audioManager?.playDeathSequence();
+    this.eventBus?.emit(GameEvent.PACMAN_DEATH);
   }
 
   private finishDying(): void {
     this.dying = false;
     this.lives--;
-    this.audioManager?.stopSiren();
 
     const pacman = this.entities.find(e => e.type === EntityType.Pacman);
     if (pacman) {
@@ -460,16 +446,13 @@ export class GameState implements IGameState {
     if (this.lives < 0) {
       this.lives = 0;
       this.gameOver = true;
+      this.eventBus?.emit(GameEvent.GAME_OVER);
     } else {
       this.resetPositions();
       this.ready = READY_DURATION > 0;
       this.readyTimer = READY_DURATION;
+      this.eventBus?.emit(GameEvent.READY_START);
     }
-
-    // Stop background sounds on life loss/reset
-    this.audioManager?.stopFrightSound();
-    this.audioManager?.stopEyesSound();
-    this.audioManager?.stopSiren();
   }
 
   private respawnGhost(ghost: Entity): void {
@@ -515,10 +498,7 @@ export class GameState implements IGameState {
     this.resetPositions();
     this.ready = READY_DURATION > 0;
     this.readyTimer = READY_DURATION;
-    // Stop background sounds on level reset
-    this.audioManager?.stopFrightSound();
-    this.audioManager?.stopEyesSound();
-    this.audioManager?.stopSiren();
+    this.eventBus?.emit(GameEvent.LEVEL_START);
     this.updateBackgroundSound(); // Restart siren for next level
   }
 
@@ -545,8 +525,6 @@ export class GameState implements IGameState {
           ghost.isScared = false;
         });
 
-        // Stop fright sound when time expires
-        this.audioManager?.stopFrightSound();
         this.updateBackgroundSound();
       }
     }
@@ -749,22 +727,14 @@ export class GameState implements IGameState {
     const anyGhostDead = ghosts.some(g => g.isDead);
 
     if (anyGhostDead) {
-      this.audioManager?.stopSiren();
-      this.audioManager?.stopFrightSound();
-      this.audioManager?.startEyesSound();
+      this.eventBus?.emit(GameEvent.EYES_START);
       return;
     }
 
     if (this.powerUpTimer > 0) {
-      this.audioManager?.stopSiren();
-      this.audioManager?.stopEyesSound();
-      this.audioManager?.startFrightSound();
+      this.eventBus?.emit(GameEvent.FRIGHT_START);
       return;
     }
-
-    // Default: Siren
-    this.audioManager?.stopEyesSound();
-    this.audioManager?.stopFrightSound();
 
     if (this.initialPelletCount === 0) return;
 
@@ -780,6 +750,6 @@ export class GameState implements IGameState {
       }
     }
 
-    this.audioManager?.playSiren(sirenIndex);
+    this.eventBus?.emit(GameEvent.SIREN_PLAY, sirenIndex);
   }
 }

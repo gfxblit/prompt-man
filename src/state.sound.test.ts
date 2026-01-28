@@ -4,10 +4,12 @@ import { Grid } from './grid.js';
 import { TileType, EntityType } from './types.js';
 import { AudioManager } from './audio-manager.js';
 import { AssetLoader } from './assets.js';
+import { EventBus } from './event-bus.js';
 
 describe('GameState Sound Events', () => {
   let grid: Grid;
   let audioManager: AudioManager;
+  let eventBus: EventBus;
   const template = `
 #####
 #P.oG#
@@ -22,9 +24,9 @@ describe('GameState Sound Events', () => {
       clear: vi.fn(),
     });
 
+    eventBus = new EventBus();
     const assetLoader = new AssetLoader();
-    audioManager = new AudioManager(assetLoader);
-    vi.spyOn(audioManager, 'playPelletSound');
+    audioManager = new AudioManager(assetLoader, eventBus);
     vi.spyOn(audioManager, 'playPelletSound');
     vi.spyOn(audioManager, 'playPowerPelletSound');
     vi.spyOn(audioManager, 'playSiren');
@@ -32,6 +34,9 @@ describe('GameState Sound Events', () => {
     vi.spyOn(audioManager, 'startFrightSound');
     vi.spyOn(audioManager, 'stopFrightSound');
     vi.spyOn(audioManager, 'playEatGhostSound');
+    vi.spyOn(audioManager, 'stopAll');
+    vi.spyOn(audioManager, 'startEyesSound');
+    vi.spyOn(audioManager, 'stopEyesSound');
   });
 
   it('should call audioManager.playEatGhostSound when a scared ghost is eaten', () => {
@@ -50,7 +55,7 @@ describe('GameState Sound Events', () => {
 #######
     `.trim();
     const gridWithGhost = Grid.fromString(templateWithGhost);
-    const state = new GameState(gridWithGhost, audioManager);
+    const state = new GameState(gridWithGhost, eventBus);
     
     // Scare the ghost by eating the power pellet
     state.consumePellet(5, 1);
@@ -77,19 +82,19 @@ describe('GameState Sound Events', () => {
   });
 
   it('should call audioManager.playPelletSound when a regular pellet is eaten', () => {
-    const state = new GameState(grid, audioManager);
+    const state = new GameState(grid, eventBus);
     state.consumePellet(2, 1); // Regular pellet at (2,1)
     expect(audioManager.playPelletSound).toHaveBeenCalled();
   });
 
   it('should call audioManager.playPowerPelletSound when a power pellet is eaten', () => {
-    const state = new GameState(grid, audioManager);
+    const state = new GameState(grid, eventBus);
     state.consumePellet(3, 1); // Power pellet at (3,1)
     expect(audioManager.playPowerPelletSound).toHaveBeenCalled();
   });
 
   it('should NOT call audioManager.playPelletSound when an already eaten pellet is "eaten" again', () => {
-    const state = new GameState(grid, audioManager);
+    const state = new GameState(grid, eventBus);
     state.consumePellet(2, 1);
     expect(audioManager.playPelletSound).toHaveBeenCalledTimes(1);
 
@@ -98,7 +103,7 @@ describe('GameState Sound Events', () => {
   });
 
   it('should call onPelletConsumed when a regular pellet is eaten', () => {
-    const state = new GameState(grid, audioManager);
+    const state = new GameState(grid, eventBus);
     const onPelletConsumed = vi.fn();
     state.onPelletConsumed = onPelletConsumed;
 
@@ -107,13 +112,14 @@ describe('GameState Sound Events', () => {
   });
 
   it('should call audioManager.startFrightSound when a power pellet is eaten', () => {
-    const state = new GameState(grid, audioManager);
+    const state = new GameState(grid, eventBus);
+    state.updatePacman({ dx: 0, dy: 0 }, 2100); // End ready state
     state.consumePellet(3, 1); // Power pellet at (3,1)
     expect(audioManager.startFrightSound).toHaveBeenCalled();
   });
 
   it('should call audioManager.stopFrightSound when power up timer expires', () => {
-    const state = new GameState(grid, audioManager);
+    const state = new GameState(grid, eventBus);
 
     // Clear ready state first
     state.updatePacman({ dx: 0, dy: 0 }, 2001); // READY_DURATION + 1
@@ -129,7 +135,7 @@ describe('GameState Sound Events', () => {
   });
 
   it('should call audioManager.playSiren when Ready state ends', () => {
-    const state = new GameState(grid, audioManager);
+    const state = new GameState(grid, eventBus);
     // Should NOT be called initially (during Ready state)
     expect(audioManager.playSiren).not.toHaveBeenCalled();
 
@@ -155,7 +161,7 @@ describe('GameState Sound Events', () => {
     // 0 eaten: ratio 0 -> index 0 (Already tested in start)
     // 1 eaten: ratio 0.5 -> index 2
 
-    const state = new GameState(grid, audioManager);
+    const state = new GameState(grid, eventBus);
     expect(audioManager.playSiren).not.toHaveBeenCalled();
 
     // Advance Ready timer to start game and trigger initial siren
@@ -170,7 +176,7 @@ describe('GameState Sound Events', () => {
   });
 
   it('should call audioManager.stopSiren on game over (dying)', () => {
-    const state = new GameState(grid, audioManager);
+    const state = new GameState(grid, eventBus);
     state.consumePellet(2, 1);
     state.consumePellet(3, 1); // All eaten -> Win
 
@@ -178,7 +184,7 @@ describe('GameState Sound Events', () => {
   });
 
   it('should call audioManager.stopSiren when startReady is called', () => {
-    const state = new GameState(grid, audioManager);
+    const state = new GameState(grid, eventBus);
     
     // Clear previous calls
     vi.clearAllMocks();
@@ -196,7 +202,7 @@ describe('GameState Sound Events', () => {
     `.trim();
     const collisionGrid = Grid.fromString(collisionTemplate);
     vi.spyOn(audioManager, 'stopAll');
-    const state = new GameState(collisionGrid, audioManager);
+    const state = new GameState(collisionGrid, eventBus);
     
     // Clear ready state
     state.updatePacman({ dx: 0, dy: 0 }, 5000);
@@ -221,7 +227,7 @@ describe('GameState Sound Events', () => {
     });
 
     it('should play Eyes sound and stop others when a ghost is dead', () => {
-      const state = new GameState(grid, audioManager);
+      const state = new GameState(grid, eventBus);
       state.updatePacman({ dx: 0, dy: 0 }, 5000); // End Ready state
       
       // Trigger ghost eat via collision
@@ -243,7 +249,7 @@ describe('GameState Sound Events', () => {
     });
 
     it('should play Fright sound and stop others when power up is active and no ghost is dead', () => {
-      const state = new GameState(grid, audioManager);
+      const state = new GameState(grid, eventBus);
       state.updatePacman({ dx: 0, dy: 0 }, 5000); // End Ready state
       
       state.consumePellet(3, 1); // Power pellet at (3,1)
@@ -254,7 +260,7 @@ describe('GameState Sound Events', () => {
     });
 
     it('should play Siren sound and stop others when neither Eyes nor Fright is active', () => {
-      const state = new GameState(grid, audioManager);
+      const state = new GameState(grid, eventBus);
       state.updatePacman({ dx: 0, dy: 0 }, 5000); // End Ready state
       
       // Initially it should be Siren
@@ -264,7 +270,7 @@ describe('GameState Sound Events', () => {
     });
 
     it('should prioritize Eyes over Fright', () => {
-      const state = new GameState(grid, audioManager);
+      const state = new GameState(grid, eventBus);
       state.updatePacman({ dx: 0, dy: 0 }, 5000); // End Ready state
       
       state.consumePellet(3, 1); // Power pellet -> Fright
@@ -286,7 +292,7 @@ describe('GameState Sound Events', () => {
     });
 
     it('should resume Fright if eyes ghost respawns and power up is still active', () => {
-      const state = new GameState(grid, audioManager);
+      const state = new GameState(grid, eventBus);
       state.updatePacman({ dx: 0, dy: 0 }, 5000); // End Ready state
       
       state.consumePellet(3, 1); // Power pellet -> Fright
@@ -311,7 +317,7 @@ describe('GameState Sound Events', () => {
       state.updateGhosts(16); // -> should go back to Fright
       
       expect(audioManager.stopEyesSound).toHaveBeenCalled();
-      expect(audioManager.startFrightSound).toHaveBeenCalledTimes(3); // Once for pellet, once for updateBackgroundSound in consumePellet, once for return
+      expect(audioManager.startFrightSound).toHaveBeenCalledTimes(2); // Once for pellet, once for return
     });
   });
 });
