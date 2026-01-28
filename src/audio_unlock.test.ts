@@ -7,6 +7,10 @@ describe('Audio Unlock', () => {
   let container: HTMLElement;
   let eventListeners: { [type: string]: (() => Promise<void> | void)[] } = {};
 
+  const GAME_START_EVENTS = ['keydown', 'mousedown', 'touchstart'];
+  const AUDIO_UNLOCK_EVENTS = ['click', 'touchend'];
+  const ALL_EVENTS = [...GAME_START_EVENTS, ...AUDIO_UNLOCK_EVENTS];
+
   beforeEach(() => {
     eventListeners = {};
     vi.stubGlobal('window', {
@@ -80,11 +84,9 @@ describe('Audio Unlock', () => {
   it('should register multiple event listeners for audio unlocking', async () => {
     await init(container);
 
-    expect(window.addEventListener).toHaveBeenCalledWith('keydown', expect.any(Function));
-    expect(window.addEventListener).toHaveBeenCalledWith('mousedown', expect.any(Function));
-    expect(window.addEventListener).toHaveBeenCalledWith('touchstart', expect.any(Function));
-    expect(window.addEventListener).toHaveBeenCalledWith('click', expect.any(Function));
-    expect(window.addEventListener).toHaveBeenCalledWith('touchend', expect.any(Function));
+    ALL_EVENTS.forEach(event => {
+      expect(window.addEventListener).toHaveBeenCalledWith(event, expect.any(Function));
+    });
   });
 
   it('should resume audio and start game on first interaction', async () => {
@@ -105,21 +107,23 @@ describe('Audio Unlock', () => {
     expect(playIntroSpy).toHaveBeenCalled();
     
     // Check that 'start' listeners are removed
-    expect(window.removeEventListener).toHaveBeenCalledWith('touchstart', listener);
-    expect(window.removeEventListener).toHaveBeenCalledWith('mousedown', listener);
-    expect(window.removeEventListener).toHaveBeenCalledWith('keydown', listener);
+    GAME_START_EVENTS.forEach(event => {
+      expect(window.removeEventListener).toHaveBeenCalledWith(event, listener);
+    });
 
     // Audio is still suspended, so 'unlock' listeners should NOT be removed yet
-    expect(window.removeEventListener).not.toHaveBeenCalledWith('click', listener);
-    expect(window.removeEventListener).not.toHaveBeenCalledWith('touchend', listener);
+    AUDIO_UNLOCK_EVENTS.forEach(event => {
+      expect(window.removeEventListener).not.toHaveBeenCalledWith(event, listener);
+    });
 
     // Simulate second interaction (touchend) that successfully resumes audio
     getStateSpy.mockReturnValue('running');
     const touchendListener = eventListeners['touchend']![0];
     if (touchendListener) await touchendListener();
 
-    expect(window.removeEventListener).toHaveBeenCalledWith('click', listener);
-    expect(window.removeEventListener).toHaveBeenCalledWith('touchend', listener);
+    AUDIO_UNLOCK_EVENTS.forEach(event => {
+      expect(window.removeEventListener).toHaveBeenCalledWith(event, listener);
+    });
   });
 
   it('should remove all listeners if first interaction resumes audio successfully', async () => {
@@ -132,10 +136,8 @@ describe('Audio Unlock', () => {
     const listener = eventListeners['keydown']![0];
     if (listener) await listener();
 
-    expect(window.removeEventListener).toHaveBeenCalledWith('keydown', listener);
-    expect(window.removeEventListener).toHaveBeenCalledWith('mousedown', listener);
-    expect(window.removeEventListener).toHaveBeenCalledWith('touchstart', listener);
-    expect(window.removeEventListener).toHaveBeenCalledWith('click', listener);
-    expect(window.removeEventListener).toHaveBeenCalledWith('touchend', listener);
+    ALL_EVENTS.forEach(event => {
+      expect(window.removeEventListener).toHaveBeenCalledWith(event, listener);
+    });
   });
 });
