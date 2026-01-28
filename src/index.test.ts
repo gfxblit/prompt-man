@@ -85,7 +85,7 @@ describe('index', () => {
           };
 
           // If it's the first canvas, keep track of it as 'canvas' and 'context' for assertions
-          if (!canvas.getContext.mock.calls.length) {
+          if (!vi.mocked(canvas.getContext).mock.calls.length) {
             Object.assign(canvas, newCanvas);
             Object.assign(context, newContext);
             return canvas;
