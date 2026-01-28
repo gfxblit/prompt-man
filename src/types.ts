@@ -175,6 +175,31 @@ export interface IRenderer {
 }
 
 /**
+ * Represents the current mode of the game state.
+ */
+export enum GameStateMode {
+  READY = 'READY',
+  PLAYING = 'PLAYING',
+  DYING = 'DYING',
+  WIN = 'WIN',
+  GAME_OVER = 'GAME_OVER',
+}
+
+/**
+ * Events that can be emitted by the game engine.
+ */
+export enum GameEvent {
+  PELLET_EATEN = 'PELLET_EATEN',
+  POWER_PELLET_EATEN = 'POWER_PELLET_EATEN',
+  GHOST_EATEN = 'GHOST_EATEN',
+  PACMAN_DEATH = 'PACMAN_DEATH',
+  LEVEL_START = 'LEVEL_START',
+  LEVEL_COMPLETE = 'LEVEL_COMPLETE',
+  GAME_OVER = 'GAME_OVER',
+  READY_START = 'READY_START',
+}
+
+/**
  * Interface for rendering UI overlays like touch controls.
  */
 export interface IUIRenderer {
