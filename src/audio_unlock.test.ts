@@ -106,7 +106,7 @@ describe('Audio Unlock', () => {
     if (listener) await listener();
 
     expect(resumeSpy).toHaveBeenCalled();
-    expect(playIntroSpy).toHaveBeenCalled();
+    expect(playIntroSpy).not.toHaveBeenCalled();
     
     // Check that 'start' listeners are removed
     GAME_START_EVENTS.forEach(event => {

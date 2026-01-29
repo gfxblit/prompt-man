@@ -37,7 +37,7 @@ export async function init(container: HTMLElement): Promise<void> {
 
     if (!gameStarted) {
       gameStarted = true;
-      audioManager.playIntroMusic();
+      // audioManager.playIntroMusic();
       state.startReady(audioManager.getIntroDuration());
 
       // Remove events that are only needed to start the game
