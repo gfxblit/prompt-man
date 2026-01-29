@@ -12,31 +12,7 @@ import {
   MAZE_RENDER_MARGIN_BOTTOM
 } from './config.js';
 
-interface MockContext {
-  fillRect: ReturnType<typeof vi.fn>;
-  beginPath: ReturnType<typeof vi.fn>;
-  arc: ReturnType<typeof vi.fn>;
-  fill: ReturnType<typeof vi.fn>;
-  clearRect: ReturnType<typeof vi.fn>;
-  lineTo: ReturnType<typeof vi.fn>;
-  closePath: ReturnType<typeof vi.fn>;
-  drawImage: ReturnType<typeof vi.fn>;
-  save: ReturnType<typeof vi.fn>;
-  restore: ReturnType<typeof vi.fn>;
-  translate: ReturnType<typeof vi.fn>;
-  scale: ReturnType<typeof vi.fn>;
-  fillStyle: string;
-  fillText: ReturnType<typeof vi.fn>;
-  font: string;
-  textAlign: string;
-  textBaseline: string;
-  canvas: {
-    width: number;
-    height: number;
-  };
-  _fillStyle: string;
-  fillStyleSpy: ReturnType<typeof vi.fn>;
-}
+import { createMockContext, createMockState, type MockContext } from './test-utils.js';
 
 describe('Renderer', () => {
   let mockContext: MockContext;
@@ -44,57 +20,11 @@ describe('Renderer', () => {
   let renderer: Renderer;
 
   beforeEach(() => {
-    const fillStyleSpy = vi.fn((val: string) => {
-      mockContext._fillStyle = val;
-    });
-
-    mockContext = {
-      fillRect: vi.fn(),
-      beginPath: vi.fn(),
-      arc: vi.fn(),
-      fill: vi.fn(),
-      clearRect: vi.fn(),
-      lineTo: vi.fn(),
-      closePath: vi.fn(),
-      drawImage: vi.fn(),
-      save: vi.fn(),
-      restore: vi.fn(),
-      translate: vi.fn(),
-      scale: vi.fn(),
-      get fillStyle() { return this._fillStyle; },
-      set fillStyle(val) { fillStyleSpy(val); },
-      _fillStyle: '',
-      fillStyleSpy: fillStyleSpy,
-      fillText: vi.fn(),
-      font: '',
-      textAlign: '',
-      textBaseline: '',
-      canvas: {
-        width: 10 * TILE_SIZE + MAZE_RENDER_OFFSET_X * 2,
-        height: 15 * TILE_SIZE + MAZE_RENDER_OFFSET_Y + MAZE_RENDER_MARGIN_BOTTOM
-      }
-    };
-    mockState = {
-      getEntities: vi.fn().mockReturnValue([]),
-      getScore: vi.fn().mockReturnValue(0),
-      getHighScore: vi.fn().mockReturnValue(0),
-      getLives: vi.fn().mockReturnValue(0),
-      getRemainingPellets: vi.fn().mockReturnValue(0),
-      getSpawnPosition: vi.fn(),
-      consumePellet: vi.fn(),
-      isPelletEaten: vi.fn().mockReturnValue(false),
-      updatePacman: vi.fn(),
-      updateGhosts: vi.fn(),
-      isGameOver: vi.fn().mockReturnValue(false),
-      isWin: vi.fn().mockReturnValue(false),
-      getLevel: vi.fn().mockReturnValue(1),
-      isDying: vi.fn().mockReturnValue(false),
-      isReady: vi.fn().mockReturnValue(false),
-      getPowerUpTimer: vi.fn().mockReturnValue(0),
-      getPointEffects: vi.fn().mockReturnValue([]),
-      getFruit: vi.fn().mockReturnValue(null),
-      startReady: vi.fn(),
-    };
+    mockContext = createMockContext(
+      10 * TILE_SIZE + MAZE_RENDER_OFFSET_X * 2,
+      15 * TILE_SIZE + MAZE_RENDER_OFFSET_Y + MAZE_RENDER_MARGIN_BOTTOM
+    );
+    mockState = createMockState();
 
     // Mock document.createElement for canvas
     const mockCanvas = {
