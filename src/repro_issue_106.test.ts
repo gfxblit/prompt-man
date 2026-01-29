@@ -53,7 +53,8 @@ describe('Issue 106: Fruit bonus score persistence', () => {
     // Verify PointEffect exists
     expect(state.getPointEffects().length).toBe(1);
     const effect = state.getPointEffects()[0];
-    expect(effect.points).toBeGreaterThan(0);
+    expect(effect).toBeDefined();
+    expect(effect!.points).toBeGreaterThan(0);
 
     // Advance time significantly (e.g. 5 seconds)
     // We need to call updatePacman (or whatever updates effects) multiple times or with large delta
