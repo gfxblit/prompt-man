@@ -20,7 +20,8 @@ import {
   MAZE_RENDER_OFFSET_X,
   MAZE_RENDER_OFFSET_Y,
   MAZE_RENDER_MARGIN_BOTTOM,
-  FRUIT_OFFSETS
+  FRUIT_OFFSETS,
+  SOURCE_FRUIT_SIZE
 } from './config.js';
 import { getTileMask } from './autotile.js';
 import {
@@ -121,8 +122,8 @@ export class Renderer implements IRenderer {
             this.spritesheet,
             offset.x + PALETTE_PADDING_X,
             offset.y + PALETTE_PADDING_Y,
-            SOURCE_TILE_SIZE - PALETTE_PADDING_X,
-            SOURCE_TILE_SIZE - PALETTE_PADDING_Y,
+            SOURCE_FRUIT_SIZE - PALETTE_PADDING_X,
+            SOURCE_FRUIT_SIZE - PALETTE_PADDING_Y,
             x - TILE_SIZE / 2, // Centered
             y - TILE_SIZE / 2, // Centered
             TILE_SIZE,
@@ -641,8 +642,8 @@ export class Renderer implements IRenderer {
               this.spritesheet,
               offset.x + PALETTE_PADDING_X,
               offset.y + PALETTE_PADDING_Y,
-              SOURCE_TILE_SIZE - PALETTE_PADDING_X,
-              SOURCE_TILE_SIZE - PALETTE_PADDING_Y,
+              SOURCE_FRUIT_SIZE - PALETTE_PADDING_X,
+              SOURCE_FRUIT_SIZE - PALETTE_PADDING_Y,
               screenX - TILE_SIZE / 2,
               screenY - TILE_SIZE / 2,
               TILE_SIZE,

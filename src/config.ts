@@ -117,6 +117,8 @@ export const GHOST_PALETTE_OFFSET_Y = 277;
 
 /** Pixel size of the Ghost sprite in the source palette. */
 export const SOURCE_GHOST_SIZE = 17;
+/** Pixel size of the Fruit sprite in the source palette. */
+export const SOURCE_FRUIT_SIZE = 17;
 
 export type SpriteOffset = { x: number; y: number };
 

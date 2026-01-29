@@ -9,9 +9,9 @@ import {
   MAZE_RENDER_MARGIN_BOTTOM,
   PALETTE_PADDING_X,
   PALETTE_PADDING_Y,
-  FRUIT_OFFSETS
+  FRUIT_OFFSETS,
+  SOURCE_FRUIT_SIZE
 } from './config.js';
-import { SOURCE_TILE_SIZE } from './sprites.js';
 
 interface MockContext {
   fillRect: ReturnType<typeof vi.fn>;
@@ -117,8 +117,8 @@ describe('Renderer HUD Fruits', () => {
       mockSpritesheet,
       cherryOffset.x + PALETTE_PADDING_X,
       cherryOffset.y + PALETTE_PADDING_Y,
-      SOURCE_TILE_SIZE - PALETTE_PADDING_X,
-      SOURCE_TILE_SIZE - PALETTE_PADDING_Y,
+      SOURCE_FRUIT_SIZE - PALETTE_PADDING_X,
+      SOURCE_FRUIT_SIZE - PALETTE_PADDING_Y,
       expect.any(Number), // destX
       expect.any(Number), // destY
       TILE_SIZE,
@@ -130,8 +130,8 @@ describe('Renderer HUD Fruits', () => {
       mockSpritesheet,
       strawberryOffset.x + PALETTE_PADDING_X,
       strawberryOffset.y + PALETTE_PADDING_Y,
-      SOURCE_TILE_SIZE - PALETTE_PADDING_X,
-      SOURCE_TILE_SIZE - PALETTE_PADDING_Y,
+      SOURCE_FRUIT_SIZE - PALETTE_PADDING_X,
+      SOURCE_FRUIT_SIZE - PALETTE_PADDING_Y,
       expect.any(Number), // destX
       expect.any(Number), // destY
       TILE_SIZE,
