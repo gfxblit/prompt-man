@@ -2,8 +2,31 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>Prompt Man</title>
+    <!-- Eruda: Mobile debugging console -->
+    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+    <script>
+        // Initialize Eruda for mobile debugging
+        // It provides a console panel that can be accessed by clicking the floating button
+        // Position the button in the top-right corner, away from game UI
+        eruda.init({
+            container: document.body,
+            tool: ['console', 'elements', 'network', 'resources', 'info', 'snippets', 'sources'],
+            useShadowDom: true,
+            autoScale: true,
+            defaults: {
+                displaySize: 50,
+                transparency: 0.9,
+                theme: 'Dark'
+            }
+        });
+
+        // Move the entry button to top-right after initialization
+        eruda.position({ x: window.innerWidth - 60, y: 10 });
+    </script>
   <script type="module" crossorigin src="./assets/index-DPZCmwlv.js"></script>
   <link rel="stylesheet" crossorigin href="./assets/index-DQlI-ZN2.css">
 </head>
