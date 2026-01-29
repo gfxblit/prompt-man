@@ -81,6 +81,7 @@ describe('Issue 89: Hide Pacman During Ghost Bonus Score', () => {
       isReady: vi.fn().mockReturnValue(false),
       getPowerUpTimer: vi.fn().mockReturnValue(0),
       getPointEffects: vi.fn().mockReturnValue([]),
+      getFruit: vi.fn().mockReturnValue(null),
       startReady: vi.fn(),
     };
   });
@@ -133,8 +134,11 @@ describe('Issue 89: Hide Pacman During Ghost Bonus Score', () => {
 
     renderer.render(grid, mockState);
 
-    // Should NOT call drawImage for Pacman
-    expect(mockContext.drawImage).not.toHaveBeenCalled();
+    // Should NOT call drawImage for Pacman (sourceY < 400)
+    // It might be called for HUD fruits (sourceY > 400)
+    const calls = mockContext.drawImage.mock.calls;
+    const pacmanCalls = calls.filter(args => args[2] < 400);
+    expect(pacmanCalls.length).toBe(0);
 
     // Should still draw the point effect
     expect(mockContext.fillText).toHaveBeenCalledWith(

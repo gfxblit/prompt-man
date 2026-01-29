@@ -92,6 +92,7 @@ describe('Renderer', () => {
       isReady: vi.fn().mockReturnValue(false),
       getPowerUpTimer: vi.fn().mockReturnValue(0),
       getPointEffects: vi.fn().mockReturnValue([]),
+      getFruit: vi.fn().mockReturnValue(null),
       startReady: vi.fn(),
     };
 
@@ -125,7 +126,8 @@ describe('Renderer', () => {
     renderer.render(grid, mockState);
 
     // Should call drawImage 4 times for the 4 quadrants of the wall
-    expect(mockContext.drawImage).toHaveBeenCalledTimes(4);
+    // PLUS 1 time for the HUD fruit (Level 1 = Cherry)
+    expect(mockContext.drawImage).toHaveBeenCalledTimes(5);
   });
 
   it('should render a Wall as a blue block when no spritesheet is provided', () => {

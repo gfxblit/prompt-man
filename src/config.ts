@@ -1,3 +1,5 @@
+import { FruitType } from './types.js';
+
 /**
  * Game mechanics configuration
  */
@@ -40,6 +42,34 @@ export const READY_DURATION = 2000;
 export const WIN_DELAY = 3000;
 /** Multiplier for ghost speed for each level gained. */
 export const GHOST_SPEED_LEVEL_MULTIPLIER = 1.1;
+
+/** Fruit spawn thresholds (dots eaten in level). */
+export const FRUIT_SPAWN_THRESHOLDS = [70, 170] as const;
+/** Duration in milliseconds for how long fruit stays on screen. */
+export const FRUIT_DURATION = 9500;
+/** Duration in milliseconds for how long fruit score stays on screen. */
+export const FRUIT_SCORE_DURATION = 2000;
+/** Default fruit spawn position in grid coordinates. */
+export const FRUIT_SPAWN_POS = { x: 13.5, y: 17 };
+
+/**
+ * Fruit data mapping levels to types and point values.
+ */
+export const FRUIT_DATA: Record<number, { type: FruitType, score: number }> = {
+  1: { type: FruitType.Cherry, score: 100 },
+  2: { type: FruitType.Strawberry, score: 300 },
+  3: { type: FruitType.Peach, score: 500 },
+  4: { type: FruitType.Peach, score: 500 },
+  5: { type: FruitType.Apple, score: 700 },
+  6: { type: FruitType.Apple, score: 700 },
+  7: { type: FruitType.Grapes, score: 1000 },
+  8: { type: FruitType.Grapes, score: 1000 },
+  9: { type: FruitType.Galaxian, score: 2000 },
+  10: { type: FruitType.Galaxian, score: 2000 },
+  11: { type: FruitType.Bell, score: 3000 },
+  12: { type: FruitType.Bell, score: 3000 },
+  13: { type: FruitType.Key, score: 5000 },
+};
 
 /**
  * Assets configuration
@@ -87,6 +117,8 @@ export const GHOST_PALETTE_OFFSET_Y = 277;
 
 /** Pixel size of the Ghost sprite in the source palette. */
 export const SOURCE_GHOST_SIZE = 17;
+/** Pixel size of the Fruit sprite in the source palette. */
+export const SOURCE_FRUIT_SIZE = 17;
 
 export type SpriteOffset = { x: number; y: number };
 
@@ -98,6 +130,17 @@ export const GHOST_OFFSETS = {
   SCARED: { x: 200, y: 167 },
   SCARED_FLASH: { x: 0, y: 353 },
   EYES: { x: 200, y: 268 },
+} as const satisfies Record<string, SpriteOffset>;
+
+export const FRUIT_OFFSETS = {
+  Cherry: { x: 600, y: 488 },
+  Strawberry: { x: 617, y: 488 },
+  Peach: { x: 834, y: 488 },
+  Apple: { x: 651, y: 488 },
+  Grapes: { x: 668, y: 488 },
+  Galaxian: { x: 285, y: 674 },
+  Bell: { x: 502, y: 674 },
+  Key: { x: 519, y: 674 },
 } as const satisfies Record<string, SpriteOffset>;
 
 /** Animation speed in milliseconds per frame. */

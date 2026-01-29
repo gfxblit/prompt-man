@@ -79,6 +79,7 @@ describe('Issue 59: Ghost Rendering on Death', () => {
       isReady: vi.fn().mockReturnValue(false),
       getPowerUpTimer: vi.fn().mockReturnValue(0),
       getPointEffects: vi.fn().mockReturnValue([]),
+      getFruit: vi.fn().mockReturnValue(null),
       startReady: vi.fn(),
     };
   });
@@ -123,8 +124,22 @@ describe('Issue 59: Ghost Rendering on Death', () => {
     vi.mocked(mockState.getEntities).mockReturnValue(entities);
     vi.mocked(mockState.isDying).mockReturnValue(true);
 
-    renderer.render(grid, mockState);
+        renderer.render(grid, mockState);
 
-    expect(mockContext.drawImage).not.toHaveBeenCalled();
-  });
-});
+    
+
+        // Should NOT call drawImage for Ghost (sourceY < 400)
+
+        // It might be called for HUD fruits (sourceY > 400)
+
+        const calls = mockContext.drawImage.mock.calls;
+
+        const ghostCalls = calls.filter(args => args[2] < 400);
+
+        expect(ghostCalls.length).toBe(0);
+
+      });
+
+    });
+
+    
