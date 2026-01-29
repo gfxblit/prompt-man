@@ -25,6 +25,7 @@ import {
   SIREN_THRESHOLDS,
   FRUIT_SPAWN_THRESHOLDS,
   FRUIT_DURATION,
+  FRUIT_SCORE_DURATION,
   FRUIT_SPAWN_POS,
   FRUIT_DATA
 } from './config.js';
@@ -314,6 +315,15 @@ export class GameState implements IGameState {
       return;
     }
 
+    // Update point effect timers
+    this.pointEffects = this.pointEffects.filter(effect => {
+      if (effect.timer !== undefined) {
+        effect.timer -= deltaTime;
+        return effect.timer > 0;
+      }
+      return true;
+    });
+
     if (this.ready) {
       if (this.started) {
         this.readyTimer -= deltaTime;
@@ -490,7 +500,7 @@ export class GameState implements IGameState {
       const levelData = this.getFruitDataForLevel();
       const points = levelData.score;
       this.score += points;
-      this.pointEffects.push({ x: this.fruit.x, y: this.fruit.y, points });
+      this.pointEffects.push({ x: this.fruit.x, y: this.fruit.y, points, timer: FRUIT_SCORE_DURATION });
       this.audioManager?.playPowerPelletSound();
       this.fruit = null;
       this.fruitTimer = 0;

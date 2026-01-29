@@ -47,6 +47,8 @@ export const GHOST_SPEED_LEVEL_MULTIPLIER = 1.1;
 export const FRUIT_SPAWN_THRESHOLDS = [70, 170] as const;
 /** Duration in milliseconds for how long fruit stays on screen. */
 export const FRUIT_DURATION = 9500;
+/** Duration in milliseconds for how long fruit score stays on screen. */
+export const FRUIT_SCORE_DURATION = 2000;
 /** Default fruit spawn position in grid coordinates. */
 export const FRUIT_SPAWN_POS = { x: 13.5, y: 17 };
 

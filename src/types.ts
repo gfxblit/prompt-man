@@ -86,6 +86,8 @@ export interface PointEffect {
   y: number;
   /** Number of points to display. */
   points: number;
+  /** Optional timer for tracking duration in milliseconds. */
+  timer?: number;
 }
 
 /**
