@@ -39,7 +39,7 @@ import {
 import { getHudFruits } from './hud-fruits.js';
 
 export class Renderer implements IRenderer {
-  private ghostCache = new Map<string, HTMLCanvasElement>();
+  private spriteCache = new Map<string, HTMLCanvasElement>();
 
   constructor(
     private ctx: CanvasRenderingContext2D,
@@ -118,8 +118,7 @@ export class Renderer implements IRenderer {
         const x = startX - rightIndex * gap;
         const y = startY + TILE_SIZE / 2; // Center Y
 
-        this.ctx.drawImage(
-            this.spritesheet,
+        this.renderWithTransparentBlack(
             offset.x + PALETTE_PADDING_X,
             offset.y + PALETTE_PADDING_Y,
             SOURCE_FRUIT_SIZE - PALETTE_PADDING_X,
@@ -381,10 +380,10 @@ export class Renderer implements IRenderer {
   }
 
   /**
-   * Renders a ghost sprite with black pixels made transparent.
-   * Used for rendering dead ghost eyes without the black background.
+   * Renders a sprite with black pixels made transparent.
+   * Used for rendering sprites without the black background.
    */
-  private renderGhostWithTransparentBlack(
+  private renderWithTransparentBlack(
     sourceX: number,
     sourceY: number,
     sourceWidth: number,
@@ -397,7 +396,7 @@ export class Renderer implements IRenderer {
     if (!this.spritesheet) return;
 
     const cacheKey = `${sourceX},${sourceY},${sourceWidth},${sourceHeight}`;
-    let tempCanvas = this.ghostCache.get(cacheKey);
+    let tempCanvas = this.spriteCache.get(cacheKey);
 
     if (!tempCanvas) {
       // Create a temporary canvas to extract and modify the sprite
@@ -440,7 +439,7 @@ export class Renderer implements IRenderer {
       tempCtx.putImageData(imageData, 0, 0);
 
       // Store in cache
-      this.ghostCache.set(cacheKey, tempCanvas);
+      this.spriteCache.set(cacheKey, tempCanvas);
     }
 
     // Draw the modified sprite to the main canvas
@@ -587,7 +586,7 @@ export class Renderer implements IRenderer {
           this.ctx.scale(scaleX, scaleY);
 
           // For all ghosts, make black pixels transparent
-          this.renderGhostWithTransparentBlack(
+          this.renderWithTransparentBlack(
             spriteSource.x,
             spriteSource.y,
             spriteSource.width,
@@ -638,8 +637,7 @@ export class Renderer implements IRenderer {
         if (this.spritesheet && entity.fruitType) {
           const offset = FRUIT_OFFSETS[entity.fruitType];
           if (offset) {
-            this.ctx.drawImage(
-              this.spritesheet,
+            this.renderWithTransparentBlack(
               offset.x + PALETTE_PADDING_X,
               offset.y + PALETTE_PADDING_Y,
               SOURCE_FRUIT_SIZE - PALETTE_PADDING_X,

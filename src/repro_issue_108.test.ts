@@ -120,6 +120,7 @@ describe('Renderer Ghost Transparency (Issue #108)', () => {
     // Normal ghost
     const entities: Partial<Entity>[] = [{ type: EntityType.Ghost, x: 0, y: 0, color: 'red', animationFrame: 0 }];
     vi.mocked(mockState.getEntities).mockReturnValue(entities as Entity[]);
+    vi.mocked(mockState.getLevel).mockReturnValue(0);
 
     // First render
     renderer.render(grid, mockState);
