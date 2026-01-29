@@ -7,7 +7,6 @@ import {
   PALETTE_PADDING_Y
 } from './config.js';
 import type { SpriteOffset } from './config.js';
-import { FruitType } from './types.js';
 
 /**
  * (row, col) coordinates in the sprite sheet for a 4x4 quadrant.
@@ -377,21 +376,6 @@ export const STATIC_SPRITE_MAP = {
   PELLET: [1, 15] as SpriteCoord,
   POWER_PELLET: [3, 15] as SpriteCoord,
 } as const;
-
-/**
- * Static sprite coordinates (row, col) for fruits.
- * Placeholders for now.
- */
-export const FRUIT_SPRITE_MAP: Record<FruitType, SpriteCoord> = {
-  [FruitType.Cherry]: [0, 0],
-  [FruitType.Strawberry]: [0, 0],
-  [FruitType.Peach]: [0, 0],
-  [FruitType.Apple]: [0, 0],
-  [FruitType.Grapes]: [0, 0],
-  [FruitType.Galaxian]: [0, 0],
-  [FruitType.Bell]: [0, 0],
-  [FruitType.Key]: [0, 0],
-};
 
 /**
  * Pixel size of a single quadrant in the sprite sheet.

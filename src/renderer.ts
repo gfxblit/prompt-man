@@ -19,14 +19,14 @@ import {
   COLLISION_THRESHOLD,
   MAZE_RENDER_OFFSET_X,
   MAZE_RENDER_OFFSET_Y,
-  MAZE_RENDER_MARGIN_BOTTOM
+  MAZE_RENDER_MARGIN_BOTTOM,
+  FRUIT_OFFSETS
 } from './config.js';
 import { getTileMask } from './autotile.js';
 import {
   TILE_MAP,
   SOURCE_QUADRANT_SIZE,
   STATIC_SPRITE_MAP,
-  FRUIT_SPRITE_MAP,
   SOURCE_TILE_SIZE,
   SOURCE_PACMAN_SIZE,
   PACMAN_DEATH_ANIMATION_MAP,
@@ -593,13 +593,12 @@ export class Renderer implements IRenderer {
         if (state.isDying()) return;
 
         if (this.spritesheet && entity.fruitType) {
-          const coord = FRUIT_SPRITE_MAP[entity.fruitType];
-          if (coord) {
-            const [sRow, sCol] = coord;
+          const offset = FRUIT_OFFSETS[entity.fruitType];
+          if (offset) {
             this.ctx.drawImage(
               this.spritesheet,
-              PALETTE_ORIGIN_X + (sCol * SOURCE_TILE_SIZE) + PALETTE_PADDING_X,
-              PALETTE_ORIGIN_Y + (sRow * SOURCE_TILE_SIZE) + PALETTE_PADDING_Y,
+              offset.x + PALETTE_PADDING_X,
+              offset.y + PALETTE_PADDING_Y,
               SOURCE_TILE_SIZE - PALETTE_PADDING_X,
               SOURCE_TILE_SIZE - PALETTE_PADDING_Y,
               screenX - TILE_SIZE / 2,
