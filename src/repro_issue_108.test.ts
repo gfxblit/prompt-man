@@ -99,12 +99,17 @@ describe('Renderer Ghost Transparency (Issue #108)', () => {
 
     // In current implementation, normal ghost calls drawImage with the spritesheet directly
     // We WANT it to call drawImage with a canvas (the result of transparency processing)
-    // For now, let's just check that it DOES NOT use the spritesheet directly
+    // For now, let's just check that it DOES NOT use the spritesheet directly FOR GHOSTS
     const drawImageCalls = vi.mocked(mockContext.drawImage).mock.calls;
-    const spritesheetUsed = drawImageCalls.some(call => call[0] === mockSpritesheet);
+    
+    // Check if any call uses the spritesheet AND has ghost coordinates (sy < 400)
+    // Fruit rendering (HUD) uses spritesheet directly but has sy > 400
+    const spritesheetUsedForGhost = drawImageCalls.some(call => 
+      call[0] === mockSpritesheet && (call[2] as number) < 400
+    );
     
     // This should PASS if implemented correctly because it should use a canvas instead
-    expect(spritesheetUsed).toBe(false);
+    expect(spritesheetUsedForGhost).toBe(false);
   });
 
   it('should cache processed ghost sprites', () => {

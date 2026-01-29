@@ -35,6 +35,8 @@ import {
   PACMAN_ANIMATION_MAP
 } from './sprites.js';
 
+import { getHudFruits } from './hud-fruits.js';
+
 export class Renderer implements IRenderer {
   private ghostCache = new Map<string, HTMLCanvasElement>();
 
@@ -69,6 +71,7 @@ export class Renderer implements IRenderer {
     this.renderEntities(state);
     this.renderPointEffects(state);
     this.renderLives(grid, state.getLives());
+    this.renderHudFruits(grid, state.getLevel());
     this.renderHUD(state, grid);
 
     if (state.isGameOver()) {
@@ -87,6 +90,45 @@ export class Renderer implements IRenderer {
       width: this.ctx.canvas?.width ?? (grid.getWidth() * TILE_SIZE + MAZE_RENDER_OFFSET_X * 2),
       height: this.ctx.canvas?.height ?? (grid.getHeight() * TILE_SIZE + MAZE_RENDER_OFFSET_Y + MAZE_RENDER_MARGIN_BOTTOM)
     };
+  }
+
+  private renderHudFruits(grid: IGrid, level: number): void {
+    if (!this.spritesheet) return;
+
+    const fruits = getHudFruits(level);
+    const { width, height } = this.getCanvasDimensions(grid);
+    
+    // Position similar to lives but on the right
+    // Right margin: align the last fruit to match the visual margin of the maze or UI
+    const startX = width - TILE_SIZE * 2 - MAZE_RENDER_OFFSET_X;
+    const startY = height - TILE_SIZE * 2;
+    const gap = TILE_SIZE * 1.2;
+
+    for (let i = 0; i < fruits.length; i++) {
+        const fruitType = fruits[i];
+        if (!fruitType) continue;
+
+        const offset = FRUIT_OFFSETS[fruitType];
+        if (!offset) continue;
+        
+        // Render from right to left: most recent (last in array) is at startX
+        // Index from right end:
+        const rightIndex = fruits.length - 1 - i;
+        const x = startX - rightIndex * gap;
+        const y = startY + TILE_SIZE / 2; // Center Y
+
+        this.ctx.drawImage(
+            this.spritesheet,
+            offset.x + PALETTE_PADDING_X,
+            offset.y + PALETTE_PADDING_Y,
+            SOURCE_TILE_SIZE - PALETTE_PADDING_X,
+            SOURCE_TILE_SIZE - PALETTE_PADDING_Y,
+            x - TILE_SIZE / 2, // Centered
+            y - TILE_SIZE / 2, // Centered
+            TILE_SIZE,
+            TILE_SIZE
+        );
+    }
   }
 
   private renderHUD(state: IGameState, grid: IGrid): void {
