@@ -131,14 +131,14 @@ export const GHOST_OFFSETS = {
 } as const satisfies Record<string, SpriteOffset>;
 
 export const FRUIT_OFFSETS = {
-  Cherry: { x: 489, y: 50 },
-  Strawberry: { x: 505, y: 50 },
-  Peach: { x: 521, y: 50 },
-  Apple: { x: 537, y: 50 },
-  Grapes: { x: 553, y: 50 },
-  Galaxian: { x: 569, y: 50 },
-  Bell: { x: 585, y: 50 },
-  Key: { x: 601, y: 50 },
+  Cherry: { x: 600, y: 488 },
+  Strawberry: { x: 617, y: 488 },
+  Peach: { x: 834, y: 488 },
+  Apple: { x: 651, y: 488 },
+  Grapes: { x: 668, y: 488 },
+  Galaxian: { x: 285, y: 674 },
+  Bell: { x: 502, y: 674 },
+  Key: { x: 519, y: 674 },
 } as const satisfies Record<string, SpriteOffset>;
 
 /** Animation speed in milliseconds per frame. */
