@@ -147,8 +147,17 @@ export class GhostAI {
       { dx: 1, dy: 0 },  // Right
     ];
 
+    const currentDir = ghost.direction;
+
     // Add initial moves to queue
     for (const dir of dirs) {
+      // Prevent immediate reversal for living ghosts
+      if (!isDead && currentDir && (currentDir.dx !== 0 || currentDir.dy !== 0)) {
+        if (dir.dx === -currentDir.dx && dir.dy === -currentDir.dy) {
+          continue;
+        }
+      }
+
       const nextX = ((startX + dir.dx) % width + width) % width;
       const nextY = ((startY + dir.dy) % height + height) % height;
       const key = `${nextX},${nextY}`;
@@ -156,6 +165,19 @@ export class GhostAI {
       if (!visited.has(key) && grid.isWalkable(nextX, nextY, EntityType.Ghost, isDead, isLeavingJail)) {
         visited.add(key);
         queue.push({ x: nextX, y: nextY, firstDir: dir });
+      }
+    }
+
+    // Handle dead end for living ghosts: if no moves were added but reverse is valid, take it
+    if (queue.length === 0 && !isDead && currentDir && (currentDir.dx !== 0 || currentDir.dy !== 0)) {
+      const reverseDir = { dx: -currentDir.dx || 0, dy: -currentDir.dy || 0 };
+      const nextX = ((startX + reverseDir.dx) % width + width) % width;
+      const nextY = ((startY + reverseDir.dy) % height + height) % height;
+      
+      if (grid.isWalkable(nextX, nextY, EntityType.Ghost, isDead, isLeavingJail)) {
+        // No need to check visited for the very first step in a dead end
+        queue.push({ x: nextX, y: nextY, firstDir: reverseDir });
+        visited.add(`${nextX},${nextY}`);
       }
     }
     

@@ -107,4 +107,34 @@ describe('Ghost Return Logic (BFS)', () => {
     expect(bfsDir.dx).toBe(-1);
     expect(bfsDir.dy).toBe(0);
   });
+
+  it('should prevent immediate reversal for living ghosts using BFS', () => {
+    // Grid 5x1
+    // T G . . .
+    // G at (1, 0). Moving Right (+1, 0).
+    // Target T at (0, 0).
+    // Direct path is Left (-1, 0) - this is REVERSE.
+    // If reverse forbidden, must go Right and wrap around.
+    
+    const map = '.....'; // All empty (using dots for clarity)
+    const grid = Grid.fromString(map);
+    const ghost = {
+      type: EntityType.Ghost,
+      x: 1,
+      y: 0,
+      direction: { dx: 1, dy: 0 }, // Moving Right
+      isDead: false, // Living ghost
+      isLeavingJail: false
+    };
+    const target = { x: 0, y: 0 };
+    
+    const bfsDir = GhostAI.findBFSDirection(ghost, target, grid, false, false);
+    
+    // Should NOT be Left (-1, 0)
+    expect(bfsDir.dx).not.toBe(-1);
+    
+    // Should be Right (1, 0) to wrap around
+    expect(bfsDir.dx).toBe(1);
+    expect(bfsDir.dy).toBe(0);
+  });
 });

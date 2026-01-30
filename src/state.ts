@@ -881,14 +881,14 @@ export class GameState implements IGameState {
 
     // Pathfinding priority:
     // 1. Dead ghosts: Pathfind to spawn position (Use BFS to avoid local minima)
-    // 2. Ghosts in jail: Pathfind to jail door
+    // 2. Ghosts in jail: Pathfind to jail door (Use BFS for guaranteed exit)
     // 3. Scared ghosts (only if not in jail): Pathfind AWAY from Pacman (handled in GhostAI.pickDirection)
-    // 4. Normal ghosts: Pathfind towards Pacman
+    // 4. Normal ghosts: Pathfind towards Pacman (Use BFS for smarter pathfinding)
     let newDir: Direction;
-    if (isDead) {
-      newDir = GhostAI.findBFSDirection(ghost, target, this.grid, isDead, isLeavingJail);
-    } else {
+    if (isScared) {
       newDir = GhostAI.pickDirection(ghost, target, this.grid, isScared, isDead, isLeavingJail);
+    } else {
+      newDir = GhostAI.findBFSDirection(ghost, target, this.grid, isDead, isLeavingJail);
     }
     ghost.direction = newDir;
     ghost.rotation = Math.atan2(newDir.dy, newDir.dx);
