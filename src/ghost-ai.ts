@@ -174,7 +174,11 @@ export class GhostAI {
         
         if (!visited.has(key) && grid.isWalkable(nextX, nextY, EntityType.Ghost, isDead, isLeavingJail)) {
           visited.add(key);
-          queue.push({ x: nextX, y: nextY, firstDir: current.firstDir });
+          queue.push({ 
+            x: nextX, 
+            y: nextY, 
+            ...(current.firstDir ? { firstDir: current.firstDir } : {}) 
+          });
         }
       }
     }

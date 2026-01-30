@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { Grid } from './grid';
-import { GhostAI } from './ghost-ai';
-import { EntityType } from './types';
+import { Grid } from './grid.js';
+import { GhostAI } from './ghost-ai.js';
+import { EntityType } from './types.js';
 
 describe('Ghost Return Logic (BFS)', () => {
   it('should calculate a path using BFS that solves local minima where Greedy fails', () => {
