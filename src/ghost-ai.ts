@@ -109,4 +109,77 @@ export class GhostAI {
     const randomIndex = Math.floor(Math.random() * bestMoves.length);
     return bestMoves[randomIndex]!;
   }
+
+  /**
+   * Finds the next direction to take to reach the target using Breadth-First Search.
+   * Useful for dead ghosts to find the shortest path back to the jail.
+   */
+  public static findBFSDirection(
+    ghost: Entity,
+    target: { x: number; y: number },
+    grid: IGrid,
+    isDead: boolean = true,
+    isLeavingJail: boolean = false
+  ): Direction {
+    const startX = Math.round(ghost.x);
+    const startY = Math.round(ghost.y);
+    const targetX = target.x;
+    const targetY = target.y;
+
+    if (startX === targetX && startY === targetY) {
+      return { dx: 0, dy: 0 };
+    }
+
+    const width = grid.getWidth();
+    const height = grid.getHeight();
+    
+    // Queue for BFS: stores { x, y, firstDir }
+    const queue: { x: number; y: number; firstDir?: Direction }[] = [];
+    const visited = new Set<string>();
+
+    // Mark start as visited
+    visited.add(`${startX},${startY}`);
+
+    const dirs: Direction[] = [
+      { dx: 0, dy: -1 }, // Up
+      { dx: -1, dy: 0 }, // Left
+      { dx: 0, dy: 1 },  // Down
+      { dx: 1, dy: 0 },  // Right
+    ];
+
+    // Add initial moves to queue
+    for (const dir of dirs) {
+      const nextX = ((startX + dir.dx) % width + width) % width;
+      const nextY = ((startY + dir.dy) % height + height) % height;
+      const key = `${nextX},${nextY}`;
+      
+      if (!visited.has(key) && grid.isWalkable(nextX, nextY, EntityType.Ghost, isDead, isLeavingJail)) {
+        visited.add(key);
+        queue.push({ x: nextX, y: nextY, firstDir: dir });
+      }
+    }
+    
+    let head = 0;
+    while (head < queue.length) {
+      const current = queue[head++]!;
+      
+      if (current.x === targetX && current.y === targetY) {
+        return current.firstDir!;
+      }
+
+      for (const dir of dirs) {
+        const nextX = ((current.x + dir.dx) % width + width) % width;
+        const nextY = ((current.y + dir.dy) % height + height) % height;
+        const key = `${nextX},${nextY}`;
+        
+        if (!visited.has(key) && grid.isWalkable(nextX, nextY, EntityType.Ghost, isDead, isLeavingJail)) {
+          visited.add(key);
+          queue.push({ x: nextX, y: nextY, firstDir: current.firstDir });
+        }
+      }
+    }
+    
+    // Fallback if no path found
+    return { dx: 0, dy: 0 };
+  }
 }
