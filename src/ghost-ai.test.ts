@@ -68,7 +68,7 @@ describe('Ghost AI', () => {
   it('should change ghost direction when hitting a wall', () => {
     const wallTemplate = `
 #####
-#G..#
+#G.P#
 #####
     `.trim();
     const customGrid = Grid.fromString(wallTemplate);
@@ -92,6 +92,7 @@ describe('Ghost AI', () => {
 #G. #
 #. .#
 # . #
+#  P#
 #####
     `.trim();
     const customGrid = Grid.fromString(intersectionTemplate);

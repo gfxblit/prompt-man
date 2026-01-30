@@ -14,6 +14,8 @@ export enum TileType {
   PacmanSpawn = 'PacmanSpawn',
   /** The starting position for Ghosts. */
   GhostSpawn = 'GhostSpawn',
+  /** A special door that only ghosts can traverse. */
+  JailDoor = 'JailDoor',
 }
 
 /**
@@ -74,6 +76,8 @@ export interface Entity {
   respawnTimer?: number;
   /** Optional type of fruit for Fruit entities. */
   fruitType?: FruitType;
+  /** Optional flag indicating if the ghost is currently leaving the jail. */
+  isLeavingJail?: boolean;
 }
 
 /**
@@ -113,7 +117,7 @@ export interface IGrid {
   /** Checks if the specified coordinates are within grid boundaries. */
   isOutOfBounds(x: number, y: number): boolean;
   /** Checks if the tile at the specified coordinates can be entered by entities. */
-  isWalkable(x: number, y: number): boolean;
+  isWalkable(x: number, y: number, entityType?: EntityType, isDead?: boolean, isLeavingJail?: boolean): boolean;
   /** Finds all coordinates of a specific tile type. */
   findTiles(type: TileType): { x: number; y: number }[];
 }

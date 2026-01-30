@@ -8,6 +8,7 @@ export const CHAR_MAP: Readonly<Record<string, TileType>> = {
   '.': TileType.Pellet,
   'o': TileType.PowerPellet,
   ' ': TileType.Empty,
+  '-': TileType.JailDoor,
   'P': TileType.PacmanSpawn,
   'G': TileType.GhostSpawn,
 };

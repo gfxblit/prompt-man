@@ -1,4 +1,5 @@
 import type { Direction, Entity, IGrid } from './types.js';
+import { EntityType } from './types.js';
 
 export class GhostAI {
   /**
@@ -17,7 +18,9 @@ export class GhostAI {
     ghost: Entity,
     target: { x: number; y: number },
     grid: IGrid,
-    isScared: boolean = false
+    isScared: boolean = false,
+    isDead: boolean = false,
+    isLeavingJail: boolean = false
   ): Direction {
     const x = Math.round(ghost.x);
     const y = Math.round(ghost.y);
@@ -37,7 +40,7 @@ export class GhostAI {
       // 1. Check if the tile is walkable (with grid wrapping for tunnel support)
       const targetX = ((x + dir.dx) % width + width) % width;
       const targetY = ((y + dir.dy) % height + height) % height;
-      if (!grid.isWalkable(targetX, targetY)) {
+      if (!grid.isWalkable(targetX, targetY, EntityType.Ghost, isDead, isLeavingJail)) {
         return false;
       }
 
@@ -66,21 +69,16 @@ export class GhostAI {
       return validMoves[0]!;
     }
 
-    // Scared ghosts pick a random valid direction (classic Pac-Man behavior)
-    if (isScared) {
-      return validMoves[Math.floor(Math.random() * validMoves.length)]!;
-    }
-
     // Otherwise, pick the move that optimizes Manhattan distance to target
-    let bestDist = this.getManhattanDistance(x + validMoves[0]!.dx, y + validMoves[0]!.dy, target.x, target.y);
-    let bestMoves: Direction[] = [validMoves[0]!];
+    const shouldMaximizeDistance = isScared && !isLeavingJail;
 
-    for (let i = 1; i < validMoves.length; i++) {
-      const dir = validMoves[i]!;
+    let bestDist = shouldMaximizeDistance ? -Infinity : Infinity;
+    let bestMoves: Direction[] = [];
+
+    for (const dir of validMoves) {
       const distance = this.getManhattanDistance(x + dir.dx, y + dir.dy, target.x, target.y);
 
-      if (isScared) {
-        // Flee: Maximize distance
+      if (shouldMaximizeDistance) {
         if (distance > bestDist) {
           bestDist = distance;
           bestMoves = [dir];
@@ -88,7 +86,6 @@ export class GhostAI {
           bestMoves.push(dir);
         }
       } else {
-        // Chase: Minimize distance
         if (distance < bestDist) {
           bestDist = distance;
           bestMoves = [dir];
@@ -101,8 +98,114 @@ export class GhostAI {
     if (bestMoves.length === 0) return { dx: 0, dy: 0 };
     if (bestMoves.length === 1) return bestMoves[0]!;
     
-    // Use Math.random() to break ties among equally good moves
+    // For deterministic movement (normal, dead, or leaving jail), break ties 
+    // using the priority order (Up, Left, Down, Right) which is already 
+    // preserved in bestMoves.
+    if (!shouldMaximizeDistance) {
+      return bestMoves[0]!;
+    }
+
+    // Use Math.random() to break ties among equally good moves only for scared ghosts
     const randomIndex = Math.floor(Math.random() * bestMoves.length);
     return bestMoves[randomIndex]!;
+  }
+
+  /**
+   * Finds the next direction to take to reach the target using Breadth-First Search.
+   * Useful for dead ghosts to find the shortest path back to the jail.
+   */
+  public static findBFSDirection(
+    ghost: Entity,
+    target: { x: number; y: number },
+    grid: IGrid,
+    isDead: boolean,
+    isLeavingJail: boolean
+  ): Direction {
+    const startX = Math.round(ghost.x);
+    const startY = Math.round(ghost.y);
+    const targetX = target.x;
+    const targetY = target.y;
+
+    if (startX === targetX && startY === targetY) {
+      return { dx: 0, dy: 0 };
+    }
+
+    const width = grid.getWidth();
+    const height = grid.getHeight();
+    
+    // Queue for BFS: stores { x, y, firstDir }
+    const queue: { x: number; y: number; firstDir?: Direction }[] = [];
+    const visited = new Set<string>();
+
+    // Mark start as visited
+    visited.add(`${startX},${startY}`);
+
+    const dirs: Direction[] = [
+      { dx: 0, dy: -1 }, // Up
+      { dx: -1, dy: 0 }, // Left
+      { dx: 0, dy: 1 },  // Down
+      { dx: 1, dy: 0 },  // Right
+    ];
+
+    const currentDir = ghost.direction;
+
+    // Add initial moves to queue
+    for (const dir of dirs) {
+      // Prevent immediate reversal for living ghosts
+      if (!isDead && currentDir && (currentDir.dx !== 0 || currentDir.dy !== 0)) {
+        if (dir.dx === -currentDir.dx && dir.dy === -currentDir.dy) {
+          continue;
+        }
+      }
+
+      const nextX = ((startX + dir.dx) % width + width) % width;
+      const nextY = ((startY + dir.dy) % height + height) % height;
+      const key = `${nextX},${nextY}`;
+      
+      if (!visited.has(key) && grid.isWalkable(nextX, nextY, EntityType.Ghost, isDead, isLeavingJail)) {
+        visited.add(key);
+        queue.push({ x: nextX, y: nextY, firstDir: dir });
+      }
+    }
+
+    // Handle dead end for living ghosts: if no moves were added but reverse is valid, take it
+    if (queue.length === 0 && !isDead && currentDir && (currentDir.dx !== 0 || currentDir.dy !== 0)) {
+      const reverseDir = { dx: -currentDir.dx || 0, dy: -currentDir.dy || 0 };
+      const nextX = ((startX + reverseDir.dx) % width + width) % width;
+      const nextY = ((startY + reverseDir.dy) % height + height) % height;
+      
+      if (grid.isWalkable(nextX, nextY, EntityType.Ghost, isDead, isLeavingJail)) {
+        // No need to check visited for the very first step in a dead end
+        queue.push({ x: nextX, y: nextY, firstDir: reverseDir });
+        visited.add(`${nextX},${nextY}`);
+      }
+    }
+    
+    let head = 0;
+    while (head < queue.length) {
+      const current = queue[head++]!;
+      
+      if (current.x === targetX && current.y === targetY) {
+        return current.firstDir!;
+      }
+
+      for (const dir of dirs) {
+        const nextX = ((current.x + dir.dx) % width + width) % width;
+        const nextY = ((current.y + dir.dy) % height + height) % height;
+        const key = `${nextX},${nextY}`;
+        
+        if (!visited.has(key) && grid.isWalkable(nextX, nextY, EntityType.Ghost, isDead, isLeavingJail)) {
+          visited.add(key);
+          queue.push({ 
+            x: nextX, 
+            y: nextY, 
+            firstDir: current.firstDir!
+          });
+        }
+      }
+    }
+    
+    // Fallback if no path found
+    return { dx: 0, dy: 0 };
   }
 }
