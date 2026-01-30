@@ -182,6 +182,7 @@ export const COLORS = {
   GHOST_COLORS: ['red', 'pink', 'cyan', 'orange'],
   GHOST_DEFAULT: 'red',
   SCARED_GHOST: 'blue',
+  JAIL_DOOR: 'pink',
 } as const;
 
 /**

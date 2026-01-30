@@ -863,9 +863,9 @@ export class GameState implements IGameState {
             // Find a neighbor of the door that is NOT in jail and NOT a wall
             const neighbors = [
                 {x: nearestDoor.x, y: nearestDoor.y - 1}, // Prefer Up
+                {x: nearestDoor.x - 1, y: nearestDoor.y}, // Then Left
                 {x: nearestDoor.x, y: nearestDoor.y + 1}, // Then Down
-                {x: nearestDoor.x + 1, y: nearestDoor.y},
-                {x: nearestDoor.x - 1, y: nearestDoor.y},
+                {x: nearestDoor.x + 1, y: nearestDoor.y}, // Then Right
             ];
             for (const n of neighbors) {
                 const tile = this.grid.getTile(n.x, n.y);

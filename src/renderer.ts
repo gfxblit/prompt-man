@@ -307,7 +307,7 @@ export class Renderer implements IRenderer {
 
       case TileType.JailDoor:
         // Render a horizontal line (pink) to represent the door
-        this.ctx.fillStyle = 'pink';
+        this.ctx.fillStyle = COLORS.JAIL_DOOR;
         this.ctx.fillRect(screenX, screenY + TILE_SIZE / 2 - 2, TILE_SIZE, 4);
         break;
 

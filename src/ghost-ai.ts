@@ -118,8 +118,8 @@ export class GhostAI {
     ghost: Entity,
     target: { x: number; y: number },
     grid: IGrid,
-    isDead: boolean = true,
-    isLeavingJail: boolean = false
+    isDead: boolean,
+    isLeavingJail: boolean
   ): Direction {
     const startX = Math.round(ghost.x);
     const startY = Math.round(ghost.y);
@@ -199,7 +199,7 @@ export class GhostAI {
           queue.push({ 
             x: nextX, 
             y: nextY, 
-            ...(current.firstDir ? { firstDir: current.firstDir } : {}) 
+            firstDir: current.firstDir!
           });
         }
       }
