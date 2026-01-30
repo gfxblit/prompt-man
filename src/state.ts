@@ -629,6 +629,7 @@ export class GameState implements IGameState {
           entity.isScared = false;
         }
         entity.isDead = false;
+        entity.isLeavingJail = true;
       }
     }
     this.fruit = null;
