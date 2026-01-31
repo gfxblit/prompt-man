@@ -76,20 +76,20 @@ export class GameState implements IGameState {
   private calculateJailTiles(): void {
     const spawns = this.grid.findTiles(TileType.GhostSpawn);
     const doors = this.grid.findTiles(TileType.JailDoor);
-    
+
     if (spawns.length === 0 && doors.length === 0) return;
 
     this.jailTiles.clear();
-    const queue: {x: number, y: number}[] = [...spawns];
+    const queue: { x: number, y: number }[] = [...spawns];
     spawns.forEach(s => this.jailTiles.add(`${s.x},${s.y}`));
 
     // Flood fill from spawns to find all connected non-wall tiles,
     // but don't cross through jail doors.
     let head = 0;
     while (head < queue.length) {
-      const {x, y} = queue[head++]!;
+      const { x, y } = queue[head++]!;
       const neighbors = [
-        {x: x + 1, y}, {x: x - 1, y}, {x, y: y + 1}, {x, y: y - 1}
+        { x: x + 1, y }, { x: x - 1, y }, { x, y: y + 1 }, { x, y: y - 1 }
       ];
 
       for (const n of neighbors) {
@@ -97,13 +97,13 @@ export class GameState implements IGameState {
         const nx = (n.x % this.width + this.width) % this.width;
         const ny = (n.y % this.height + this.height) % this.height;
         const key = `${nx},${ny}`;
-        
+
         if (this.jailTiles.has(key)) continue;
 
         const tile = this.grid.getTile(nx, ny);
         if (tile !== undefined && tile !== TileType.Wall && tile !== TileType.JailDoor) {
           this.jailTiles.add(key);
-          queue.push({x: nx, y: ny});
+          queue.push({ x: nx, y: ny });
         }
       }
     }
@@ -570,7 +570,7 @@ export class GameState implements IGameState {
       pacman.animationFrame = 0;
       pacman.direction = { dx: 0, dy: 0 };
     }
-    
+
     this.audioManager?.stopAll();
     this.audioManager?.playDeathSequence();
   }
@@ -723,7 +723,7 @@ export class GameState implements IGameState {
         const x = Math.round(ghost.x);
         const y = Math.round(ghost.y);
         const currentTileType = this.grid.getTile(x, y);
-        
+
         const inJail = this.isTileInJail(x, y);
 
         // A ghost has left jail if it's on a tile that is neither GhostSpawn nor JailDoor
@@ -765,7 +765,13 @@ export class GameState implements IGameState {
           // Ghosts leaving jail should ALWAYS re-evaluate to find the exit efficiently.
           const isScaredAndCanContinue = ghost.isScared && !ghost.isDead && !ghost.isLeavingJail && canContinueStraight;
 
-          if (!isScaredAndCanContinue) {
+          // Dead ghosts (eyes) returning to jail should ALWAYS re-evaluate at aligned positions
+          // to ensure they find the optimal path and don't miss jail door entrances
+          if (ghost.isDead) {
+            ghost.x = x;
+            ghost.y = y;
+            this.chooseGhostDirection(ghost);
+          } else if (!isScaredAndCanContinue) {
             const allPossibleDirs = this.getPossibleDirections(x, y, ghost as Entity); // Pass the whole ghost entity with correct typing
             const nonReversePossibleDirs = allPossibleDirs.filter(
               dir => !(dir.dx === -ghost.direction!.dx && dir.dy === -ghost.direction!.dy)
@@ -776,6 +782,47 @@ export class GameState implements IGameState {
               // Only change if we are actually close to the center to avoid "jitter"
               ghost.x = x;
               ghost.y = y;
+              this.chooseGhostDirection(ghost);
+            }
+          }
+        } else if (ghost.isDead) {
+          // For dead ghosts not currently aligned, check if they would cross a grid intersection
+          // during this move. If so, snap to that intersection first to ensure proper pathfinding.
+          const proposedX = ghost.x + ghost.direction.dx * distance;
+          const proposedY = ghost.y + ghost.direction.dy * distance;
+
+          // Check if we cross an integer position in the direction of movement
+          if (ghost.direction.dx !== 0) {
+            const currentFloor = Math.floor(ghost.x);
+            const proposedFloor = Math.floor(proposedX);
+            const currentCeil = Math.ceil(ghost.x);
+            const proposedCeil = Math.ceil(proposedX);
+
+            // If we cross an integer boundary, snap to that integer
+            if (ghost.direction.dx > 0 && proposedFloor > currentFloor) {
+              // Moving right and crossing an integer
+              ghost.x = currentCeil;
+              ghost.y = Math.round(ghost.y);
+              this.chooseGhostDirection(ghost);
+            } else if (ghost.direction.dx < 0 && proposedCeil < currentCeil) {
+              // Moving left and crossing an integer
+              ghost.x = currentFloor;
+              ghost.y = Math.round(ghost.y);
+              this.chooseGhostDirection(ghost);
+            }
+          } else if (ghost.direction.dy !== 0) {
+            const currentFloor = Math.floor(ghost.y);
+            const proposedFloor = Math.floor(proposedY);
+            const currentCeil = Math.ceil(ghost.y);
+            const proposedCeil = Math.ceil(proposedY);
+
+            if (ghost.direction.dy > 0 && proposedFloor > currentFloor) {
+              ghost.y = currentCeil;
+              ghost.x = Math.round(ghost.x);
+              this.chooseGhostDirection(ghost);
+            } else if (ghost.direction.dy < 0 && proposedCeil < currentCeil) {
+              ghost.y = currentFloor;
+              ghost.x = Math.round(ghost.x);
               this.chooseGhostDirection(ghost);
             }
           }
@@ -853,7 +900,7 @@ export class GameState implements IGameState {
             nearestDoor = door;
           }
         }
-        
+
         // Target the jail door tile itself
         target = { x: nearestDoor.x, y: nearestDoor.y };
 
@@ -861,21 +908,21 @@ export class GameState implements IGameState {
         // to avoid random movement when reaching the target.
         const distToDoor = Math.abs(ghost.x - nearestDoor.x) + Math.abs(ghost.y - nearestDoor.y);
         if (distToDoor < 0.2) {
-            // Find a neighbor of the door that is NOT in jail and NOT a wall
-            const neighbors = [
-                {x: nearestDoor.x, y: nearestDoor.y - 1}, // Prefer Up
-                {x: nearestDoor.x - 1, y: nearestDoor.y}, // Then Left
-                {x: nearestDoor.x, y: nearestDoor.y + 1}, // Then Down
-                {x: nearestDoor.x + 1, y: nearestDoor.y}, // Then Right
-            ];
-            for (const n of neighbors) {
-                const tile = this.grid.getTile(n.x, n.y);
-                const inJail = this.isTileInJail(n.x, n.y);
-                if (tile !== undefined && tile !== TileType.Wall && tile !== TileType.GhostSpawn && tile !== TileType.JailDoor && !inJail) {
-                    target = { x: n.x, y: n.y };
-                    break;
-                }
+          // Find a neighbor of the door that is NOT in jail and NOT a wall
+          const neighbors = [
+            { x: nearestDoor.x, y: nearestDoor.y - 1 }, // Prefer Up
+            { x: nearestDoor.x - 1, y: nearestDoor.y }, // Then Left
+            { x: nearestDoor.x, y: nearestDoor.y + 1 }, // Then Down
+            { x: nearestDoor.x + 1, y: nearestDoor.y }, // Then Right
+          ];
+          for (const n of neighbors) {
+            const tile = this.grid.getTile(n.x, n.y);
+            const inJail = this.isTileInJail(n.x, n.y);
+            if (tile !== undefined && tile !== TileType.Wall && tile !== TileType.GhostSpawn && tile !== TileType.JailDoor && !inJail) {
+              target = { x: n.x, y: n.y };
+              break;
             }
+          }
         }
       }
     }
